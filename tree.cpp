@@ -4,13 +4,15 @@
 	> Mail: ma6174@163.com 
 	> Created Time: Sun 07 Jul 2013 10:57:34 AM CST
  ************************************************************************/
+
+#pragma once
+
 #include <queue>
 #include <cmath>
 #include "SS.cpp"
 //#include "GINI.cpp"
 using namespace std;
 #define MAX_HIGH 10
-
 
 class Node			// be a class cause it have to free some spaces
 {
@@ -35,6 +37,8 @@ public:
 		this->single = 0;
 	}
 };
+
+
 class BinaryTree
 {
 public:
@@ -47,11 +51,13 @@ public:
 private:
 	void bulidTree( const CsvData &D );	
 };
+
 BinaryTree::BinaryTree( const CsvData &D )
 {
 	this->features = vector<int>(D.n, 1);
 	this->bulidTree( D );
 }
+
 void BinaryTree::bulidTree( const CsvData &D )
 {
 	queue<Node*> q;
@@ -173,7 +179,8 @@ void BinaryTree::disp()
 	}
 	cout << endl;
 }
-#include <ctime>
+
+/*
 int main()
 {
 	time_t tic, toc;
@@ -194,4 +201,4 @@ int main()
 	double tol = (double)(toc-tic)/CLOCKS_PER_SEC;
 	cout << "Time: " << tol << " s" << endl;
 	return 0;
-}
+}*/

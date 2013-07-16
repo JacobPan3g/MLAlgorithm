@@ -8,8 +8,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <cstdlib>
+#include <cstdlib>		// rand()
 #include <cmath>
+#include <ctime>		// time()
 using namespace std;
 
 /*
@@ -162,6 +163,32 @@ double variance( const vector<T> &v, vector<int> tag=vector<int>() )
 	}
 	return res/(num+1e-8);
 }
+
+/*
+ * Random
+ */
+// generate random number in [0,x]
+int random( int x )
+{
+	srand( (int)time(0) );
+	return rand()%(x+1);
+}
+
+template <class T>
+void shuffling( vector<T> &v )
+{
+	int n = v.size();
+	for ( int i = n-1; i >= 0; i-- )
+	{
+		// shuffling for n times
+		int j =	random( i );
+		T tmp = v[i];
+		v[i] = v[j];
+		v[j] = tmp;
+	}
+	//return v;
+}
+
 /*
  * disp
  */
@@ -226,6 +253,7 @@ int main()
 	a.push_back(4);
 	cout << mean(a) << endl;
 	cout << variance(a) << endl;
+	disp( shuffling(a) );
 
 	// min()
 	vector<double> a;

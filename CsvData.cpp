@@ -5,6 +5,8 @@
 	> Created Time: Mon 08 Jul 2013 09:14:40 AM CST
  ************************************************************************/
 
+#pragma once
+
 #include <fstream>
 #include "JPTool.cpp"
 using namespace std;
