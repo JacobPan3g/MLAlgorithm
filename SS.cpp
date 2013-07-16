@@ -47,6 +47,9 @@ vector< vector<double> > measure( const CsvData &D, const vector<int> &r, int m,
 			int num2 = 0;
 			for ( int j = 0; j < D.m; j++ )
 			{
+				if ( !r[j] )
+					continue;
+
 				if ( f[j] <= sp[k] )
 				{
 					part1[j] = 1;
