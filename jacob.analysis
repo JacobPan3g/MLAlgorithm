@@ -1,0 +1,11 @@
+1.	Empty Loop: 1e8 times, take 22.5s
+
+2.	The decision tree bulid process:(GINI, matlab ignore the data-load time)
+	High	1		4
+	MATLAB	10.6s	21.68s
+	C++		0.04s	0.14s
+	[CONCLUSION] C++ is faster than MATLAB without matrix calculation.
+
+3.	GINI
+	min the Gini, which means that separate the cases as the real.
+	ie. It will not let the tmpN1 or tmpN2 == 0.
