@@ -8,10 +8,12 @@
 #include "CsvData.cpp"
 using namespace std;
 
+#define FILENAME "dataset/pro1.csv"
+
 class BaggingData: public CsvData
 {
 public:
-	BaggingData( string filename );
+	BaggingData( string filename=FILENAME );
 	
 
 protected:

@@ -25,6 +25,8 @@ public:
 	vector<int> cases;	// which cases(rows) will be considered.
 	int cnum;			// the num of cases
 	int single;			// mark is the single child node (just for debug)
+	int lIdx;			// the leaf idx of the tree
+
 	Node( const vector<int> &cases, int cnum, int high, int fIdx=-1, double obValue=-1, Node *l=NULL, Node *r=NULL ) 
 	{
 		this->fIdx = fIdx;
@@ -35,6 +37,7 @@ public:
 		this->cases = cases;
 		this->cnum = cnum;
 		this->single = 0;
+		this->lIdx = -1;
 	}
 };
 
@@ -43,23 +46,33 @@ class BinaryTree
 {
 public:
 	BinaryTree( const CsvData &D );
-	void disp();
+	double predict( const vector<double> &a );
+	void dispTree();
+	void dispLeaves();
+
 	Node *root;
 	vector<int> features;	// tag which feature can be considered
 	vector<Node*> leaf;
 	vector<double> labels;
 private:
-	void bulidTree( const CsvData &D );	
+	void bulidTree( const CsvData &D );
+	void foundALeaf( Node *node, const vector<double> &L );
 };
 
 BinaryTree::BinaryTree( const CsvData &D )
 {
 	this->features = vector<int>(D.n, 1);
 	this->bulidTree( D );
+	
+	cout << "finish: construct" << endl;
 }
 
 void BinaryTree::bulidTree( const CsvData &D )
 {
+	cout << "Bulid Tree" << endl;
+	//cout << D.m << endl;
+	//cout << D.L.size() << endl;
+
 	queue<Node*> q;
 	vector<int> rows( D.m, 1 );
 	this->root = new Node( rows, D.m, 0 );
@@ -71,25 +84,21 @@ void BinaryTree::bulidTree( const CsvData &D )
 		// end 1
 		if ( node->high >= MAX_HIGH )
 		{
-			this->leaf.push_back( node );	// a leaf needn't find minF
-			this->labels.push_back( estimateLabel( D.L, node->cases ) );
+			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
 			continue;
 		}
 		// end 2
 		/// is all features used
 		if ( isAll( this->features, 0 ) )
 		{
-			this->leaf.push_back( node );
-			this->labels.push_back( estimateLabel( D.L, node->cases ) );
+			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
 			continue;
 		}
 		// end 3
 		/// the measure's end condition
 		if ( endCondition( D.L, node->cases, node->cnum ) )
 		{
-			node->fIdx = -1;
-			this->leaf.push_back( node );
-			this->labels.push_back( estimateLabel( D.L, node->cases ) );
+			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
 			continue;
 		}
 
@@ -152,7 +161,14 @@ void BinaryTree::bulidTree( const CsvData &D )
 	}
 }
 
-void BinaryTree::disp()
+void BinaryTree::foundALeaf( Node *node, const vector<double> &L )
+{
+	node->lIdx = this->leaf.size();
+	this->leaf.push_back( node );
+	this->labels.push_back( estimateLabel( L, node->cases ) );
+}
+
+void BinaryTree::dispTree()
 {
 	queue<Node*> q;
 	q.push(this->root);
@@ -180,6 +196,38 @@ void BinaryTree::disp()
 	cout << endl;
 }
 
+
+void BinaryTree::dispLeaves()
+{
+	cout << "lIdx\tcnum\thigh\tlabel\t" << endl;
+	for ( int i = 0; i < this->leaf.size(); i++ )
+		cout << i << "\t"
+			 << this->leaf[i]->cnum << "\t" 
+			 << this->leaf[i]->high << "\t" 
+			 << this->labels[i] << endl;
+	cout << "Total: " << this->leaf.size() << endl;
+
+}
+
+double BinaryTree::predict( const vector<double> &a )
+{
+	cout << "begin predict" << endl;
+
+	Node *node = this->root;
+	while( node->fIdx != -1 )
+	{
+		cout << "r: " << node->fIdx << endl;
+		cout << "oV: " << node->obValue << " " << a[node->fIdx] << endl;
+
+		if ( a[node->fIdx] <= node->obValue )
+			node = node->left;
+		else
+			node = node->right;
+	}
+	cout << node->lIdx << endl;
+	return this->labels[node->lIdx];
+}
+
 /*
 int main()
 {
@@ -190,13 +238,9 @@ int main()
 	BinaryTree tree(D);
 	//cout << tree.leaf.size() << endl;
 	tree.disp();
-	cout << "cnum\thigh\tlabel\t" << endl;
-	for ( int i = 0; i < tree.leaf.size(); i++ )
-		cout << tree.leaf[i]->cnum << "\t" 
-			 << tree.leaf[i]->high << "\t" 
-			 << tree.labels[i] << endl;
-	cout << tree.leaf.size() << endl;
-	
+	tree.dispLeaves();
+	cout << tree.predict( D.A[18] ) << endl;
+
 	toc = clock();
 	double tol = (double)(toc-tic)/CLOCKS_PER_SEC;
 	cout << "Time: " << tol << " s" << endl;

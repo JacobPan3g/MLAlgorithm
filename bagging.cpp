@@ -9,16 +9,25 @@
 #include "tree.cpp"
 using namespace std;
 
-void bagging()
+double bagging( int bagNum, const vector<double> &a )
 {
-	BaggingData D( "dataset/pro1.csv" );
-	BinaryTree tree( D );
-	//cout << D.bagNum << endl;
+	vector<double> res( bagNum );
+	
+	for ( int i = 0; i < bagNum; i++ )
+	{
+		BaggingData D;
+		BinaryTree tree( D );
+		tree.dispTree();
+		//tree.dispLeaves();
+		res[i] = tree.predict( a );
+	}
+	return mean( res );
 }
 
 int main()
 {
-	bagging();
+	CsvData test("dataset/pro1.csv");
+	cout << bagging( 2, test.A[18] ) << endl;
 
 	return 0;
 }
