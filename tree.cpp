@@ -12,7 +12,7 @@
 #include "SS.cpp"
 //#include "GINI.cpp"
 using namespace std;
-#define MAX_HIGH 10
+
 
 class Node			// be a class cause it have to free some spaces
 {
@@ -45,7 +45,8 @@ public:
 class BinaryTree
 {
 public:
-	BinaryTree( const CsvData &D );
+	BinaryTree( const CsvData &D, int maxH );
+	BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
 	double predict( const vector<double> &a );
 	void dispTree();
 	void dispLeaves();
@@ -54,27 +55,39 @@ public:
 	vector<int> features;	// tag which feature can be considered
 	vector<Node*> leaf;
 	vector<double> labels;
+	int MAX_HIGH;
 private:
-	void bulidTree( const CsvData &D );
+	void bulidTree( const CsvData &D, const vector<int> &row );
 	void foundALeaf( Node *node, const vector<double> &L );
 };
 
-BinaryTree::BinaryTree( const CsvData &D )
+BinaryTree::BinaryTree( const CsvData &D, int maxH )
 {
-	this->features = vector<int>(D.n, 1);
-	this->bulidTree( D );
-	
-	cout << "finish: construct" << endl;
+	vector<int> cs(D.m, 1);
+	vector<int> fs(D.n, 1);
+	BinaryTree( D, cs, fs, maxH );
 }
 
-void BinaryTree::bulidTree( const CsvData &D )
+BinaryTree::BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
 {
-	cout << "Bulid Tree" << endl;
+	//cout << "begin construct" << endl;
+
+	this->MAX_HIGH = maxH;
+	this->features = fs;
+	this->bulidTree( D, cs );
+	
+	//cout << "finish: construct" << endl;
+}
+
+void BinaryTree::bulidTree( const CsvData &D, const vector<int> &rows )
+{
+	//cout << "Bulid Tree" << endl;
 	//cout << D.m << endl;
 	//cout << D.L.size() << endl;
 
 	queue<Node*> q;
-	vector<int> rows( D.m, 1 );
+	//cout << "here" << endl;
+	//vector<int> rows( D.m, 1 );
 	this->root = new Node( rows, D.m, 0 );
 	q.push( this->root );
 	while ( !q.empty() )
@@ -211,20 +224,20 @@ void BinaryTree::dispLeaves()
 
 double BinaryTree::predict( const vector<double> &a )
 {
-	cout << "begin predict" << endl;
+	//cout << "begin predict" << endl;
 
 	Node *node = this->root;
 	while( node->fIdx != -1 )
 	{
-		cout << "r: " << node->fIdx << endl;
-		cout << "oV: " << node->obValue << " " << a[node->fIdx] << endl;
+		//cout << "r: " << node->fIdx << endl;
+		//cout << "oV: " << node->obValue << " " << a[node->fIdx] << endl;
 
 		if ( a[node->fIdx] <= node->obValue )
 			node = node->left;
 		else
 			node = node->right;
 	}
-	cout << node->lIdx << endl;
+	//cout << node->lIdx << endl;
 	return this->labels[node->lIdx];
 }
 

@@ -14,11 +14,15 @@ class BaggingData: public CsvData
 {
 public:
 	BaggingData( string filename=FILENAME );
-	
+
+	vector<int> cs;
+	vector<int> fs;
+	int bm;
+	int bn;
 
 protected:
-	vector<double> get80Labels();
-	vector< vector<double> > get80Features();
+	void get80Labels();
+	void get80Features();
 	
 	vector<int> L_idx;
 	vector<int> A_idx;
@@ -31,8 +35,8 @@ BaggingData::BaggingData( string filename ):
 	//cout << this->m << endl;
 	this->L_idx.resize( CsvData::m );
 	this->A_idx.resize( CsvData::n );
-	this->m = CsvData::m * 0.8;
-	this->n = CsvData::n * 0.8;
+	this->bm = CsvData::m * 0.8;
+	this->bn = CsvData::n * 0.8;
 	// this time the value of m is 0.8 times of before
 	//cout << this->m << endl;
 	for ( int i = 0; i < this->L_idx.size(); i++ )
@@ -40,33 +44,24 @@ BaggingData::BaggingData( string filename ):
 	for ( int i = 0; i < this->A_idx.size(); i++ )
 		this->A_idx[i] = i;
 
-	this->L = this->get80Labels();	// this func have to call first.(change this->L_idx )
-	this->A = this->get80Features();
+	this->get80Labels();
+	this->get80Features();
 }
 
-vector<double> BaggingData::get80Labels()
+void BaggingData::get80Labels()
 {
-	vector<double> res(this->m);
+	this->cs.resize( this->m, 0 );
 	shuffling( this->L_idx );
-	for ( int i = 0; i < this->m; i++ )
-		res[i] = this->L[this->L_idx[i]];
-	return res;
+	for ( int i = 0; i < this->bm; i++ )
+		this->cs[this->L_idx[i]] = 1;
 }
 
-vector< vector<double> > BaggingData::get80Features()
+void BaggingData::get80Features()
 {
-	vector< vector<double> > res(this->m);
+	this->fs.resize( this->n, 0 );
 	shuffling( this->A_idx );
-	for ( int i = 0; i < this->m; i++ )
-	{	
-		vector<double> tmp( this->n );
-		for ( int j = 0; j < this->n; j++ )
-		{
-			tmp[j] = A[this->L_idx[i]][this->A_idx[j]];
-		}
-		res[i] = tmp;
-	}
-	return res;
+	for ( int i = 0; i < this->bn; i++ )
+		this->fs[this->A_idx[i]] = 1;
 }
 
 
