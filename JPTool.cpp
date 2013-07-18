@@ -145,6 +145,21 @@ double mean( const vector<T> &v, vector<int> tag=vector<int>() )
 }
 
 template <class T>
+vector<double> meanR( const vector< vector<T> > &v2 )
+{
+	int n = v2[0].size();
+	int m = v2.size();
+	vector<double> res( n, 0 );
+	for ( int j = 0; j < n; j++ )
+	{
+		for ( int i = 0; i < m; i++ )
+			res[j] += v2[i][j];
+		res[j] /= m;
+	}
+	return res;
+}
+
+template <class T>
 double variance( const vector<T> &v, vector<int> tag=vector<int>() )
 {
 	if ( tag.size() == 0 )
@@ -233,6 +248,17 @@ vector<T> split( string str, string pattern )
 		pos = str.find( pattern, i );
 	}
 	return res;
+}
+
+/*
+ * error rate in ML
+ */
+double rmse( const vector<double> &p, const vector<double> &r )
+{
+	double res = 0;
+	for ( int i = 0; i < p.size(); i++ )
+		res += pow( p[i] - r[i], 2 );
+	return sqrt( res/p.size() );
 }
 
 /*

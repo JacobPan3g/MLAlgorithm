@@ -24,12 +24,25 @@ double bagging( int maxH, int bagNum, const vector<double> &a )
 	return mean( res );
 }
 
+double bagging( int maxH, int bagNum, const CsvData &test )
+{
+	vector< vector<double> > tmp( bagNum ); //bagNum * test.m
+	for ( int i = 0; i < bagNum; i++ )
+	{
+		BaggingData D;
+		BinaryTree tree( D, D.cs, D.fs, maxH );
+		tmp[i] = tree.predict( test );
+	}
+	vector<double> p = meanR( tmp );
+	return rmse( p, test.L );
+}
+
 int main()
 {
 	time_t tic = clock();
 
 	CsvData test("dataset/pro1.csv");
-	cout << bagging( 2, 10, test.A[18] ) << endl;
+	cout << bagging( 2, 10, test ) << endl;
 
 	time_t toc = clock();
 	double tt = (double)(toc-tic)/CLOCKS_PER_SEC;

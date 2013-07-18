@@ -48,6 +48,7 @@ public:
 	BinaryTree( const CsvData &D, int maxH );
 	BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
 	double predict( const vector<double> &a );
+	vector<double> predict( const CsvData &test );
 	void dispTree();
 	void dispLeaves();
 
@@ -239,6 +240,14 @@ double BinaryTree::predict( const vector<double> &a )
 	}
 	//cout << node->lIdx << endl;
 	return this->labels[node->lIdx];
+}
+
+vector<double> BinaryTree::predict( const CsvData &test )
+{
+	vector<double> res( test.m );
+	for ( int i = 0; i < test.m; i++ )
+		res[i] = this->predict( test.A[i] );
+	return res;
 }
 
 /*
