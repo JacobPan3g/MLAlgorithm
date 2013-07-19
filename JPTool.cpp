@@ -11,6 +11,7 @@
 #include <cstdlib>		// rand()
 #include <cmath>
 #include <ctime>		// time()
+#include <fstream>
 using namespace std;
 
 /*
@@ -253,12 +254,25 @@ vector<T> split( string str, string pattern )
 /*
  * error rate in ML
  */
-double rmse( const vector<double> &p, const vector<double> &r )
+template <class T>
+double rmse( const vector<T> &p, const vector<T> &r )
 {
 	double res = 0;
 	for ( int i = 0; i < p.size(); i++ )
 		res += pow( p[i] - r[i], 2 );
 	return sqrt( res/p.size() );
+}
+
+/*
+ * Persistence
+ */
+template <class T>
+void save( string filename, const vector<T> &v ) 
+{
+	ofstream fobj( filename.c_str() );
+	for ( int i = 0; i < v.size(); i++ )
+		fobj << v[i] << endl;
+	fobj.close();
 }
 
 /*

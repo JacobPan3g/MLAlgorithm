@@ -56,6 +56,7 @@ void CsvData::csvread( string filename )
 		tmp.erase( tmp.begin() );
 		this->A.push_back( tmp );
 	}
+	fobj.close();
 	
 	/*
 	// just print for test

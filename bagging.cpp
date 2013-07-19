@@ -34,6 +34,7 @@ double bagging( int maxH, int bagNum, const CsvData &test )
 		tmp[i] = tree.predict( test );
 	}
 	vector<double> p = meanR( tmp );
+	save( "p/h-2_bn-10_10s.p", p );
 	return rmse( p, test.L );
 }
 
@@ -42,7 +43,7 @@ int main()
 	time_t tic = clock();
 
 	CsvData test("dataset/pro1.csv");
-	cout << bagging( 2, 10, test ) << endl;
+	//cout << bagging( 2, 10, test ) << endl;
 
 	time_t toc = clock();
 	double tt = (double)(toc-tic)/CLOCKS_PER_SEC;

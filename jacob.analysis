@@ -9,3 +9,10 @@
 3.	GINI
 	min the Gini, which means that separate the cases as the real.
 	ie. It will not let the tmpN1 or tmpN2 == 0.
+
+4.	explicit call the constructor
+	Call a constructor in other constructor, which will trigger some 
+	errors. The called constructor will construct a temporary object,
+	but won't initialize the member.
+	SLOVE:	a. new(this) constructor();		(whether need delete?)
+			b. write a init()
