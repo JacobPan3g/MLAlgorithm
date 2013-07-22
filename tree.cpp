@@ -49,7 +49,7 @@ public:
 	BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
 	double predict( const vector<double> &a );
 	vector<double> predict( const CsvData &test );
-	void saveTree();
+	void saveTree( string filename );
 	void dispTree();
 	void dispLeaves();
 
@@ -263,7 +263,7 @@ vector<double> BinaryTree::predict( const CsvData &test )
 	return res;
 }
 
-void BinaryTree::saveTree()
+void BinaryTree::saveTree( string filename )
 {
 //	cout << "here" << endl;
 	queue<Node*> q;
@@ -316,15 +316,15 @@ void BinaryTree::saveTree()
 	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
 */
 	// save
-	ofstream obj( "trees/bag.tree" );
+	ofstream obj( filename.c_str(), ofstream::app );
 	save( obj, fIdxV );
-	save( obj, oValV );
 	save( obj, leftV );
 	save( obj, rightV);
+	save( obj, oValV );
 	obj.close();
 }
 
-
+/*
 int main()
 {
 	time_t tic, toc;
@@ -346,4 +346,4 @@ int main()
 	double tol = (double)(toc-tic)/CLOCKS_PER_SEC;
 	cout << "Time: " << tol << " s" << endl;
 	return 0;
-}
+}*/
