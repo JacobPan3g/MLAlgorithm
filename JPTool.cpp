@@ -275,6 +275,14 @@ void save( string filename, const vector<T> &v )
 	fobj.close();
 }
 
+template <class T>
+void save( ofstream &fobj, const vector<T> &v, string d=" " )
+{
+	for ( int i = 0; i < v.size(); i++ )
+		fobj << v[i] << d;
+	fobj << endl;
+}
+
 /*
 int main()
 {

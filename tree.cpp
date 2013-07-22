@@ -59,23 +59,28 @@ public:
 	vector<double> labels;
 	int MAX_HIGH;
 private:
-	void init
+	void init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
 	void bulidTree( const CsvData &D, const vector<int> &row );
 	void foundALeaf( Node *node, const vector<double> &L );
 };
 
 BinaryTree::BinaryTree( const CsvData &D, int maxH=10 )
 {
-	cout << this->root->fIdx << endl;
+	//cout << this->root->fIdx << endl;
 	
 	vector<int> cs(D.m, 1);
 	vector<int> fs(D.n, 1);
-	new(this) BinaryTree( D, cs, fs, maxH );
+	this->init( D, cs, fs, maxH );
 
-	cout << this->root->fIdx << endl;
+	//cout << this->root->fIdx << endl;
 }
 
 BinaryTree::BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
+{
+	this->init( D, cs, fs, maxH );
+}
+
+void BinaryTree::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
 {
 	//cout << "begin construct" << endl;
 
@@ -83,7 +88,7 @@ BinaryTree::BinaryTree( const CsvData &D, const vector<int> &cs, const vector<in
 	this->features = fs;
 	this->bulidTree( D, cs );
 	
-	cout << this->root->fIdx << endl;
+	//cout << this->root->fIdx << endl;
 	//cout << "finish: construct" << endl;
 }
 
@@ -260,11 +265,12 @@ vector<double> BinaryTree::predict( const CsvData &test )
 
 void BinaryTree::saveTree()
 {
-	cout << "here" << endl;
+//	cout << "here" << endl;
 	queue<Node*> q;
 	vector<int> fIdxV;
 	vector<int> leftV;
 	vector<int> rightV;
+	vector<double> oValV;
 
 	fIdxV.push_back( this->root->fIdx );
 	q.push( this->root );
@@ -276,27 +282,46 @@ void BinaryTree::saveTree()
 
 		if ( node->fIdx != -1 )
 		{
-			if ( !node->left )
+			oValV.push_back( node->obValue );
+
+			if ( node->left != NULL )
 			{
+				q.push( node->left );
 				leftV.push_back( fIdxV.size() );
 				fIdxV.push_back( node->left->fIdx );
 			}
-			if ( !node->right )
+			else
+				leftV.push_back( -1 );
+
+			if ( node->right != NULL )
 			{
+				q.push( node->right );
 				rightV.push_back( fIdxV.size() );
 				fIdxV.push_back( node->right->fIdx );
 			}
+			else
+				rightV.push_back( -1 );
 		}
 		else
 		{
+			oValV.push_back( this->labels[node->lIdx] );	// save the labels
 			leftV.push_back( -1 );
 			rightV.push_back( -1 );
 		}
 	}
-	disp( fIdxV );
+/*	disp( fIdxV );
+	disp( oValV );
 	disp( leftV );
 	disp( rightV );
-	cout << fIdxV.size() << endl << leftV.size() << endl << rightV.size() << endl;
+	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
+*/
+	// save
+	ofstream obj( "trees/bag.tree" );
+	save( obj, fIdxV );
+	save( obj, oValV );
+	save( obj, leftV );
+	save( obj, rightV);
+	obj.close();
 }
 
 
@@ -307,7 +332,7 @@ int main()
 	CsvData D = CsvData("dataset/pro1.csv");
 	cout << "load end" << endl;
 
-	BinaryTree tree(D);
+	BinaryTree tree(D, 6);
 	cout << "build end" << endl;
 
 	//cout << tree.leaf.size() << endl;
