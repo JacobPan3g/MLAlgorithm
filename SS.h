@@ -15,7 +15,7 @@ public:
 	vector< vector<double> > measure( const CsvData &D, const vector<int> &r, const vector<int> &c );
 	double estimateLabel( const vector<double> &L, const vector<int> &tag );
 	bool endCondition( const vector<double> v, vector<int> tag, int num );
-	
+private:
 	// own methods
 	vector<double> getSplitPoints( const vector<double> &v );
 	double getSpByValueIdx( int x );

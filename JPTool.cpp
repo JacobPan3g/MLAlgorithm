@@ -18,14 +18,10 @@ using namespace std;
 /*
  * statistic
  */
-template <class T>
-int count( const vector<T> &v, vector<int> tag=vector<int>() )
+int count( const vector<int> &tag )
 {
-	if ( tag.size() == 0 )
-		tag = vector<int>( v.size(), 1 );
-	
 	int res = 0;
-	for ( int i = 0; i < v.size(); i++ )
+	for ( int i = 0; i < tag.size(); i++ )
 		if ( tag[i] == 1 )
 			res++;
 	return res;

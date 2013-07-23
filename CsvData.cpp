@@ -42,7 +42,7 @@ void CsvData::csvread( string filename )
 	fobj.close();	
 }
 
-vector<double> CsvData::getFeatures( int fIdx, vector<int> tag=vector<int>() ) const
+vector<double> CsvData::getFeatures( int fIdx, vector<int> tag ) const
 {
 	if ( tag.size() == 0 )
 		tag = vector<int>( this->m, 1 );

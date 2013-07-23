@@ -14,6 +14,7 @@
 #define LEAF_MAX_NUM 5
 #define SPLIT_AREA_NUM 10
 
+// Average Spilt the Area [0,1]
 vector<double> SS::getSplitPoints( const vector<double> &v )
 {
 	vector<double> sp(SPLIT_AREA_NUM+1);
@@ -40,6 +41,9 @@ vector< vector<double> > SS::measure( const CsvData &D, const vector<int> &r, co
 		vector<double> tmp;
 		vector<double> f = D.getFeatures(i, r);
 		vector<double> sp = getSplitPoints( f );
+
+		assert( f.size()==count(r) );
+
 		for ( int k = 0; k < sp.size(); k++ )
 		{
 			// desperate into two parts
@@ -62,6 +66,9 @@ vector< vector<double> > SS::measure( const CsvData &D, const vector<int> &r, co
 					num2++;
 				}
 			}
+
+			assert( count(r)==num1+num2 );
+			assert( count(r)==count(part1)+count(part2) );
 	
 			double var1 = variance( D.L, part1 );
 			double var2 = variance( D.L, part2 );
@@ -92,14 +99,16 @@ bool SS::endCondition( vector<double> v, vector<int> tag, int num )
 int main()
 {
 	CsvData D = CsvData("dataset/pro1.csv");
-	SS ms = SS();
-
+	SS ms;
 	vector<int> r(D.m, 1), c(D.n, 1);
 	vector< vector<double> > res = ms.measure( D, r, c );
-	cout << res.size() << endl;
 
-	disp(res);
+	assert( res.size()==46 );
+	assert( res[0].size()==SPLIT_AREA_NUM+1 );	// just for aver_split
+	
+	//disp(res);
 
+	cout << "All Unit Cases Passed." << endl;
 	return 0;
 }
 

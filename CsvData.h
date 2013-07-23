@@ -14,7 +14,7 @@ class CsvData
 {
 public:
 	CsvData( string filename );
-	vector<double> getFeatures( int fIdx, vector<int> tag ) const;
+	vector<double> getFeatures( int fIdx, vector<int> tag=vector<int>() ) const;
 	void disp();
 
 	int m;
