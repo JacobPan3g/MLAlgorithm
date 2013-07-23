@@ -5,101 +5,37 @@
 	> Created Time: Sun 07 Jul 2013 10:57:34 AM CST
  ************************************************************************/
 
-#pragma once
+#define _CART_UTEST_
 
-#include <queue>
+
+#include "CART.h"
 #include "SS.cpp"
-//#include "GINI.cpp"
-using namespace std;
 
-
-class Node			// be a class cause it have to free some spaces
+CART::CART( const CsvData &D, int maxH=10 )
 {
-public:
-	int fIdx;
-	double obValue;
-	Node *left;
-	Node *right;
-	int high;
-	vector<int> cases;	// which cases(rows) will be considered.
-	int cnum;			// the num of cases
-	int single;			// mark is the single child node (just for debug)
-	int lIdx;			// the leaf idx of the tree
-
-	Node( const vector<int> &cases, int cnum, int high, int fIdx=-1, double obValue=-1, Node *l=NULL, Node *r=NULL ) 
-	{
-		this->fIdx = fIdx;
-		this->obValue = obValue;
-		this->left = l;
-		this->right = r;
-		this->high = high;
-		this->cases = cases;
-		this->cnum = cnum;
-		this->single = 0;
-		this->lIdx = -1;
-	}
-};
-
-
-class BinaryTree
-{
-public:
-	BinaryTree( const CsvData &D, int maxH );
-	BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
-	double predict( const vector<double> &a );
-	vector<double> predict( const CsvData &test );
-	void saveTree( string filename );
-	void dispTree();
-	void dispLeaves();
-
-	Node *root;
-	vector<int> features;	// tag which feature can be considered
-	vector<Node*> leaf;
-	vector<double> labels;
-	int MAX_HIGH;
-private:
-	void init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
-	void bulidTree( const CsvData &D, const vector<int> &row );
-	void foundALeaf( Node *node, const vector<double> &L );
-};
-
-BinaryTree::BinaryTree( const CsvData &D, int maxH=10 )
-{
-	//cout << this->root->fIdx << endl;
-	
 	vector<int> cs(D.m, 1);
 	vector<int> fs(D.n, 1);
 	this->init( D, cs, fs, maxH );
-
-	//cout << this->root->fIdx << endl;
 }
 
-BinaryTree::BinaryTree( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
+CART::CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
 {
 	this->init( D, cs, fs, maxH );
 }
 
-void BinaryTree::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
+void CART::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
 {
-	//cout << "begin construct" << endl;
-
 	this->MAX_HIGH = maxH;
+	this->high = 0;
 	this->features = fs;
 	this->bulidTree( D, cs );
-	
-	//cout << this->root->fIdx << endl;
-	//cout << "finish: construct" << endl;
 }
 
-void BinaryTree::bulidTree( const CsvData &D, const vector<int> &rows )
+void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 {
-	//cout << "Bulid Tree" << endl;
-	//cout << D.m << endl;
-	//cout << D.L.size() << endl;
-
 	queue<Node*> q;
-	//cout << "here" << endl;
-	//vector<int> rows( D.m, 1 );
+	int inNodeNum = 0;
+	
 	this->root = new Node( rows, D.m, 0 );
 	q.push( this->root );
 	while ( !q.empty() )
@@ -121,18 +57,19 @@ void BinaryTree::bulidTree( const CsvData &D, const vector<int> &rows )
 		}
 		// end 3
 		/// the measure's end condition
-		if ( endCondition( D.L, node->cases, node->cnum ) )
+		if ( c_msr.endCondition( D.L, node->cases, node->cnum ) )
 		{
 			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
 			continue;
 		}
 
+		inNodeNum++;
 		// get the optimal feature
-		vector< vector<double> > ms = measure( D, node->cases, node->cnum, this->features );
+		vector< vector<double> > ms = c_msr.measure( D, node->cases, this->features );
 		vector<double> tmp = min( ms, this->features );
 		double minMS = tmp[0];
 		int minF = (int)tmp[1];		// ms start at first feature
-		double obValue = getSpByValueIdx( (int)tmp[2] );
+		double obValue = c_msr.getSpByValueIdx( (int)tmp[2] );
 		/// tag and asign
 		this->features[minF] = 0;
 		node->fIdx = minF;
@@ -158,42 +95,38 @@ void BinaryTree::bulidTree( const CsvData &D, const vector<int> &rows )
 			}
 		}
 		
-		/*
-		// it's not good for debugging
-		if ( tmpN1 == 0 || tmpN2 == 0 )
-		{
-			// retry. **dead-loop	i.e. ignore one node
-			//this->features[minF] = 1;
-			node->fIdx = -1;
-			q.push( node );
-			continue;
-		}*/
-		
-		int high = node->high + 1;
+		int h = node->high + 1;
 		if ( tmpN1 != 0 )
 		{
-			node->left = new Node( rows1, tmpN1, high );
+			node->left = new Node( rows1, tmpN1, h );
 			q.push(node->left);
 		}
 		if ( tmpN2 != 0 )
 		{
-			node->right = new Node( rows2, tmpN2, high );
+			node->right = new Node( rows2, tmpN2, h );
 			q.push(node->right);
 		}
 
 		if ( tmpN1 == 0 || tmpN2 == 0 )
 			node->single = 1;
 	}
+
+	assert( this->high <= MAX_HIGH );
+	assert( root!=NULL );
+	assert( leaf.size()!=0 );
+	assert( leaf.size()==labels.size() );
+	assert( count(this->features)+inNodeNum==D.n );
 }
 
-void BinaryTree::foundALeaf( Node *node, const vector<double> &L )
+void CART::foundALeaf( Node *node, const vector<double> &L )
 {
 	node->lIdx = this->leaf.size();
+	this->high = node->high > this->high? node->high : this->high;
 	this->leaf.push_back( node );
-	this->labels.push_back( estimateLabel( L, node->cases ) );
+	this->labels.push_back( c_msr.estimateLabel( L, node->cases ) );
 }
 
-void BinaryTree::dispTree()
+void CART::dispTree()
 {
 	queue<Node*> q;
 	q.push(this->root);
@@ -223,7 +156,7 @@ void BinaryTree::dispTree()
 }
 
 
-void BinaryTree::dispLeaves()
+void CART::dispLeaves()
 {
 	cout << "lIdx\tcnum\thigh\tlabel\t" << endl;
 	for ( int i = 0; i < this->leaf.size(); i++ )
@@ -235,26 +168,22 @@ void BinaryTree::dispLeaves()
 
 }
 
-double BinaryTree::predict( const vector<double> &a )
+double CART::predict( const vector<double> &a )
 {
-	//cout << "begin predict" << endl;
 
 	Node *node = this->root;
 	while( node->fIdx != -1 )
 	{
-		//cout << "r: " << node->fIdx << endl;
-		//cout << "oV: " << node->obValue << " " << a[node->fIdx] << endl;
 
 		if ( a[node->fIdx] <= node->obValue )
 			node = node->left;
 		else
 			node = node->right;
 	}
-	//cout << node->lIdx << endl;
 	return this->labels[node->lIdx];
 }
 
-vector<double> BinaryTree::predict( const CsvData &test )
+vector<double> CART::predict( const CsvData &test )
 {
 	vector<double> res( test.m );
 	for ( int i = 0; i < test.m; i++ )
@@ -262,9 +191,8 @@ vector<double> BinaryTree::predict( const CsvData &test )
 	return res;
 }
 
-void BinaryTree::saveTree( string filename )
+void CART::saveTree( string filename )
 {
-//	cout << "here" << endl;
 	queue<Node*> q;
 	vector<int> fIdxV;
 	vector<int> leftV;
@@ -323,26 +251,27 @@ void BinaryTree::saveTree( string filename )
 	obj.close();
 }
 
-/*
+
+#ifdef _CART_UTEST_
+
 int main()
 {
 	time_t tic, toc;
 	tic = clock();
+
 	CsvData D = CsvData("dataset/pro1.csv");
-	cout << "load end" << endl;
+	CART tree(D, 10);
 
-	BinaryTree tree(D, 6);
-	cout << "build end" << endl;
-
-	//cout << tree.leaf.size() << endl;
 	tree.dispTree();
 	//tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveTree();
+	tree.saveTree( "trees/UT" );
 
 	toc = clock();
 	double tol = (double)(toc-tic)/CLOCKS_PER_SEC;
 	cout << "Time: " << tol << " s" << endl;
 	return 0;
-}*/
+}
+
+#endif
