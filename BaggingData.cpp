@@ -5,41 +5,19 @@
 	> Created Time: Tue 16 Jul 2013 07:30:40 PM CST
  ************************************************************************/
 
+#define BAGGINGDATA_UTEST
+
+
+#include "BaggingData.h"
 #include "CsvData.cpp"
-using namespace std;
-
-#define FILENAME "dataset/pro1.csv"
-
-class BaggingData: public CsvData
-{
-public:
-	BaggingData( string filename=FILENAME );
-	void reshuffling();
-
-	vector<int> cs;
-	vector<int> fs;
-	int bm;
-	int bn;
-
-protected:
-	void get80Labels();
-	void get80Features();
-	
-	vector<int> L_idx;
-	vector<int> A_idx;
-};
 
 BaggingData::BaggingData( string filename ): 
 	CsvData(filename)
 {
-	// this time the value of m is the super value: CsvData::m
-	//cout << this->m << endl;
 	this->L_idx.resize( CsvData::m );
 	this->A_idx.resize( CsvData::n );
 	this->bm = CsvData::m * 0.8;
 	this->bn = CsvData::n * 0.8;
-	// this time the value of m is 0.8 times of before
-	//cout << this->m << endl;
 	for ( int i = 0; i < this->L_idx.size(); i++ )
 		this->L_idx[i] = i;
 	for ( int i = 0; i < this->A_idx.size(); i++ )
@@ -60,6 +38,10 @@ void BaggingData::get80Labels()
 	shuffling( this->L_idx );				// shuffling
 	for ( int i = 0; i < this->bm; i++ )	// choose 80%
 		this->cs[this->L_idx[i]] = 1;
+
+	assert( cs[L_idx[0]]==1 );
+	assert( cs[L_idx[bm-1]]==1 );
+	assert( cs[L_idx[rand()%bm]]==1 );
 }
 
 void BaggingData::get80Features()
@@ -68,19 +50,32 @@ void BaggingData::get80Features()
 	shuffling( this->A_idx );
 	for ( int i = 0; i < this->bn; i++ )
 		this->fs[this->A_idx[i]] = 1;
+
+	assert( fs[A_idx[0]]==1 );
+	assert( fs[A_idx[bn-1]]==1 );
+	assert( fs[A_idx[rand()%bn]]==1 );
 }
 
 
-/*
+#ifdef BAGGINGDATA_UTEST
+
 int main()
 {
-	BaggingData data( "dataset/pro1.csv" );
-	cout << data.m << " " << data.n << endl;
-	cout << data.CsvData::m << endl;
-	disp( data.L_idx );
-	disp( data.D_idx );
-	disp( data.get80Labels() );
-	cout << 
+	BaggingData D( "dataset/pro1.csv" );
+	
+	// Test Size
+	assert( D.m==9126&&D.n==46 );
+	assert( D.bm==7300&&D.bn==36 );
+
+	// Test reshuffling()
+	vector<int> old_cs = D.cs;
+	vector<int> old_fs = D.fs;
+	D.reshuffling();
+	assert( !isSame( old_cs, D.cs ) );
+	assert( !isSame( old_fs, D.fs ) );
+
+	cout << "All Test Cases Passed." << endl;
 	return 0;
 }
-*/
+
+#endif

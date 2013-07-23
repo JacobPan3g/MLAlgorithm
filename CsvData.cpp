@@ -5,27 +5,10 @@
 	> Created Time: Mon 08 Jul 2013 09:14:40 AM CST
  ************************************************************************/
 
-#pragma once
+//#define CSVDATA_UTEST
 
-#include <fstream>
-#include "JPTool.cpp"
-using namespace std;
 
-class CsvData
-{
-public:
-	CsvData( string filename );
-	vector<double> getFeatures( int fIdx, vector<int> tag ) const;
-	void disp();
-
-	int m;
-	int n;
-	vector<double> L;
-	vector< vector<double> > A;
-
-private:
-	void csvread( string filename );
-};
+#include "CsvData.h"
 
 CsvData::CsvData( string filename )
 {
@@ -56,15 +39,7 @@ void CsvData::csvread( string filename )
 		tmp.erase( tmp.begin() );
 		this->A.push_back( tmp );
 	}
-	fobj.close();
-	
-	/*
-	// just print for test
-	cout << "size:" << res.size() << endl;
-	for ( int i = 0; i < res.size(); i++ )
-		for ( int j = 0; j < res[i].size(); j++ )
-			cout << res[i][j] << endl;
-	*/
+	fobj.close();	
 }
 
 vector<double> CsvData::getFeatures( int fIdx, vector<int> tag=vector<int>() ) const
@@ -91,16 +66,52 @@ void CsvData::disp()
 }
 
 
+#ifdef CSVDATA_UTEST
 
-/*
 int main()
 {
+	// Test: Constructor
 	CsvData D( "dataset/pro1.csv" );
-	cout << D.m << " " << D.n << endl;
-	//D.disp();
-	vector<double> f = D.getFeatures( 1 );
-	cout << f.size() << " " << D.m << endl;
-	//disp( f );
+	
+	assert( D.m==9126&&D.n==46 );
+	assert( D.L.size()==9126&&D.A.size()==9126&&D.A[0].size()==46 );
+
+	assert( D.L[0]==0 );
+	assert( D.L[9125]==1 );
+	assert( D.L[1]==0&&D.L[3]==0 );
+	assert( D.L[217]==1 );
+	assert( D.L[8]==0&&D.L[18]==2 );
+	assert( D.L[925]==1 );
+
+	assert( abs(D.A[0][0]-0.016838)<1e-5 );
+	assert( D.A[9125][0]==1 );
+	assert( abs(D.A[0][45]-0.16667)<1e-5 );
+	assert( D.A[9125][45]==0 );
+	assert( D.A[1][3]==0 );
+	assert( D.A[2][17]==0 );
+	assert( abs(D.A[8][18]-0.54546)<1e-5 );
+	assert( D.A[9][25]==0);
+
+
+	// Test: getFeatures( int )
+	int _test1[] = {0, 46, 1, 3, 8, 18 };
+	for ( int i = 0; i < 6; i++ )
+	{
+		vector<double> f = D.getFeatures( _test1[i] );
+		assert( f.size()==9126 );
+	}
+
+	vector<double> f = D.getFeatures( 13 );
+	assert( f[0]==0 );
+	assert( f[9125]==0 );
+	assert( f[13]==0 );
+	assert( f[818]==0 );
+	assert( f[217]==0 );
+	assert( f[9025]==0 );
+
+	cout << "All Test Cases Passed." << endl;
 	return 0;
 }
-*/
+
+#endif
+

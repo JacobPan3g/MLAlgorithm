@@ -6,12 +6,12 @@
  ************************************************************************/
 
 #include "CsvData.cpp"
-#include <cmath>
 using namespace std;
+
+#define _TEST_
 
 #define LEAF_MAX_NUM 5
 #define SPLIT_AREA_NUM 10
-
 
 vector<double> getSplitPoints( const vector<double> &v )
 {

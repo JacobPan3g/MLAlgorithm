@@ -1,0 +1,28 @@
+/*************************************************************************
+	> File Name: CsvData.h
+	> Author: Jacob Pan
+	> Mail: zhenjian3g@gmail.com 
+	> Created Time: Tue 23 Jul 2013 11:40:32 AM CST
+ ************************************************************************/
+
+#pragma once
+
+#include "JPTool.cpp"
+using namespace std;
+
+class CsvData
+{
+public:
+	CsvData( string filename );
+	vector<double> getFeatures( int fIdx, vector<int> tag ) const;
+	void disp();
+
+	int m;
+	int n;
+	vector<double> L;
+	vector< vector<double> > A;
+
+private:
+	void csvread( string filename );
+};
+

@@ -12,6 +12,7 @@
 #include <cmath>
 #include <ctime>		// time()
 #include <fstream>
+#include <cassert>
 using namespace std;
 
 /*
@@ -112,6 +113,22 @@ bool isAllSame( const vector<T> &v, vector<int> tag=vector<int>() )
 				allSame = false;
 
 	return allSame;
+}
+
+template <class T>
+bool isSame( const vector<T> &v, const vector<T> &w )
+{
+	bool res = true;
+	if ( v.size() != w.size() )
+		res = false;
+	else
+		for( int i =0; i < v.size(); i++ )
+			if ( v[i] != w[i] )
+			{
+				res = false;
+				break;
+			}
+	return res;
 }
 
 template <class T>
