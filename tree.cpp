@@ -317,10 +317,10 @@ void BinaryTree::saveTree( string filename )
 */
 	// save
 	ofstream obj( filename.c_str(), ofstream::app );
-	save( obj, fIdxV );
-	save( obj, leftV );
-	save( obj, rightV);
-	save( obj, oValV );
+	save( obj, fIdxV, "," );
+	save( obj, leftV, "," );
+	save( obj, rightV, ",");
+	save( obj, oValV, "," );
 	obj.close();
 }
 

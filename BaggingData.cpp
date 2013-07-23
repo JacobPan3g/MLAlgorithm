@@ -14,6 +14,7 @@ class BaggingData: public CsvData
 {
 public:
 	BaggingData( string filename=FILENAME );
+	void reshuffling();
 
 	vector<int> cs;
 	vector<int> fs;
@@ -44,6 +45,11 @@ BaggingData::BaggingData( string filename ):
 	for ( int i = 0; i < this->A_idx.size(); i++ )
 		this->A_idx[i] = i;
 
+	this->reshuffling();
+}
+
+void BaggingData::reshuffling()
+{
 	this->get80Labels();
 	this->get80Features();
 }
@@ -51,8 +57,8 @@ BaggingData::BaggingData( string filename ):
 void BaggingData::get80Labels()
 {
 	this->cs.resize( this->m, 0 );
-	shuffling( this->L_idx );
-	for ( int i = 0; i < this->bm; i++ )
+	shuffling( this->L_idx );				// shuffling
+	for ( int i = 0; i < this->bm; i++ )	// choose 80%
 		this->cs[this->L_idx[i]] = 1;
 }
 

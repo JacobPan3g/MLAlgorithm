@@ -283,6 +283,20 @@ void save( ofstream &fobj, const vector<T> &v, string d=" " )
 	fobj << endl;
 }
 
+template <class T>
+void csvread( string filename, vector< vector<T> > &v2 )
+{
+	string line;
+	ifstream fobj( filename.c_str() );
+	while ( getline( fobj, line ) )
+	{
+		vector<T> tmp = split<T>( line, "," );
+		v2.push_back( tmp );
+	}
+	fobj.close();
+}
+
+
 /*
 int main()
 {
@@ -330,7 +344,12 @@ int main()
 	v.push_back(2);
 	if ( isAllSame(v) )
 		cout << "YES" << endl;
-	
+
+	vector< vector<double> > v2;
+	csvread( "trees/bag.tree", v2 );
+	disp( v2 );
+	cout << v2.size() << endl;
+
 	return 0;
 }
 */
