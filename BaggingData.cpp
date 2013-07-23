@@ -5,7 +5,7 @@
 	> Created Time: Tue 16 Jul 2013 07:30:40 PM CST
  ************************************************************************/
 
-#define BAGGINGDATA_UTEST
+#define _BAGGINGDATA_UTEST_
 
 
 #include "BaggingData.h"
@@ -57,7 +57,7 @@ void BaggingData::get80Features()
 }
 
 
-#ifdef BAGGINGDATA_UTEST
+#ifdef _BAGGINGDATA_UTEST_
 
 int main()
 {

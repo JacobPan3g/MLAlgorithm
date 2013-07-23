@@ -8,7 +8,6 @@
 #pragma once
 
 #include <queue>
-#include <cmath>
 #include "SS.cpp"
 //#include "GINI.cpp"
 using namespace std;

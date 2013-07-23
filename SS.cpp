@@ -5,15 +5,16 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-#include "CsvData.cpp"
-using namespace std;
+#define _SS_UTEST_
 
-#define _TEST_
+
+#include "SS.h"
+#include "CsvData.cpp"
 
 #define LEAF_MAX_NUM 5
 #define SPLIT_AREA_NUM 10
 
-vector<double> getSplitPoints( const vector<double> &v )
+vector<double> SS::getSplitPoints( const vector<double> &v )
 {
 	vector<double> sp(SPLIT_AREA_NUM+1);
 	double step = 1.0/SPLIT_AREA_NUM;
@@ -23,12 +24,12 @@ vector<double> getSplitPoints( const vector<double> &v )
 	return sp;
 }
 
-double getSpByValueIdx( int x )
+double SS::getSpByValueIdx( int x )
 {
 	return 0 + x * 1.0/SPLIT_AREA_NUM;
 }
 
-vector< vector<double> > measure( const CsvData &D, const vector<int> &r, int m, const vector<int> &c )
+vector< vector<double> > SS::measure( const CsvData &D, const vector<int> &r, const vector<int> &c )
 {
 	vector< vector<double> > ss( D.n );
 	for ( int i = 0; i < D.n; i++ )	
@@ -37,7 +38,7 @@ vector< vector<double> > measure( const CsvData &D, const vector<int> &r, int m,
 			continue;
 			
 		vector<double> tmp;
-		vector<double> f = D.getFeatures(i);
+		vector<double> f = D.getFeatures(i, r);
 		vector<double> sp = getSplitPoints( f );
 		for ( int k = 0; k < sp.size(); k++ )
 		{
@@ -75,27 +76,31 @@ vector< vector<double> > measure( const CsvData &D, const vector<int> &r, int m,
 }
 
 
-double estimateLabel( const vector<double> &L, vector<int> tag )
+double SS::estimateLabel( const vector<double> &L, const vector<int> &tag )
 {
 	return mean(L, tag);
 }
 
-bool endCondition( vector<double> v, vector<int> tag, int num )
+bool SS::endCondition( vector<double> v, vector<int> tag, int num )
 {
 	return num < LEAF_MAX_NUM;
 }
 
-/*
-#include <cstdio>
+
+#ifdef _SS_UTEST_
+
 int main()
 {
 	CsvData D = CsvData("dataset/pro1.csv");
-	
+	SS ms = SS();
+
 	vector<int> r(D.m, 1), c(D.n, 1);
-	vector< vector<double> > res = measure( D, r, D.m, c );
+	vector< vector<double> > res = ms.measure( D, r, c );
 	cout << res.size() << endl;
 
 	disp(res);
 
 	return 0;
-}*/
+}
+
+#endif

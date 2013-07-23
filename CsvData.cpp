@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 09:14:40 AM CST
  ************************************************************************/
 
-//#define CSVDATA_UTEST
+//#define _CSVDATA_UTEST_
 
 
 #include "CsvData.h"
@@ -66,7 +66,7 @@ void CsvData::disp()
 }
 
 
-#ifdef CSVDATA_UTEST
+#ifdef _CSVDATA_UTEST_
 
 int main()
 {
