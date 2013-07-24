@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: SS.h
+	> File Name: VAR.h
 	> Author: Jacob Pan
 	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Tue 23 Jul 2013 12:29:18 PM CST
@@ -10,7 +10,7 @@
 #include "Measurer.h"
 using namespace std;
 
-class SS: public Measurer
+class VAR: public Measurer
 {	
 public:
 	// implement virtual methods

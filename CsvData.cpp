@@ -10,11 +10,10 @@
 
 #include "CsvData.h"
 
-CsvData::CsvData( string filename )
+CsvData::CsvData()
 {
-	this->csvread( filename );
-	m = A.size();
-	n = A[0].size();
+	this->m = 0;
+	this->n = 0;
 }
 
 
@@ -40,6 +39,9 @@ void CsvData::csvread( string filename )
 		this->A.push_back( tmp );
 	}
 	fobj.close();	
+	
+	this->m = A.size();
+	this->n = A[0].size();
 }
 
 vector<double> CsvData::getFeatures( int fIdx, vector<int> tag ) const
@@ -54,7 +56,7 @@ vector<double> CsvData::getFeatures( int fIdx, vector<int> tag ) const
 	return res;
 }
 
-void CsvData::disp()
+void CsvData::disp() const
 {
 	for ( int i = 0; i < this->m; i++ )
 	{
@@ -70,9 +72,23 @@ void CsvData::disp()
 
 int main()
 {
-	// Test: Constructor
-	CsvData D( "dataset/pro1.csv" );
+	CsvData D;
 	
+	// Test Case 1
+	D.csvread( "test/case1.csv" );
+	double l[] = { 1, 1, 1, 2, 2, 2 };
+	double a[][] = { 0,   0,   0.5, 0.4;
+					 0,   0,   0.5, 0.5;
+					 0.5, 0,   0.5, 0;
+					 0.7, 0.5, 0.5, 0.8;
+					 0.9, 0.5, 0.5, 0.9};
+
+
+	// Live Test
+	
+	// Test: Constructor
+	D.csvread( "dataset/pro1.csv" );
+
 	assert( D.m==9126&&D.n==46 );
 	assert( D.L.size()==9126&&D.A.size()==9126&&D.A[0].size()==46 );
 

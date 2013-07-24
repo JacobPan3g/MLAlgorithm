@@ -13,16 +13,14 @@ using namespace std;
 class CsvData
 {
 public:
-	CsvData( string filename );
+	CsvData();
+	void csvread( string filename );
 	vector<double> getFeatures( int fIdx, vector<int> tag=vector<int>() ) const;
-	void disp();
+	void disp() const;
 
 	int m;
 	int n;
 	vector<double> L;
 	vector< vector<double> > A;
-
-private:
-	void csvread( string filename );
 };
 
