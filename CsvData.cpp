@@ -26,11 +26,13 @@ CsvData::CsvData()
  */
 void CsvData::csvread( string filename )
 {
+	this->L.resize(0);
+	this->A.resize(0);
+
 	string line;
 	ifstream fobj( filename.c_str() );
 
 	//vector< vector<double> > res;	// the blank '> >' is necessary
-
 	while ( getline( fobj, line ) )		//* the main cmd to read line
 	{
 		vector<double> tmp = split<double>( line, "," );
@@ -76,12 +78,25 @@ int main()
 	
 	// Test Case 1
 	D.csvread( "test/case1.csv" );
-	double l[] = { 1, 1, 1, 2, 2, 2 };
-	double a[][] = { 0,   0,   0.5, 0.4;
-					 0,   0,   0.5, 0.5;
-					 0.5, 0,   0.5, 0;
-					 0.7, 0.5, 0.5, 0.8;
-					 0.9, 0.5, 0.5, 0.9};
+	double l[5] = { 1, 1, 1, 2, 2 };
+	double a[5][4] = {	0,   0,   0.5, 0.4,
+						0,   0,   0.5, 0.5,
+						0.5, 0,   0.5, 0,
+						0.7, 0.5, 0.5, 0.8,
+						0.9, 0.5, 0.5, 0.9	};
+	vector<double> L(5);
+	vector< vector<double> > A(5);
+	for ( int i = 0; i < 5; i++ )
+	{
+		L[i] = l[i];
+		A[i].resize( 4 );
+	}
+	for( int i = 0; i < 5; i++ )
+		for ( int j = 0; j < 4; j++ )
+			A[i][j] = a[i][j];
+	
+	assert( isSame(D.L,L) );
+	assert( isSame(D.A,A) );
 
 
 	// Live Test

@@ -5,6 +5,9 @@
 	> Created Time: Tue 09 Jul 2013 04:31:42 PM CST
  ************************************************************************/
 
+//#define _JPTOOL_UTEST_
+
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -14,6 +17,9 @@
 #include <fstream>
 #include <cassert>
 using namespace std;
+
+#define EPS 1e-5
+
 
 /*
  * statistic
@@ -118,12 +124,35 @@ bool isSame( const vector<T> &v, const vector<T> &w )
 	if ( v.size() != w.size() )
 		res = false;
 	else
-		for( int i =0; i < v.size(); i++ )
-			if ( v[i] != w[i] )
+		for( int i = 0; i < v.size(); i++ )
+			if ( v[i] - w[i] >= EPS )
 			{
 				res = false;
 				break;
 			}
+	return res;
+}
+
+template <class T>
+bool isSame( const vector< vector<T> > &v2, const vector< vector<T> > &w2 )
+{
+	bool res = true;
+	// one v is NULL
+	if ( v2.size() == 0 || w2.size() == 0 )
+		if ( v2.size() != 0 || w2.size() != 0 )
+			res = false;
+		else
+			res = true;
+	else if ( v2.size() != w2.size() || v2[0].size() != w2[0].size() )
+		res = false;
+	else
+		for ( int i = 0; i < v2.size(); i++ )
+			for ( int j = 0; j < v2[0].size(); j++ )
+				if ( v2[i][j] - w2[i][j] >= EPS )
+				{	
+					res = false;
+					break;
+				}
 	return res;
 }
 
@@ -309,61 +338,41 @@ void csvread( string filename, vector< vector<T> > &v2 )
 	fobj.close();
 }
 
-
 /*
+ * init
+ */
+template <class T>
+vector< vector<T> > v2( int r, int c, T value )
+{
+	vector< vector<T> > res( r );
+	for ( int i = 0; i < res.size(); i++ )
+	{
+		res[i].resize( c, value );
+	}
+	return res;
+}
+
+#ifdef _JPTOOL_UTEST_
+
 int main()
 {
+	vector< vector<double> > a = v2(2,3,2.0);
+	vector< vector<double> > b = v2<double>(2,3,1);
 	
-	vector<int> a( 3, 1 );
-	a[0] = 0;
-	cout << count(a) << endl;
-	cout << sum(a) << endl;
-	cout << mean(a) << endl;
-	cout << variance(a) << endl;
+	/*for ( int i = 0; i < a.size(); i++ )
+	{
+		a[i].resize( 3, 1 );
+		b[i].resize( 3, 1 );
+	}*/
 
-	vector<int> a;
-	a.push_back(1);
-	a.push_back(2);
-	a.push_back(3);
-	a.push_back(4);
-	cout << mean(a) << endl;
-	cout << variance(a) << endl;
-	disp( shuffling(a) );
-
-	// min()
-	vector<double> a;
-	vector<double> c( 5, 2 );
-	a.push_back( 0.1 );
-	a.push_back( 0.2 );
-	a.push_back( 0.01 );
-	a.push_back( 0.3 );
-	a.push_back( 0.4 );
-	vector< vector<double> > aa;
-	aa.push_back( c );
-	aa.push_back( a );
-	aa.push_back( c );
-
-	vector<double> b = min(aa);
-	cout << b[0] << endl << b[1] << endl;
-
-	// spilt()
-	string s = "123,456,78.94";
-	vector<double> res = split<double>(s, ",");
-	for ( int i = 0; i < res.size(); i++ )
-		cout << res[i] << endl;
 	
-	//isAll() isAllSame()
-	vector<int> v(3, 1);
-	v.push_back(2);
-	if ( isAllSame(v) )
-		cout << "YES" << endl;
-
-	vector< vector<double> > v2;
-	csvread( "trees/bag.tree", v2 );
-	disp( v2 );
-	cout << v2.size() << endl;
-
+	disp( a );
+	cout << endl;
+	disp( b );
+	if ( isSame( a, b) )
+		cout << "Same" << endl;
+	
 	return 0;
 }
-*/
 
+#endif

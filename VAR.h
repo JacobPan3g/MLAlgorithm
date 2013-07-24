@@ -19,9 +19,11 @@ public:
 	bool endCondition( const vector<double> v, vector<int> tag, int num );
 
 	// own methods
+	VAR( int saNum=10 );
 	double getSpByValueIdx( int x );
 
 private:
 	vector<double> getSplitPoints( const vector<double> &v );
 
+	int SPLIT_AREA_NUM; 
 };

@@ -12,7 +12,11 @@
 #include "CsvData.cpp"
 
 #define LEAF_MAX_NUM 5
-#define SPLIT_AREA_NUM 10
+
+VAR::VAR( int saNum )
+{
+	this->SPLIT_AREA_NUM = saNum;
+}
 
 // Average Spilt the Area [0,1]
 vector<double> VAR::getSplitPoints( const vector<double> &v )
@@ -98,21 +102,33 @@ bool VAR::endCondition( vector<double> v, vector<int> tag, int num )
 
 int main()
 {
-	vector<int> r(D.m, 1), c(D.n, 1);	
+	CsvData D;
+	VAR ms(2);
+	vector< vector<double> > res;
+	vector<int> r, c;	
 
 	// Test Case 1
-	CsvData D1 = CsvData( "test/case1.csv" );
-	VAR ms1;
-	vector< vector<double> > res1 = ms1.measure( D1, r, c );
-	
+	D.csvread( "test/case1.csv" );
+	r.resize( D.m, 1 );
+	c.resize( D.n, 1 );
+	res = ms.measure( D, r, c );
+	disp(res);
+	vector< vector<double> > var = v2( 4, 3, 0.24 );
+	var[0][0] = 0.13333; var[0][1] = 0;
+	var[1][0] = 0;
+	var[3][0] = 0.2; var[3][1] = 0;
+	disp(var);
+
+	assert( isSame( res, var ) );
 
 	// Live Test
-	CsvData D = CsvData("dataset/pro1.csv");
-	VAR ms;
-	vector< vector<double> > res = ms.measure( D, r, c );
+	D.csvread("dataset/pro1.csv");
+	r.resize( D.m, 1 );
+	c.resize( D.n, 1 );
+	ms = VAR();
+	res = ms.measure( D, r, c );
 
 	assert( res.size()==46 );
-	assert( res[0].size()==SPLIT_AREA_NUM+1 );	// just for aver_split
 	
 	//disp(res);
 
