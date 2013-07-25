@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-#define _VAR_UTEST_
+//#define _VAR_UTEST_
 
 
 #include "VAR.h"
@@ -73,7 +73,7 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 
 			assert( count(r)==num1+num2 );
 			assert( count(r)==count(part1)+count(part2) );
-	
+
 			double var1 = variance( D.L, part1 );
 			double var2 = variance( D.L, part2 );
 			double num = num1 + num2;
@@ -112,12 +112,12 @@ int main()
 	r.resize( D.m, 1 );
 	c.resize( D.n, 1 );
 	res = ms.measure( D, r, c );
-	disp(res);
+	//disp(res);
 	vector< vector<double> > var = v2( 4, 3, 0.24 );
 	var[0][0] = 0.13333; var[0][1] = 0;
 	var[1][0] = 0;
 	var[3][0] = 0.2; var[3][1] = 0;
-	disp(var);
+	//disp(var);
 
 	assert( isSame( res, var ) );
 

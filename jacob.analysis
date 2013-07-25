@@ -16,3 +16,7 @@
 	but won't initialize the member.
 	SLOVE:	a. new(this) constructor();		(whether need delete?)
 			b. write a init()
+
+5.	cout just output post-decimal point 6 bit.
+	cout << 0.9999999 << endl;  output 1
+	cout << 0.999999 << endl;	output 0.999999

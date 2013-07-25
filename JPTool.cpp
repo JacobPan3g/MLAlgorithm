@@ -20,6 +20,10 @@ using namespace std;
 
 #define EPS 1e-5
 
+#define nonzero(x) ( (double)(x==0 ? x+1e-8 : x) )
+#define round(x) ((int)(x+0.5))
+#define src(x) ( abs(x-round(x)) < EPS ? round(x) : x )
+
 
 /*
  * statistic
@@ -184,7 +188,7 @@ double mean( const vector<T> &v, vector<int> tag=vector<int>() )
 			num++;
 		}
 	}
-	return res/(num+1e-8);
+	return res/nonzero(num);
 }
 
 template <class T>
@@ -219,7 +223,7 @@ double variance( const vector<T> &v, vector<int> tag=vector<int>() )
 			res	+= pow(v[i]-aver, 2 );	
 		}
 	}
-	return res/(num+1e-8);
+	return res/nonzero(num);
 }
 
 /*
@@ -251,10 +255,14 @@ void shuffling( vector<T> &v )
  * disp
  */
 template <class T>
-void disp( const vector<T> &v )
+void disp( const vector<T> &v, vector<int> tag=vector<int>() )
 {
+	if ( tag.size() == 0 )
+		tag.resize( v.size(), 1 );
+
 	for ( int i = 0; i < v.size(); i++ )
-		cout << v[i] << " ";
+		if ( tag[i] == 1 )
+			cout << v[i] << " ";
 	cout << endl;
 }
 
@@ -352,26 +360,21 @@ vector< vector<T> > v2( int r, int c, T value )
 	return res;
 }
 
+
 #ifdef _JPTOOL_UTEST_
 
 int main()
 {
-	vector< vector<double> > a = v2(2,3,2.0);
-	vector< vector<double> > b = v2<double>(2,3,1);
-	
-	/*for ( int i = 0; i < a.size(); i++ )
-	{
-		a[i].resize( 3, 1 );
-		b[i].resize( 3, 1 );
-	}*/
 
-	
-	disp( a );
-	cout << endl;
-	disp( b );
-	if ( isSame( a, b) )
-		cout << "Same" << endl;
-	
+	double a = 0.9999999;
+	cout << a << endl;
+	cout << src( a ) << endl;
+
+	double b = -0.9;
+	cout << t(b) << endl;
+
+	cout << 0.9999999 << endl;
+	cout << 0.999999 << endl;
 	return 0;
 }
 
