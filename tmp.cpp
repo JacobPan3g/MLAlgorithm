@@ -1,12 +1,11 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 using namespace std;
 
 
 int main()
 {
-	int b[] = { 1, 1, 1, 1, 2, 2, 2, 2 };
-	vector<int> a(b);
-
+	cout << log2(8) << endl;
 	return 0;
 }

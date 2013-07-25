@@ -9,9 +9,9 @@
 
 
 #include "CART.h"
-#include "SS.cpp"
+#include "VAR.cpp"
 
-CART::CART( const CsvData &D, int maxH=10 )
+CART::CART( const CsvData &D, int maxH )
 {
 	vector<int> cs(D.m, 1);
 	vector<int> fs(D.n, 1);
@@ -21,6 +21,23 @@ CART::CART( const CsvData &D, int maxH=10 )
 CART::CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
 {
 	this->init( D, cs, fs, maxH );
+}
+
+CART::~CART()
+{
+	queue<Node*> q;
+	q.push( this->root );
+	while( !q.empty() )
+	{
+		Node *node = q.front();
+		q.pop();
+		if ( node->left != NULL )
+			q.push( node->left );
+		if ( node->right != NULL )
+			q.push( node->right );
+
+		delete node;
+	}
 }
 
 void CART::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
@@ -34,7 +51,7 @@ void CART::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs,
 void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 {
 	queue<Node*> q;
-	int inNodeNum = 0;
+	this->sinNodeNum = 0;
 	
 	this->root = new Node( rows, D.m, 0 );
 	q.push( this->root );
@@ -62,8 +79,10 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
 			continue;
 		}
+		
+		// handle the inner node
+		inNode.push_back( node );
 
-		inNodeNum++;
 		// get the optimal feature
 		vector< vector<double> > ms = c_msr.measure( D, node->cases, this->features );
 		vector<double> tmp = min( ms, this->features );
@@ -95,6 +114,18 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 			}
 		}
 		
+		// handle the single node
+		if ( tmpN1 == 0 || tmpN2 == 0 )
+		{
+			node->single = 1;
+			this->sinNodeNum++;
+
+			/*node->fIdx = -1;
+			this->features[minF] = 1;
+			q.push( node );*/
+		}
+		//else{
+
 		int h = node->high + 1;
 		if ( tmpN1 != 0 )
 		{
@@ -106,16 +137,17 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 			node->right = new Node( rows2, tmpN2, h );
 			q.push(node->right);
 		}
+		//}
 
-		if ( tmpN1 == 0 || tmpN2 == 0 )
-			node->single = 1;
 	}
 
 	assert( this->high <= MAX_HIGH );
 	assert( root!=NULL );
 	assert( leaf.size()!=0 );
 	assert( leaf.size()==labels.size() );
-	assert( count(this->features)+inNodeNum==D.n );
+	assert( count(this->features)+inNode.size()==D.n );
+	assert( high <= (int)log2(D.n)+1 );
+	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
 
 void CART::foundALeaf( Node *node, const vector<double> &L )
@@ -259,14 +291,37 @@ int main()
 	time_t tic, toc;
 	tic = clock();
 
-	CsvData D = CsvData("dataset/pro1.csv");
+	CsvData D;
+
+	// Unit Test 1
+	D.csvread( "test/case1.csv" );
+	CART c1T( D );
+	c1T.dispTree();
+
+	vector<int> tag(D.n, 1);
+	tag[0] = 0;
+
+	assert( isAll(c1T.features, 1, tag) );
+	assert( c1T.inNode.size()==1 );
+	assert( c1T.inNode[0]->fIdx==0 );
+	assert( c1T.inNode[0]->obValue==0.5 );
+	assert( c1T.high==1 );
+	assert( c1T.leaf.size()==2 );
+	assert( c1T.labels[0]==1&&c1T.labels[1]==2);
+
+	// Live Test
+	D.csvread("dataset/pro1.csv");
 	CART tree(D, 10);
 
 	tree.dispTree();
 	//tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveTree( "trees/UT" );
+	tree.saveTree( "trees/UT_20" );
+	//cout << tree.inNode[17]->obValue << endl;
+	
+	assert( isAll(tree.features,0) );
+	//assert(  )
 
 	toc = clock();
 	double tol = (double)(toc-tic)/CLOCKS_PER_SEC;

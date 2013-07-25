@@ -6,6 +6,7 @@
  ************************************************************************/
 
 //#define _JPTOOL_UTEST_
+#define _INNER_TEST_
 
 
 #include <iostream>
@@ -56,19 +57,21 @@ vector<T> min( const vector<T> &ginis, vector<int> tag=vector<int>() )
 }
 
 template <class T>
-vector<T> min( const vector< vector<T> > &v2, vector<int> tag=vector<int>() )
+vector<T> min( const vector< vector<T> > &v2, vector<int> r=vector<int>() )
 {	
-	if ( tag.size() == 0 )
-		tag = vector<int>( v2.size(), 1 );
+	if ( r.size() == 0 )
+		r = vector<int>( v2.size(), 1 );
 
 	vector<T> res(3, 0);	// idx 0 for min, idx 1 for idx, idx 2 for value idx
 	res[0] = 1e8;
 
 	for ( int i = 0; i < v2.size(); i++ )
 	{
+		if ( !r[i] )
+			continue;
 		for ( int j = 0; j < v2[i].size(); j++ )
 		{
-			if ( tag[i] == 1 && v2[i][j] < res[0] )
+			if ( v2[i][j] < res[0] )
 			{
 				res[0] = v2[i][j];
 				res[1] = i;
@@ -76,6 +79,29 @@ vector<T> min( const vector< vector<T> > &v2, vector<int> tag=vector<int>() )
 			}
 		}
 	}
+	
+#ifdef _INNER_TEST_
+	bool isMin = true;
+	bool jump = false;
+	for ( int i = 0; i < v2.size(); i++ )
+	{
+		if ( !r[i] )
+			continue;
+		for ( int j = 0; j < v2[i].size(); j++ )
+		{
+			if ( v2[i][j] < res[0] )
+			{
+				isMin = false;
+				jump = true;
+				break;
+			}
+		}
+		if ( jump )
+			break;
+	}
+	assert( isMin );
+#endif
+
 	return res;
 }
 
@@ -137,9 +163,24 @@ bool isSame( const vector<T> &v, const vector<T> &w )
 	return res;
 }
 
+// the v2 and w2 is a rectangle matrix
 template <class T>
 bool isSame( const vector< vector<T> > &v2, const vector< vector<T> > &w2 )
 {
+	int vc, wc;
+	for ( int i = 0; i < v2.size(); i++ )
+		if ( v2[i].size() != 0 )
+		{
+			vc = v2[i].size();
+			break;
+		}
+	for ( int i = 0; i < w2.size(); i++ )
+		if ( w2[i].size() != 0 )
+		{
+			wc = w2[i].size();
+			break;
+		}
+
 	bool res = true;
 	// one v is NULL
 	if ( v2.size() == 0 || w2.size() == 0 )
@@ -147,11 +188,11 @@ bool isSame( const vector< vector<T> > &v2, const vector< vector<T> > &w2 )
 			res = false;
 		else
 			res = true;
-	else if ( v2.size() != w2.size() || v2[0].size() != w2[0].size() )
+	else if ( v2.size() != w2.size() || vc != wc )
 		res = false;
 	else
 		for ( int i = 0; i < v2.size(); i++ )
-			for ( int j = 0; j < v2[0].size(); j++ )
+			for ( int j = 0; j < v2[i].size(); j++ )
 				if ( v2[i][j] - w2[i][j] >= EPS )
 				{	
 					res = false;

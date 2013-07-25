@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-//#define _VAR_UTEST_
+#define _VAR_UTEST_
 
 
 #include "VAR.h"
@@ -34,6 +34,7 @@ double VAR::getSpByValueIdx( int x )
 	return 0 + x * 1.0/SPLIT_AREA_NUM;
 }
 
+// some col tagged 0 will sort as a zero-size vector
 vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, const vector<int> &c )
 {
 	vector< vector<double> > vars( D.n );
@@ -107,7 +108,7 @@ int main()
 	vector< vector<double> > res;
 	vector<int> r, c;	
 
-	// Test Case 1
+	// Test Case 1.1
 	D.csvread( "test/case1.csv" );
 	r.resize( D.m, 1 );
 	c.resize( D.n, 1 );
@@ -121,6 +122,20 @@ int main()
 
 	assert( isSame( res, var ) );
 
+	// Test Case 1.2
+	r[4]=0;
+	c[1]=0;
+	res=ms.measure( D, r, c );
+	disp( res );
+	var = v2( 4, 3, 0.1875 );
+	var[0][0] = 0.125; var[0][1] = 0;
+	var[1].resize(0);
+	var[3][0] = 0.166667; var[3][1] = 0;
+	disp( var );
+
+	assert( isSame( res, var ) );
+	
+
 	// Live Test
 	D.csvread("dataset/pro1.csv");
 	r.resize( D.m, 1 );
@@ -131,6 +146,12 @@ int main()
 	assert( res.size()==46 );
 	
 	//disp(res);
+/*
+	D.csvread( "dataset/pro1.csv" );
+	r.resize( D.m, 1 );
+	c.resize( D.n, 1 ); c[38]=0;c[33]=0;c[17]=1;c[21]=0;
+	ms = VAR();*/
+
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

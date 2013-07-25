@@ -8,7 +8,7 @@
 #pragma once
 
 #include <queue>
-#include "SS.h"
+#include "VAR.h"
 using namespace std;
 
 
@@ -43,8 +43,9 @@ public:
 class CART
 {
 public:
-	CART( const CsvData &D, int maxH );
+	CART( const CsvData &D, int maxH=10 );
 	CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
+	~CART();
 	double predict( const vector<double> &a );
 	vector<double> predict( const CsvData &test );
 	void saveTree( string filename );
@@ -54,8 +55,9 @@ public:
 
 	Node *root;
 	vector<int> features;	// tag which feature can be considered
-	vector<Node*> leaf;
 	vector<double> labels;
+	vector<Node*> leaf;
+	vector<Node*> inNode;	// for test
 	int MAX_HIGH;
 	int high;
 
@@ -64,8 +66,9 @@ private:
 	void bulidTree( const CsvData &D, const vector<int> &row );
 	void foundALeaf( Node *node, const vector<double> &L );
 
-	SS c_msr;
+	VAR c_msr;
 	//GINI d_msr;
+	int sinNodeNum;			// number of single node
 };
 
 
