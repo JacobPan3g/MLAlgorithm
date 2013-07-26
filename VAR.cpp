@@ -13,20 +13,37 @@
 
 #define LEAF_MAX_NUM 5
 
+VAR::VAR()
+{
+	this->SPLIT_AREA_NUM = -1;
+}
+
 VAR::VAR( int saNum )
 {
 	this->SPLIT_AREA_NUM = saNum;
 }
 
-// Average Spilt the Area [0,1]
 vector<double> VAR::getSplitPoints( const vector<double> &v )
 {
-	vector<double> sp(SPLIT_AREA_NUM+1);
-	double step = 1.0/SPLIT_AREA_NUM;
-	double tmp = 0;
-	for ( int i = 0; i < sp.size(); i++ )
-		sp[i] = i * step;
-	return sp;
+	// Average Spilt the Area [0,1]
+	if ( this->SPLIT_AREA_NUM != -1 )
+	{
+		vector<double> sp(SPLIT_AREA_NUM+1);
+		double step = 1.0/SPLIT_AREA_NUM;
+		double tmp = 0;
+		for ( int i = 0; i < sp.size(); i++ )
+			sp[i] = i * step;
+		return sp;
+	}
+	// Accurater
+	else
+	{
+		for ( int i = 0; i < v.size(); i++ )
+		{
+			
+		}
+	}
+
 }
 
 double VAR::getSpByValueIdx( int x )
@@ -107,7 +124,7 @@ int main()
 	VAR ms(2);
 	vector< vector<double> > res;
 	vector<int> r, c;	
-
+/*
 	// Test Case 1.1
 	D.csvread( "test/case1.csv" );
 	r.resize( D.m, 1 );
@@ -146,11 +163,20 @@ int main()
 	assert( res.size()==46 );
 	
 	//disp(res);
-/*
-	D.csvread( "dataset/pro1.csv" );
+
+//	D.csvread( "dataset/pro1.csv" );
+//	r.resize( D.m, 1 );
+//	c.resize( D.n, 1 ); c[38]=0;c[33]=0;c[17]=1;c[21]=0;
+//	ms = VAR();
+*/
+
+	// Test Case 2
+	D.csvread( "test/case2.csv" );
 	r.resize( D.m, 1 );
-	c.resize( D.n, 1 ); c[38]=0;c[33]=0;c[17]=1;c[21]=0;
-	ms = VAR();*/
+	c.resize( D.n, 1 );
+	res = ms.measure( D, r, c );
+	disp(res);
+	
 
 
 	cout << "All Unit Cases Passed." << endl;

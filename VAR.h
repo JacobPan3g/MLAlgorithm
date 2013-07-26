@@ -19,11 +19,12 @@ public:
 	bool endCondition( const vector<double> v, vector<int> tag, int num );
 
 	// own methods
-	VAR( int saNum=10 );
+	VAR();					// constructor for accurater
+	VAR( int saNum );		// constructor for averager
 	double getSpByValueIdx( int x );
 
 private:
 	vector<double> getSplitPoints( const vector<double> &v );
 
-	int SPLIT_AREA_NUM; 
+	int SPLIT_AREA_NUM;		// also a tag for averager
 };
