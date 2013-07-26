@@ -17,6 +17,9 @@
 #include <ctime>		// time()
 #include <fstream>
 #include <cassert>
+#include <set>
+#include <iterator>		// ostream_iterator
+#include <algorithm>	// copy()
 using namespace std;
 
 #define EPS 1e-5
@@ -319,6 +322,13 @@ void disp( vector< vector<T> > v2 )
 	cout << endl;
 }
 
+template <class T>
+void disp( set<T> s )
+{
+	ostream_iterator<T> out_it(cout, " ");
+	copy( s.begin(), s.end(), out_it ); //array use as ( a, a+l, o )
+	cout << endl;
+}
 
 /*
  * string
@@ -391,7 +401,40 @@ void csvread( string filename, vector< vector<T> > &v2 )
  * init
  */
 template <class T>
-vector< vector<T> > v2( int r, int c, T value )
+vector<T> vv1( T arr[], int len )
+{
+	vector<T> res(len);
+	copy( arr, arr+len, res.begin() );
+	return res;
+}
+
+// transform set to vector
+template <class T>
+vector<T> vv1( set<T> s )
+{
+	vector<T> res( s.size() );
+	copy( s.begin(), s.end(), res.begin() );
+	return res;
+}
+
+// remove reduplication
+template <class T>
+vector<T> vv1( vector<T> v, vector<int> tag=vector<int>() )
+{
+	if ( tag.size() == 0 )
+		tag.resize( v.size(), 1 );
+	
+	set<T> s;
+	for ( int i = 0; i < v.size(); i++ )
+		if ( tag[i] )
+			s.insert( v[i] );
+	vector<T> res( s.size() );
+	copy( s.begin(), s.end(), res.begin() );
+	return res;
+}
+
+template <class T>
+vector< vector<T> > vv2( int r, int c, T value )
 {
 	vector< vector<T> > res( r );
 	for ( int i = 0; i < res.size(); i++ )
@@ -401,21 +444,36 @@ vector< vector<T> > v2( int r, int c, T value )
 	return res;
 }
 
+template <class T>
+set<T> ss( const vector<T> &v, vector<int> tag=vector<int>() )
+{
+	if ( tag.size() == 0 )
+		tag.resize( v.size(), 1 );
+	
+	set<T> res;
+	for ( int i = 0; i < v.size(); i++ )
+		if ( tag[i] )
+			res.insert( v[i] );
+	return res;
+}
+
+/*
+ * Transform in STL
+ */
+
+
 
 #ifdef _JPTOOL_UTEST_
 
 int main()
 {
+	int a[] = { 1,3,3,5,5};
+	vector<int> v = vv1( a, 5 );
+	vector<int> tag( 5, 1 );
+	tag[0] = 0;
+	vector<int> vv = vv1( v, tag );
+	disp( vv );
 
-	double a = 0.9999999;
-	cout << a << endl;
-	cout << src( a ) << endl;
-
-	double b = -0.9;
-	cout << t(b) << endl;
-
-	cout << 0.9999999 << endl;
-	cout << 0.999999 << endl;
 	return 0;
 }
 

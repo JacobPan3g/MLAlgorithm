@@ -37,13 +37,7 @@ vector<double> VAR::getSplitPoints( const vector<double> &v )
 	}
 	// Accurater
 	else
-	{
-		for ( int i = 0; i < v.size(); i++ )
-		{
-			
-		}
-	}
-
+		return vv1( v );
 }
 
 double VAR::getSpByValueIdx( int x )
@@ -61,7 +55,7 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 			continue;
 			
 		vector<double> tmp;
-		vector<double> f = D.getFeatures(i, r);
+		vector<double> f = D.getFeatures(i, r);	// have deal with tag
 		vector<double> sp = getSplitPoints( f );
 
 		assert( f.size()==count(r) );
@@ -92,6 +86,9 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 			assert( count(r)==num1+num2 );
 			assert( count(r)==count(part1)+count(part2) );
 
+			disp( D.L, part1 );
+			disp( D.L, part2 );
+
 			double var1 = variance( D.L, part1 );
 			double var2 = variance( D.L, part2 );
 			double num = num1 + num2;
@@ -118,10 +115,18 @@ bool VAR::endCondition( vector<double> v, vector<int> tag, int num )
 
 #ifdef _VAR_UTEST_
 
+void test2()
+{
+	CsvData D;
+	VAR ms;
+	vector< vector<double> > res;
+	vector<int> r, c;	
+}
+
 int main()
 {
 	CsvData D;
-	VAR ms(2);
+	VAR ms;
 	vector< vector<double> > res;
 	vector<int> r, c;	
 /*
@@ -170,12 +175,14 @@ int main()
 //	ms = VAR();
 */
 
-	// Test Case 2
+	// Test Case 2.1
 	D.csvread( "test/case2.csv" );
 	r.resize( D.m, 1 );
 	c.resize( D.n, 1 );
 	res = ms.measure( D, r, c );
 	disp(res);
+
+	vector< vector<int> >  
 	
 
 
