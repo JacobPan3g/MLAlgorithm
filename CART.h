@@ -66,7 +66,7 @@ private:
 	void bulidTree( const CsvData &D, const vector<int> &row );
 	void foundALeaf( Node *node, const vector<double> &L );
 
-	VAR c_msr;
+	VAR c_msr;				// default use accurater
 	//GINI d_msr;
 	int sinNodeNum;			// number of single node
 };

@@ -451,7 +451,7 @@ set<T> ss( const vector<T> &v, vector<int> tag=vector<int>() )
 /*
  * for tag
  */
-int count( const vector<int> &tag )
+int countTag( const vector<int> &tag )
 {
 	int res = 0;
 	for ( int i = 0; i < tag.size(); i++ )
@@ -460,7 +460,7 @@ int count( const vector<int> &tag )
 	return res;
 }
 
-void unsetTags( vector<int> &tag, int idx[], int len )
+void resetTags( vector<int> &tag, int idx[], int len )
 {
 	for ( int i = 0; i < len; i++ )
 		if ( idx[i] < tag.size() )

@@ -24,7 +24,7 @@ public:
 	double getSpByValueIdx( int x );
 
 private:
-	vector<double> getSplitPoints( const vector<double> &v );
+	vector<double> getSplitPoints( const vector<double> &v, vector<int> tag=vector<int>() );
 
 	int SPLIT_AREA_NUM;		// also a tag for averager
 };
