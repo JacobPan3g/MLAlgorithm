@@ -460,7 +460,7 @@ int countTag( const vector<int> &tag )
 	return res;
 }
 
-void resetTags( vector<int> &tag, int idx[], int len )
+void resetTag( vector<int> &tag, int idx[], int len )
 {
 	for ( int i = 0; i < len; i++ )
 		if ( idx[i] < tag.size() )

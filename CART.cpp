@@ -11,16 +11,16 @@
 #include "CART.h"
 #include "VAR.cpp"
 
-CART::CART( const CsvData &D, int maxH )
+CART::CART( const CsvData &D, int spNum, int maxH )
 {
 	vector<int> cs(D.m, 1);
 	vector<int> fs(D.n, 1);
-	this->init( D, cs, fs, maxH );
+	this->init( D, cs, fs, spNum, maxH );
 }
 
-CART::CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
+CART::CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int spNum, int maxH )
 {
-	this->init( D, cs, fs, maxH );
+	this->init( D, cs, fs, spNum, maxH );
 }
 
 CART::~CART()
@@ -40,8 +40,9 @@ CART::~CART()
 	}
 }
 
-void CART::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH )
+void CART::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int spNum, int maxH )
 {
+	this->c_msr = VAR( spNum );
 	this->MAX_HIGH = maxH;
 	this->high = 0;
 	this->features = fs;
@@ -145,7 +146,7 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 	assert( root!=NULL );
 	assert( leaf.size()!=0 );
 	assert( leaf.size()==labels.size() );
-	assert( count(this->features)+inNode.size()==D.n );
+	assert( countTag(this->features)+inNode.size()==D.n );
 	assert( high <= (int)log2(D.n)+1 );
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
@@ -286,20 +287,17 @@ void CART::saveTree( string filename )
 
 #ifdef _CART_UTEST_
 
-int main()
+void test1()
 {
-	time_t tic, toc;
-	tic = clock();
-
 	CsvData D;
-
-	// Unit Test 1
 	D.csvread( "test/case1.csv" );
-	CART c1T( D );
+
+	// Unit Test 1.1
+	CART c1T( D, 2 );
 	c1T.dispTree();
 
-	vector<int> tag(D.n, 1);
-	tag[0] = 0;
+	vector<int> tag(D.n, 1);	// just for first assert
+	tag[0] = 0;					// mean just choose F0
 
 	assert( isAll(c1T.features, 1, tag) );
 	assert( c1T.inNode.size()==1 );
@@ -309,23 +307,54 @@ int main()
 	assert( c1T.leaf.size()==2 );
 	assert( c1T.labels[0]==1&&c1T.labels[1]==2);
 
-	// Live Test
+	// Unit Test 2.2	--WHY?
+	CART c2T( D, -1 );
+	c2T.dispTree();
+}
+
+void test2()
+{
+	CsvData D;
+	D.csvread( "test/case2.csv" );
+
+	CART t1( D, -1 );
+	t1.dispTree();
+}
+
+void liveTest( int spNum, int maxH )
+{
+	time_t tic = clock();
+
+	CsvData D;
 	D.csvread("dataset/pro1.csv");
-	CART tree(D, 10);
+	CART tree(D, spNum, maxH);
 
 	tree.dispTree();
-	//tree.dispLeaves();
+	tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveTree( "trees/UT_20" );
+	tree.saveTree( "trees/UT_1" );
 	//cout << tree.inNode[17]->obValue << endl;
 	
-	assert( isAll(tree.features,0) );
-	//assert(  )
+	// all use
+	//assert( isAll(tree.features,0) );
 
-	toc = clock();
-	double tol = (double)(toc-tic)/CLOCKS_PER_SEC;
-	cout << "Time: " << tol << " s" << endl;
+	time_t toc = clock();
+	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
+}
+
+int main()
+{
+//	test1();
+	test2();
+	
+	/*
+	 * @param1: spNum	the num of sp | -1 for accurater
+	 * @param2:	maxH	the max high of tree
+	 */
+	//liveTest( -1, 1 );
+
+	cout << "All Unit Cases Passed." << endl;
 	return 0;
 }
 

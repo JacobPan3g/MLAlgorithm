@@ -164,10 +164,11 @@ void test2()
 	vector< vector<double> > res;
 	vector<int> r, c;	
 	
-	// Test Case 2.1
 	D.csvread( "test/case2.csv" );
 	r.resize( D.m, 1 );
 	c.resize( D.n, 1 );
+	
+	// Test Case 2.1
 	res = ms.measure( D, r, c );
 	//disp(res);
 
@@ -186,7 +187,7 @@ void test2()
 
 	// Test Case 2.2
 	int tmp[] = { 3, 7, 8, 9, 10, 11 };
-	resetTags( r, tmp, sizeof(tmp)/sizeof(int) );
+	resetTag( r, tmp, sizeof(tmp)/sizeof(int) );
 	//disp( r );
 	c[2] = 0;
 	res = ms.measure( D, r, c );
@@ -212,12 +213,12 @@ void liveTest()
 	vector< vector<double> > res;
 	vector<int> r, c;	
 
-	// Live Test
 	D.csvread("dataset/pro1.csv");
 	r.resize( D.m, 1 );
 	c.resize( D.n, 1 );
 	ms = VAR();
 	res = ms.measure( D, r, c );
+	disp( res );
 
 	assert( res.size()==46 );
 
@@ -227,9 +228,9 @@ void liveTest()
 
 int main()
 {
-	test1();
-	test2();
-//	liveTest();
+//	test1();
+//	test2();
+	liveTest();
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

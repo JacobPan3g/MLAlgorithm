@@ -43,8 +43,8 @@ public:
 class CART
 {
 public:
-	CART( const CsvData &D, int maxH=10 );
-	CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
+	CART( const CsvData &D, int saNum=-1, int maxH=10 );
+	CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int saNum=-1, int maxH=10 );
 	~CART();
 	double predict( const vector<double> &a );
 	vector<double> predict( const CsvData &test );
@@ -62,7 +62,7 @@ public:
 	int high;
 
 private:
-	void init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int maxH );
+	void init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int spNum, int maxH );
 	void bulidTree( const CsvData &D, const vector<int> &row );
 	void foundALeaf( Node *node, const vector<double> &L );
 
