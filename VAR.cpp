@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-#define _VAR_UTEST_
+//#define _VAR_UTEST_
 
 
 #include "VAR.h"

@@ -74,6 +74,13 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 			continue;
 		}
 		// end 3
+		// is all same label
+		if ( isAllSame( D.L, node->cases ) )
+		{
+			this->foundALeaf( node, D.L );
+			continue;
+		}
+		// end 4
 		/// the measure's end condition
 		if ( c_msr.endCondition( D.L, node->cases, node->cnum ) )
 		{
@@ -95,28 +102,32 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 		node->fIdx = minF;
 		node->obValue = obValue;
 		// separate the data by minF( need to know the minF )
-		vector<int> rows1( D.m, 0 );
-		vector<int> rows2( D.m, 0 );
-		int tmpN1 = 0;
-		int tmpN2 = 0;
+		vector<int> part1( D.m, 0 );
+		vector<int> part2( D.m, 0 );
+		int num1 = 0;
+		int num2 = 0;
 		for ( int i = 0; i < D.m; i++ )
 		{
 			if ( !node->cases[i] )
 				continue;
 			if ( D.A[i][node->fIdx] <= obValue )
 			{
-				tmpN1++;
-				rows1[i] = 1;
+				num1++;
+				part1[i] = 1;
 			}
 			else
 			{
-				tmpN2++;
-				rows2[i] = 1;
+				num2++;
+				part2[i] = 1;
 			}
 		}
+
+		assert( countTag(part1)==num1 );
+		assert( countTag(part2)==num2 );
+		assert( num1+num2==countTag(node->cases) );
 		
 		// handle the single node
-		if ( tmpN1 == 0 || tmpN2 == 0 )
+		if ( num1 == 0 || num2 == 0 )
 		{
 			node->single = 1;
 			this->sinNodeNum++;
@@ -128,14 +139,14 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 		//else{
 
 		int h = node->high + 1;
-		if ( tmpN1 != 0 )
+		if ( num1 != 0 )
 		{
-			node->left = new Node( rows1, tmpN1, h );
+			node->left = new Node( part1, num1, h );
 			q.push(node->left);
 		}
-		if ( tmpN2 != 0 )
+		if ( num2 != 0 )
 		{
-			node->right = new Node( rows2, tmpN2, h );
+			node->right = new Node( part2, num2, h );
 			q.push(node->right);
 		}
 		//}
@@ -346,13 +357,13 @@ void liveTest( int spNum, int maxH )
 int main()
 {
 //	test1();
-	test2();
+//	test2();
 	
 	/*
 	 * @param1: spNum	the num of sp | -1 for accurater
 	 * @param2:	maxH	the max high of tree
 	 */
-	//liveTest( -1, 1 );
+	liveTest( -1, 3 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
