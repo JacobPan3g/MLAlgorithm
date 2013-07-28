@@ -37,7 +37,11 @@ vector<double> VAR::getSplitPoints( const vector<double> &v )
 	}
 	// Accurater
 	else
-		return vv1( v );
+	{
+		vector<double> tmp = vv1( v );
+		tmp.erase( tmp.end()-1 );		// erase the last one
+		return tmp;
+	}
 }
 
 double VAR::getSpByValueIdx( int x )
@@ -121,6 +125,34 @@ void test2()
 	VAR ms;
 	vector< vector<double> > res;
 	vector<int> r, c;	
+	
+	// Test Case 2.1
+	D.csvread( "test/case2.csv" );
+	r.resize( D.m, 1 );
+	c.resize( D.n, 1 );
+	res = ms.measure( D, r, c );
+	//disp(res);
+
+	vector< vector<double> > ans( 4 );
+	double tmp0[] = { 0.22, 0.22 };
+	double tmp1[] = { 0.16 };
+	double tmp2[] = { 0.13333 };
+	double tmp3[] = { 0.16, 0.18182 };
+	ans[0] = vv1( tmp0, 2 );
+	ans[1] = vv1( tmp1, 1 );
+	ans[2] = vv1( tmp2, 1 );
+	ans[3] = vv1( tmp3, 2 );
+
+	assert( isSame( res, ans ) );
+
+	// Test Case 2.2
+	int tmp[] = { 3, 7, 8, 9, 10, 11 };
+	unsetTags( r, tmp, sizeof(tmp)/sizeof(int) );
+	disp( r );
+	c[2] = 0;
+	res = ms.measure( D, r, c );
+	disp( res );
+
 }
 
 int main()
@@ -175,15 +207,7 @@ int main()
 //	ms = VAR();
 */
 
-	// Test Case 2.1
-	D.csvread( "test/case2.csv" );
-	r.resize( D.m, 1 );
-	c.resize( D.n, 1 );
-	res = ms.measure( D, r, c );
-	disp(res);
-
-	vector< vector<int> >  
-	
+	test2();
 
 
 	cout << "All Unit Cases Passed." << endl;

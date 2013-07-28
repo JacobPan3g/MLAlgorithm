@@ -32,15 +32,6 @@ using namespace std;
 /*
  * statistic
  */
-int count( const vector<int> &tag )
-{
-	int res = 0;
-	for ( int i = 0; i < tag.size(); i++ )
-		if ( tag[i] == 1 )
-			res++;
-	return res;
-}
-
 template <class T>
 vector<T> min( const vector<T> &ginis, vector<int> tag=vector<int>() )
 {	
@@ -458,8 +449,25 @@ set<T> ss( const vector<T> &v, vector<int> tag=vector<int>() )
 }
 
 /*
- * Transform in STL
+ * for tag
  */
+int count( const vector<int> &tag )
+{
+	int res = 0;
+	for ( int i = 0; i < tag.size(); i++ )
+		if ( tag[i] == 1 )
+			res++;
+	return res;
+}
+
+void unsetTags( vector<int> &tag, int idx[], int len )
+{
+	for ( int i = 0; i < len; i++ )
+		if ( idx[i] < tag.size() )
+			tag[idx[i]] = 0;
+}
+
+
 
 
 
@@ -467,12 +475,12 @@ set<T> ss( const vector<T> &v, vector<int> tag=vector<int>() )
 
 int main()
 {
-	int a[] = { 1,3,3,5,5};
-	vector<int> v = vv1( a, 5 );
-	vector<int> tag( 5, 1 );
-	tag[0] = 0;
-	vector<int> vv = vv1( v, tag );
-	disp( vv );
+	//int a[] = { 1,3,3,5,5};
+	vector<int> v = vv1( { 1, 2, 3 }, 5 );
+	//vector<int> tag( 5, 1 );
+	//tag[0] = 0;
+	//vector<int> vv = vv1( v, tag );
+	//disp( vv );
 
 	return 0;
 }
