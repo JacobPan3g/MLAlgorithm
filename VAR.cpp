@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-//#define _VAR_UTEST_
+#define _VAR_UTEST_
 
 
 #include "VAR.h"
@@ -67,8 +67,8 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 		for ( int k = 0; k < sp.size(); k++ )
 		{
 			// desperate into two parts
-			vector<int> part1 = r;
-			vector<int> part2 = r;
+			vector<int> part1( D.m, 0 );
+			vector<int> part2( D.m, 0 );
 			int num1 = 0;
 			int num2 = 0;
 			for ( int j = 0; j < D.m; j++ )
@@ -78,12 +78,12 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 
 				if ( f[j] <= sp[k] )
 				{
-					part2[j] = 0;	// reset the other side
+					part1[j] = 1;	// reset the other side
 					num1++;
 				}
 				else
 				{
-					part1[j] = 0;
+					part2[j] = 1;
 					num2++;
 				}
 			}
@@ -228,9 +228,9 @@ void liveTest()
 
 int main()
 {
-//	test1();
-//	test2();
-	liveTest();
+	test1();
+	test2();
+//	liveTest();
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
