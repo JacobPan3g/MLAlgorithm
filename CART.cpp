@@ -298,19 +298,25 @@ void CART::saveTree( string filename )
 
 #ifdef _CART_UTEST_
 
-//#define _TEST_1_1_
-#define _TEST_1_2_
 void test1()
 {
+
+#define _TEST_1_1_
+#define _TEST_1_2_
+	
 	CsvData D;
 	D.csvread( "test/case1.csv" );
+	vector<int> tag(D.n, 1);	// just for first assert in each test
+	tag[0] = 0;					// mean just choose F0
 
 #ifdef _TEST_1_1_
+/* Test 1.1 
+ * Type: averager
+ * Goal: 1. calculation
+ *		 2. tree-build
+ */
 	CART c1T( D, 2 );
 	c1T.dispTree();
-
-	vector<int> tag(D.n, 1);	// just for first assert
-	tag[0] = 0;					// mean just choose F0
 
 	assert( isAll(c1T.features, 1, tag) );
 	assert( c1T.inNode.size()==1 );
@@ -322,30 +328,50 @@ void test1()
 #endif
 
 #ifdef _TEST_1_2_
+/* Test 1.2
+ * Type: accurater
+ * Goal: 1. calculation
+ *		 2. tree-build
+ */
 	CART c2T( D, -1 );
 	c2T.dispTree();
-
-	vector<int> tag(D.n, 1);	// just for first assert
-	tag[0] = 0;					// mean just choose F0
 	
 	assert( isAll(c2T.features, 1, tag) );
 	assert( c2T.inNode.size()==1 );
 	assert( c2T.inNode[0]->fIdx==0 );
-	//assert( c2T.inNode[0]->obValue==0.5 );
-	cout << c2T.inNode[0]->obValue << endl;
+	assert( c2T.inNode[0]->obValue==0.5 );
 	assert( c2T.high==1 );
 	assert( c2T.leaf.size()==2 );
-	//assert( c2T.labels[0]==1&&c2T.labels[1]==2);
+	assert( c2T.labels[0]==1&&c2T.labels[1]==2);
 #endif
 }
 
 void test2()
 {
+
+#define _TEST_2_1_
+
 	CsvData D;
 	D.csvread( "test/case2.csv" );
 
+#ifdef _TEST_2_1_
+/* Test 2.1
+ * Type: accurater
+ * Goal: 1. calculation
+ *		 2. Tree-bulid
+ */
 	CART t1( D, -1 );
 	t1.dispTree();
+
+	vector<int> tag( D.n, 1 ); tag[1]=0; tag[2]=0;
+	assert( isAll(t1.features,1,tag) );
+	assert( t1.inNode.size()==2 );
+	assert( t1.inNode[0]->fIdx==2&&t1.inNode[1]->fIdx==1 );
+	assert( t1.inNode[0]->obValue==0&&t1.inNode[1]->obValue==0 );
+	assert( t1.high==2 );
+	assert( t1.leaf.size()==3 );
+	assert( t1.labels[0]==1&&t1.labels[1]==0&&t1.labels[2]==1 );
+#endif
 }
 
 /*
@@ -364,7 +390,7 @@ void liveTest( int spNum, int maxH )
 	tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveTree( "trees/UT_1" );
+	tree.saveTree( "trees/UT_all" );
 	//cout << tree.inNode[17]->obValue << endl;
 	
 	// all use
@@ -376,10 +402,10 @@ void liveTest( int spNum, int maxH )
 
 int main()
 {
-	test1();
-//	test2();
+//	test1();	// done
+//	test2();	// done
 	
-//	liveTest( -1, 2 );
+	liveTest( -1, 10 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

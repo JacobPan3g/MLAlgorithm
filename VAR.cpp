@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-#define _VAR_UTEST_
+//#define _VAR_UTEST_
 
 
 #include "VAR.h"
@@ -58,7 +58,10 @@ double VAR::getSpByValueIdx( int idx1, int idx2 )
 //						getSpByValueIdx()
 vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, const vector<int> &c )
 {
-	this->sp.resize( D.n );
+	assert( r.size()==D.m );
+	assert( c.size()==D.n );
+
+	this->sp = vector< vector<double> >( D.n );
 	vector< vector<double> > vars( D.n );
 	for ( int i = 0; i < D.n; i++ )	
 	{
@@ -108,6 +111,7 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 		vars[i] = tmp;
 	}
 
+	assert( vars.size()==D.n );
 	return vars;
 }
 
@@ -165,8 +169,8 @@ void test1()
  *		 2. test the split point
  */
 	ms = VAR(2);
-	r.resize( D.m, 1 );
-	c.resize( D.n, 1 );
+	r = vector<int>( D.m, 1 );
+	c = vector<int>( D.n, 1 );
 	res = ms.measure( D, r, c );
 	
 	// test the calculation
@@ -191,8 +195,8 @@ void test1()
  *		 2. test the tag
  */
 	ms = VAR(2);
-	r.resize( D.m, 1 );
-	c.resize( D.n, 1 );
+	r = vector<int>( D.m, 1 );
+	c = vector<int>( D.n, 1 );
 	r[4]=0;
 	c[1]=0;
 	res = ms.measure( D, r, c );
@@ -211,17 +215,12 @@ void test1()
  * Goal: 1. test the calculation
  *		 2. test the sp
  */
-	ms = VAR(-1);
-	cout << ms.getSPLIT_AREA_NUM() << endl;
-	r.resize( D.m, 1 );
-	c.resize( D.n, 1 );
+	ms = VAR();
+	r = vector<int>( D.m, 1 );
+	c = vector<int>( D.n, 1 );
 	res = ms.measure( D, r, c );
 
 	// test the calculation
-	
-	//disp( ms.measure(D,r,c) ); 
-	//disp( res );
-	//disp( var );
 	var.resize( D.n );
 	double c13v0[] = { 0.13333, 0, 0.15 };
 	double c13v1[] = { 0 };
@@ -231,8 +230,6 @@ void test1()
 	var[1] = vv1( c13v1, sizeof(c13v1)/sizeof(double) );
 	var[2] = vv1( c13v2, sizeof(c13v2)/sizeof(double) );
 	var[3] = vv1( c13v3, sizeof(c13v3)/sizeof(double) );
-	//disp( res );
-	//disp( var );
 	assert( isSame(res,var) );
 
 	// test the sp
@@ -252,49 +249,90 @@ void test1()
 // accurater
 void test2()
 {
+
+#define _TEST_2_1_
+#define _TEST_2_2_
+
 	CsvData D;
 	VAR ms;
 	vector< vector<double> > res;
-	vector<int> r, c;	
-	
+	vector< vector<double> > var;
+	vector< vector<double> > sp;
+	vector<int> r, c;		
 	D.csvread( "test/case2.csv" );
-	r.resize( D.m, 1 );
-	c.resize( D.n, 1 );
 	
-	// Test Case 2.1
+#ifdef _TEST_2_1_
+/* Test 2.1
+ * Type: accurater
+ * Data: all of case2.csv
+ * Goal: 1. calculation
+ *		 2. sp
+ */
+	r = vector<int>( D.m, 1 );
+	c = vector<int>( D.n, 1 );
 	res = ms.measure( D, r, c );
-	//disp(res);
 
-	vector< vector<double> > ans( D.n );
+	// test the calculation
+	var.resize( D.n );
 	double tmp0[] = { 0.22, 0.22 };
 	double tmp1[] = { 0.16 };
 	double tmp2[] = { 0.13333 };
 	double tmp3[] = { 0.16, 0.18182 };
-	ans[0] = vv1( tmp0, 2 );
-	ans[1] = vv1( tmp1, 1 );
-	ans[2] = vv1( tmp2, 1 );
-	ans[3] = vv1( tmp3, 2 );
+	var[0] = vv1( tmp0, 2 );
+	var[1] = vv1( tmp1, 1 );
+	var[2] = vv1( tmp2, 1 );
+	var[3] = vv1( tmp3, 2 );
+	assert( isSame( res, var ) );
 
-	assert( isSame( res, ans ) );
+	// test the sp
+	sp.resize( D.n );
+	double c1sp0[] = { 0, 1 };
+	double c1sp1[] = { 0 };
+	double c1sp2[] = { 0 };
+	double c1sp3[] = { 0, 1 };
+	sp[0] = vv1( c1sp0, sizeof(c1sp0)/sizeof(double) );
+	sp[1] = vv1( c1sp1, sizeof(c1sp1)/sizeof(double) );
+	sp[2] = vv1( c1sp2, sizeof(c1sp2)/sizeof(double) );
+	sp[3] = vv1( c1sp3, sizeof(c1sp3)/sizeof(double) );
+	assert( isSame( ms.getSp(), sp ) );
+#endif
 
-
-	// Test Case 2.2
+#ifdef _TEST_2_2_
+/* Test 2.2
+ * Type: accurater
+ * Data: part of case2.csv | with r[3,7,8,9,10,11]=0, c[2]=0
+ * Goal: 1. calculation
+ *		 2. sp
+ */
+	r = vector<int>( D.m, 1 );
+	c = vector<int>( D.n, 1 );
 	int tmp[] = { 3, 7, 8, 9, 10, 11 };
 	resetTag( r, tmp, sizeof(tmp)/sizeof(int) );
-	//disp( r );
 	c[2] = 0;
 	res = ms.measure( D, r, c );
-	//disp( res );
 
-	vector< vector<double> > ans2( D.n );
+	// test the calculation
+	var.resize( D.n );
 	double tmp20[] = { 0.21667, 0.16667 };
 	double tmp21[] = { 0 };
 	double tmp23[] = { 0.13333, 0.16667 };
-	ans2[0] = vv1( tmp20, 2 );
-	ans2[1] = vv1( tmp21, 1 );
-	ans2[3] = vv1( tmp23, 2 );
+	var[0] = vv1( tmp20, 2 );
+	var[1] = vv1( tmp21, 1 );
+	var[2].resize(0);
+	var[3] = vv1( tmp23, 2 );
+	assert( isSame( res, var ) );
 
-	assert( isSame( res, ans2 ) );
+	// test the sp
+	sp.resize( D.n );
+	double c2sp0[] = { 0, 1 };
+	double c2sp1[] = { 0 };
+	double c2sp3[] = { 0, 1 };
+	sp[0] = vv1( c2sp0, sizeof(c2sp0)/sizeof(double) );
+	sp[1] = vv1( c2sp1, sizeof(c2sp1)/sizeof(double) );
+	sp[2].resize(0);
+	sp[3] = vv1( c2sp3, sizeof(c2sp3)/sizeof(double) );
+	assert( isSame( ms.getSp(), sp ) );
+#endif
 }
 
 void liveTest()
@@ -307,8 +345,8 @@ void liveTest()
 	vector<int> r, c;	
 
 	D.csvread("dataset/pro1.csv");
-	r.resize( D.m, 1 );
-	c.resize( D.n, 1 );
+	r = vector<int>( D.m, 1 );
+	c =vector<int>( D.n, 1 );
 	ms = VAR();
 	res = ms.measure( D, r, c );
 	disp( res );
@@ -321,8 +359,8 @@ void liveTest()
 
 int main()
 {
-	test1();
-//	test2();
+	test1();	// done
+	test2();	// done
 //	liveTest();
 
 	cout << "All Unit Cases Passed." << endl;
