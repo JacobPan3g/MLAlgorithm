@@ -4,13 +4,19 @@
 #include "JPTool.cpp"
 using namespace std;
 
+template <class T>
+void disp( T arr[], int len )
+{
+	for ( int i = 0; i < len; i++ )
+		cout << arr[i] << " ";
+	cout << endl;
+}
 
 int main()
 {
-	int a[] = { 1, 3, 5 };
-	vector<int> tmp( 5, 0 );
-	setTags( tmp, a, 3 );
+	int *a;
+	a = { 1, 3, 5 };
 
-	disp( tmp );
+	disp( a, 3 );
 	return 0;
 }

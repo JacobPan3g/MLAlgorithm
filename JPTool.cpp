@@ -161,38 +161,32 @@ bool isSame( const vector<T> &v, const vector<T> &w )
 template <class T>
 bool isSame( const vector< vector<T> > &v2, const vector< vector<T> > &w2 )
 {
-	int vc, wc;
-	for ( int i = 0; i < v2.size(); i++ )
-		if ( v2[i].size() != 0 )
-		{
-			vc = v2[i].size();
-			break;
-		}
-	for ( int i = 0; i < w2.size(); i++ )
-		if ( w2[i].size() != 0 )
-		{
-			wc = w2[i].size();
-			break;
-		}
-
-	bool res = true;
 	// one v is NULL
 	if ( v2.size() == 0 || w2.size() == 0 )
 		if ( v2.size() != 0 || w2.size() != 0 )
-			res = false;
+			return false;
 		else
-			res = true;
-	else if ( v2.size() != w2.size() || vc != wc )
-		res = false;
-	else
-		for ( int i = 0; i < v2.size(); i++ )
-			for ( int j = 0; j < v2[i].size(); j++ )
-				if ( v2[i][j] - w2[i][j] >= EPS )
-				{	
-					res = false;
-					break;
+			return true;
+	else { 
+		if ( v2.size() != w2.size() )
+			return false;
+		else {
+			for ( int i = 0; i < v2.size(); i++ ) {
+				if ( v2[i].size() != w2[i].size() ) {
+					return false;
 				}
-	return res;
+			}
+			// size same
+			for ( int i = 0; i < v2.size(); i++ ) {
+				for ( int j = 0; j < v2[i].size(); j++ ) {
+					if ( v2[i][j] - w2[i][j] >= EPS ) {	
+						return false;
+					}
+				}
+			}
+		}
+	}
+	return true;
 }
 
 template <class T>
@@ -289,6 +283,9 @@ void shuffling( vector<T> &v )
 /*
  * disp
  */
+//template <class T>
+//void disp( const T  )
+
 template <class T>
 void disp( const vector<T> &v, vector<int> tag=vector<int>() )
 {

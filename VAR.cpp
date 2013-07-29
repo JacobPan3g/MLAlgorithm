@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  ************************************************************************/
 
-//#define _VAR_UTEST_
+#define _VAR_UTEST_
 
 
 #include "VAR.h"
@@ -41,19 +41,24 @@ vector<double> VAR::getSplitPoints( const vector<double> &v, vector<int> tag )
 			tag.resize( v.size(), 1 );
 
 		vector<double> tmp = vv1( v, tag );
-		tmp.erase( tmp.end()-1 );		// erase the last one
+		if ( tmp.size() != 1 )
+			tmp.erase( tmp.end()-1 );		// erase the last one
 		return tmp;
 	}
 }
 
-double VAR::getSpByValueIdx( int x )
+double VAR::getSpByValueIdx( int idx1, int idx2 )
 {
-	return 0 + x * 1.0/SPLIT_AREA_NUM;
+	return this->sp[idx1][idx2];
 }
 
 // some col tagged 0 will sort as a zero-size vector
+// Same as the averager and accurater
+//	just differ from:	getSplitPoints()
+//						getSpByValueIdx()
 vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, const vector<int> &c )
 {
+	this->sp.resize( D.n );
 	vector< vector<double> > vars( D.n );
 	for ( int i = 0; i < D.n; i++ )	
 	{
@@ -61,10 +66,10 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 			continue;
 			
 		vector<double> tmp;
-		vector<double> f = D.getFeatures(i);	// have deal with tag
-		vector<double> sp = getSplitPoints( f, r );
+		vector<double> f = D.getFeatures(i);
+		this->sp[i] = getSplitPoints( f, r );		// update the sp
 
-		for ( int k = 0; k < sp.size(); k++ )
+		for ( int k = 0; k < this->sp[i].size(); k++ )
 		{
 			// desperate into two parts
 			vector<int> part1( D.m, 0 );
@@ -76,7 +81,7 @@ vector< vector<double> > VAR::measure( const CsvData &D, const vector<int> &r, c
 				if ( !r[j] )
 					continue;
 
-				if ( f[j] <= sp[k] )
+				if ( f[j] <= this->sp[i][k] )
 				{
 					part1[j] = 1;	// reset the other side
 					num1++;
@@ -117,43 +122,131 @@ bool VAR::endCondition( vector<double> v, vector<int> tag, int num )
 	return num < LEAF_MAX_NUM;
 }
 
+// getter
+int VAR::getSPLIT_AREA_NUM() const
+{
+	return this->SPLIT_AREA_NUM;
+}
+
+vector< vector<double> > VAR::getSp() const
+{
+	return this->sp;
+}
+
+
+
+/*********************************************************************
+ * Unit Test
+ * by Jacob Pan
+ *********************************************************************/
 
 #ifdef _VAR_UTEST_
 
-// averager
 void test1()
 {
-	CsvData D;
-	VAR ms(2);
-	vector< vector<double> > res;
-	vector<int> r, c;	
 
-	// Test Case 1.1
+#define _TEST_1_1_
+#define _TEST_1_2_
+#define _TEST_1_3_
+	
+	CsvData D;
+	VAR ms;
+	vector< vector<double> > res;
+	vector< vector<double> > var;
+	vector< vector<double> > sp;
+	vector<int> r, c;	
 	D.csvread( "test/case1.csv" );
+
+#ifdef _TEST_1_1_
+/* Test 1.1
+ * Type: averager
+ * Data: all in case1.csv
+ * Goal: 1. test the calculation
+ *		 2. test the split point
+ */
+	ms = VAR(2);
 	r.resize( D.m, 1 );
 	c.resize( D.n, 1 );
 	res = ms.measure( D, r, c );
-	//disp(res);
-	vector< vector<double> > var = vv2( 4, 2, 0.24 );
+	
+	// test the calculation
+	var = vv2( 4, 2, 0.24 );
 	var[0][0] = 0.13333; var[0][1] = 0;
 	var[1][0] = 0;
 	var[3][0] = 0.2; var[3][1] = 0;
-	//disp(var);
-
 	assert( isSame( res, var ) );
 
-	// Test Case 1.2
+	// test the split point
+	sp = vv2( 4, 2, 0.0 );
+	for ( int i = 0; i < 4; i++ )
+		sp[i][1] = 0.5;
+	assert( isSame( ms.getSp(), sp ) );
+#endif
+
+#ifdef _TEST_1_2_
+/* Test 1.2
+ * Type: averager
+ * Data: part of case1.csv	| with r[4]=0, c[1]=0
+ * Goal: 1. test the calculation
+ *		 2. test the tag
+ */
+	ms = VAR(2);
+	r.resize( D.m, 1 );
+	c.resize( D.n, 1 );
 	r[4]=0;
 	c[1]=0;
-	res=ms.measure( D, r, c );
-	//disp( res );
+	res = ms.measure( D, r, c );
+
 	var = vv2( 4, 2, 0.1875 );
 	var[0][0] = 0.125; var[0][1] = 0;
 	var[1].resize(0);
 	var[3][0] = 0.166667; var[3][1] = 0;
-	//disp( var );
-
 	assert( isSame( res, var ) );
+#endif
+
+#ifdef _TEST_1_3_
+/* Test 1.3
+ * Type: accurater
+ * Data: all in case1.csv
+ * Goal: 1. test the calculation
+ *		 2. test the sp
+ */
+	ms = VAR(-1);
+	cout << ms.getSPLIT_AREA_NUM() << endl;
+	r.resize( D.m, 1 );
+	c.resize( D.n, 1 );
+	res = ms.measure( D, r, c );
+
+	// test the calculation
+	
+	//disp( ms.measure(D,r,c) ); 
+	//disp( res );
+	//disp( var );
+	var.resize( D.n );
+	double c13v0[] = { 0.13333, 0, 0.15 };
+	double c13v1[] = { 0 };
+	double c13v2[] = { 0.24 };
+	double c13v3[] = { 0.2, 0.13333, 0, 0.15 };
+	var[0] = vv1( c13v0, sizeof(c13v0)/sizeof(double) );
+	var[1] = vv1( c13v1, sizeof(c13v1)/sizeof(double) );
+	var[2] = vv1( c13v2, sizeof(c13v2)/sizeof(double) );
+	var[3] = vv1( c13v3, sizeof(c13v3)/sizeof(double) );
+	//disp( res );
+	//disp( var );
+	assert( isSame(res,var) );
+
+	// test the sp
+	sp.resize( D.n );
+	double c13sp0[] = { 0, 0.5, 0.7 };
+	double c13sp1[] = { 0 };
+	double c13sp2[] = { 0.5 };
+	double c13sp3[] = { 0, 0.4, 0.5, 0.8 };
+	sp[0] = vv1( c13sp0, sizeof(c13sp0)/sizeof(double) ); 
+	sp[1] = vv1( c13sp1, sizeof(c13sp1)/sizeof(double) ); 
+	sp[2] = vv1( c13sp2, sizeof(c13sp2)/sizeof(double) ); 
+	sp[3] = vv1( c13sp3, sizeof(c13sp3)/sizeof(double) );
+	assert( isSame(ms.getSp(),sp) );
+#endif
 }
 
 // accurater
@@ -229,7 +322,7 @@ void liveTest()
 int main()
 {
 	test1();
-	test2();
+//	test2();
 //	liveTest();
 
 	cout << "All Unit Cases Passed." << endl;

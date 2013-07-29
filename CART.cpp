@@ -96,7 +96,7 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 		vector<double> tmp = min( ms, this->features );
 		double minMS = tmp[0];
 		int minF = (int)tmp[1];		// ms start at first feature
-		double obValue = c_msr.getSpByValueIdx( (int)tmp[2] );
+		double obValue = c_msr.getSpByValueIdx( minF, (int)tmp[2] );
 		/// tag and asign
 		this->features[minF] = 0;
 		node->fIdx = minF;
@@ -298,12 +298,14 @@ void CART::saveTree( string filename )
 
 #ifdef _CART_UTEST_
 
+//#define _TEST_1_1_
+#define _TEST_1_2_
 void test1()
 {
 	CsvData D;
 	D.csvread( "test/case1.csv" );
 
-	// Unit Test 1.1
+#ifdef _TEST_1_1_
 	CART c1T( D, 2 );
 	c1T.dispTree();
 
@@ -317,10 +319,24 @@ void test1()
 	assert( c1T.high==1 );
 	assert( c1T.leaf.size()==2 );
 	assert( c1T.labels[0]==1&&c1T.labels[1]==2);
+#endif
 
-	// Unit Test 2.2	--WHY?
+#ifdef _TEST_1_2_
 	CART c2T( D, -1 );
 	c2T.dispTree();
+
+	vector<int> tag(D.n, 1);	// just for first assert
+	tag[0] = 0;					// mean just choose F0
+	
+	assert( isAll(c2T.features, 1, tag) );
+	assert( c2T.inNode.size()==1 );
+	assert( c2T.inNode[0]->fIdx==0 );
+	//assert( c2T.inNode[0]->obValue==0.5 );
+	cout << c2T.inNode[0]->obValue << endl;
+	assert( c2T.high==1 );
+	assert( c2T.leaf.size()==2 );
+	//assert( c2T.labels[0]==1&&c2T.labels[1]==2);
+#endif
 }
 
 void test2()
@@ -332,6 +348,10 @@ void test2()
 	t1.dispTree();
 }
 
+/*
+ * @param1: spNum	the num of sp | -1 for accurater
+ * @param2:	maxH	the max high of tree
+ */
 void liveTest( int spNum, int maxH )
 {
 	time_t tic = clock();
@@ -356,14 +376,10 @@ void liveTest( int spNum, int maxH )
 
 int main()
 {
-//	test1();
+	test1();
 //	test2();
 	
-	/*
-	 * @param1: spNum	the num of sp | -1 for accurater
-	 * @param2:	maxH	the max high of tree
-	 */
-	liveTest( -1, 3 );
+//	liveTest( -1, 2 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

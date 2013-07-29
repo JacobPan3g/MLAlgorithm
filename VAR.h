@@ -21,10 +21,15 @@ public:
 	// own methods
 	VAR();					// constructor for accurater
 	VAR( int saNum );		// constructor for averager
-	double getSpByValueIdx( int x );
+	double getSpByValueIdx( int idx1, int idx2 );
+
+	// getter
+	int getSPLIT_AREA_NUM() const;
+	vector< vector<double> > getSp() const;
 
 private:
 	vector<double> getSplitPoints( const vector<double> &v, vector<int> tag=vector<int>() );
 
-	int SPLIT_AREA_NUM;		// also a tag for averager
+	int SPLIT_AREA_NUM;			// also a tag for averager
+	vector< vector<double> > sp;// will update every loop
 };
