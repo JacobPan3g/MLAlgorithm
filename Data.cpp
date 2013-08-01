@@ -5,12 +5,12 @@
 	> Created Time: Mon 08 Jul 2013 09:14:40 AM CST
  ************************************************************************/
 
-//#define _CSVDATA_UTEST_
+#define _DATA_UTEST_
 
 
-#include "CsvData.h"
+#include "Data.h"
 
-CsvData::CsvData()
+Data::Data()
 {
 	this->m = 0;
 	this->n = 0;
@@ -24,15 +24,14 @@ CsvData::CsvData()
  * 2. split by ','
  * 3. transform char[] to num
  */
-void CsvData::csvread( string filename )
+void Data::csvread( const string& fNM )
 {
 	this->L.resize(0);
 	this->A.resize(0);
 
 	string line;
-	ifstream fobj( filename.c_str() );
+	ifstream fobj( fNM.c_str() );
 
-	//vector< vector<double> > res;	// the blank '> >' is necessary
 	while ( getline( fobj, line ) )		//* the main cmd to read line
 	{
 		vector<double> tmp = split<double>( line, "," );
@@ -46,19 +45,19 @@ void CsvData::csvread( string filename )
 	this->n = A[0].size();
 }
 
-vector<double> CsvData::getFeatures( int fIdx, vector<int> tag ) const
+vector<double> Data::getFeatures( int fIdx, vector<int> fs ) const
 {
-	if ( tag.size() == 0 )
-		tag = vector<int>( this->m, 1 );
+	if ( fs.size() == 0 )
+		fs = vector<int>( this->m, 1 );
 
 	vector<double> res;
 	for ( int i = 0; i < this->m; i++ )
-		if ( tag[i] == 1 )
+		if ( fs[i] == 1 )
 			res.push_back( this->A[i][fIdx] );
 	return res;
 }
 
-void CsvData::disp() const
+void Data::disp() const
 {
 	for ( int i = 0; i < this->m; i++ )
 	{
@@ -69,14 +68,33 @@ void CsvData::disp() const
 	}
 }
 
-
-#ifdef _CSVDATA_UTEST_
-
-int main()
+// getter
+int Data::getM() const
 {
-	CsvData D;
-	
-	// Test Case 1
+	return this->m;
+}
+
+int Data::getN() const
+{
+	return this->n;
+}
+
+const vector<double>& Data::getL() const
+{
+	return this->L;
+}
+
+const vector< vector<double> >& Data::getA() const
+{
+	return this->A;
+}
+
+
+#ifdef _DATA_UTEST_
+
+void test1()
+{
+	Data D;
 	D.csvread( "test/case1.csv" );
 	double l[5] = { 1, 1, 1, 2, 2 };
 	double a[5][4] = {	0,   0,   0.5, 0.4,
@@ -95,34 +113,54 @@ int main()
 		for ( int j = 0; j < 4; j++ )
 			A[i][j] = a[i][j];
 	
-	assert( isSame(D.L,L) );
-	assert( isSame(D.A,A) );
+	assert( isSame(D.getL(),L) );
+	assert( isSame(D.getA(),A) );
+}
 
+void test2()
+{
+	Data D;
+	D.csvread( "test/case2.csv" );
+	vector<double> L = D.getL();
+	vector< vector<double> > A = D.getA();
+	
+	assert( D.getM()==15&&D.getN()==4 );
+	assert( D.getM()==L.size() );
+	
+	double ll[15] = {0,0,1,1,0,0,0,1,1,1,1,1,1,1,0};
+	vector<double> l = vv1( ll, 15 );
+	assert( isSame( L, l ) );
+	double aa[15] = {0,0,0,1,0,0,0,1,1,1,1,1,0,0,0};
+	vector<double> a = vv1( aa, 15 );
+	assert( isSame(D.getFeatures(2),a) );
+}
 
-	// Live Test
+void liveTest()
+{
+	Data D;
+	D.csvread( "dataset/pro1.csv" );
+	vector<double> L = D.getL();
+	vector< vector<double> > A = D.getA();
 	
 	// Test: Constructor
-	D.csvread( "dataset/pro1.csv" );
+	assert( D.getM()==9126&&D.getN()==46 );
+	assert( L.size()==9126&&A.size()==9126&&A[0].size()==46 );
 
-	assert( D.m==9126&&D.n==46 );
-	assert( D.L.size()==9126&&D.A.size()==9126&&D.A[0].size()==46 );
+	assert( L[0]==0 );
+	assert( L[9125]==1 );
+	assert( L[1]==0&&L[3]==0 );
+	assert( L[217]==1 );
+	assert( L[8]==0&&L[18]==2 );
+	assert( L[925]==1 );
 
-	assert( D.L[0]==0 );
-	assert( D.L[9125]==1 );
-	assert( D.L[1]==0&&D.L[3]==0 );
-	assert( D.L[217]==1 );
-	assert( D.L[8]==0&&D.L[18]==2 );
-	assert( D.L[925]==1 );
-
-	assert( abs(D.A[0][0]-0.016838)<1e-5 );
-	assert( D.A[9125][0]==1 );
-	assert( abs(D.A[0][45]-0.16667)<1e-5 );
-	assert( D.A[9125][45]==0 );
-	assert( D.A[1][3]==0 );
-	assert( D.A[2][17]==0 );
-	assert( abs(D.A[8][18]-0.54546)<1e-5 );
-	assert( D.A[9][25]==0);
-
+	assert( abs(A[0][0]-0.016838)<1e-5 );
+	assert( A[9125][0]==1 );
+	assert( abs(A[0][45]-0.16667)<1e-5 );
+	assert( A[9125][45]==0 );
+	assert( A[1][3]==0 );
+	assert( A[2][17]==0 );
+	assert( abs(A[8][18]-0.54546)<1e-5 );
+	assert( A[9][25]==0);
 
 	// Test: getFeatures( int )
 	int _test1[] = {0, 46, 1, 3, 8, 18 };
@@ -138,7 +176,16 @@ int main()
 	assert( f[13]==0 );
 	assert( f[818]==0 );
 	assert( f[217]==0 );
-	assert( f[9025]==0 );
+	assert( f[9025]==0 );	
+}
+
+
+int main()
+{
+	test1();	// done
+	test2();	// done
+	
+	liveTest();
 
 	cout << "All Test Cases Passed." << endl;
 	return 0;

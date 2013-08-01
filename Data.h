@@ -10,14 +10,23 @@
 #include "JPTool.cpp"
 using namespace std;
 
-class CsvData
+class Data
 {
 public:
-	CsvData();
-	void csvread( string filename );
-	vector<double> getFeatures( int fIdx, vector<int> tag=vector<int>() ) const;
-	void disp() const;
+	Data();
+	void csvread( const string& fNM );
 
+	vector<double> getFeatures( int fIdx, vector<int> fs=vector<int>() ) const;
+	void disp() const;
+	
+	// getter
+	int getM() const;
+	int getN() const;
+	// big data getter
+	const vector<double>& getL() const;
+	const vector< vector<double> >& getA() const;
+
+private:
 	int m;
 	int n;
 	vector<double> L;
