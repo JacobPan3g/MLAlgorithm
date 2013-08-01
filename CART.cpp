@@ -10,6 +10,7 @@
 
 #include "CART.h"
 #include "VAR.cpp"
+#include "SingleTree.cpp"
 
 CART::CART( const CsvData &D, int spNum, int maxH )
 {
@@ -237,49 +238,14 @@ vector<double> CART::predict( const CsvData &test )
 
 void CART::saveTree( string filename )
 {
-	queue<Node*> q;
+/*	queue<Node*> q;
 	vector<int> fIdxV;
 	vector<int> leftV;
 	vector<int> rightV;
 	vector<double> oValV;
+*/
+	SingleTree m( this );	
 
-	fIdxV.push_back( this->root->fIdx );
-	q.push( this->root );
-	
-	while ( !q.empty() )
-	{
-		Node *node = q.front();
-		q.pop();
-
-		if ( node->fIdx != -1 )
-		{
-			oValV.push_back( node->obValue );
-
-			if ( node->left != NULL )
-			{
-				q.push( node->left );
-				leftV.push_back( fIdxV.size() );
-				fIdxV.push_back( node->left->fIdx );
-			}
-			else
-				leftV.push_back( -1 );
-
-			if ( node->right != NULL )
-			{
-				q.push( node->right );
-				rightV.push_back( fIdxV.size() );
-				fIdxV.push_back( node->right->fIdx );
-			}
-			else
-				rightV.push_back( -1 );
-		}
-		else
-		{
-			oValV.push_back( this->labels[node->lIdx] );	// save the labels
-			leftV.push_back( -1 );
-			rightV.push_back( -1 );
-		}
-	}
 /*	disp( fIdxV );
 	disp( oValV );
 	disp( leftV );
@@ -287,14 +253,18 @@ void CART::saveTree( string filename )
 	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
 */
 	// save
-	ofstream obj( filename.c_str(), ofstream::app );
-	save( obj, fIdxV, "," );
-	save( obj, leftV, "," );
-	save( obj, rightV, ",");
-	save( obj, oValV, "," );
+	ofstream obj( filename.c_str()/*, ofstream::app*/ );
+	save( obj, m.fIdxV, "," );
+	save( obj, m.leftV, "," );
+	save( obj, m.rightV, ",");
+	save( obj, m.obValV, "," );
 	obj.close();
 }
 
+void CART::saveTrees( ofstream &fobj )
+{
+	
+}
 
 #ifdef _CART_UTEST_
 
@@ -390,7 +360,7 @@ void liveTest( int spNum, int maxH )
 	tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveTree( "trees/UT_all" );
+	tree.saveTree( "trees/UT_test" );
 	//cout << tree.inNode[17]->obValue << endl;
 	
 	// all use
@@ -405,7 +375,7 @@ int main()
 //	test1();	// done
 //	test2();	// done
 	
-	liveTest( -1, 10 );
+	liveTest( -1, 1 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

@@ -1,1 +1,39 @@
 The Boosting Decision Tree
+
+
+Class
+
+CsvData			save the data
+ |- BaggingData		data for bagging
+
+Measurer		the measure for feature
+ |- GINI			the measurer for discrete feature
+ |- VAR				the measurer for continue feature
+
+CART			the predicter
+Bagger			the predicter
+
+Model			save the model
+
+
+
+Goal
+
+Data			save the data
+ |- BGData		data for bagging
+ |- RFData
+ |- BTData
+
+Measurer		the measure for feature
+ |- GINI			the measurer for discrete feature
+ |- VAR				the measurer for continue feature
+
+Predictor
+ |- CART
+ |- Bagging
+ |- RandomForest
+
+Model			save the model
+ |- SingleTree
+ |- MultiTrees
+ |- Theta

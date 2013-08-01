@@ -1,9 +1,9 @@
-/*************************************************************************
+/**********************************************************************
 	> File Name: CART.h
 	> Author: Jacob Pan
 	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Tue 23 Jul 2013 08:17:25 PM CST
- ************************************************************************/
+ *********************************************************************/
 
 #pragma once
 
@@ -49,6 +49,7 @@ public:
 	double predict( const vector<double> &a );
 	vector<double> predict( const CsvData &test );
 	void saveTree( string filename );
+	void saveTrees( ofstream &fobj );
 	// disp
 	void dispTree();
 	void dispLeaves();

@@ -10,17 +10,6 @@
 using namespace std;
 
 
-class Bagging
-{
-public:
-	Bagging( int maxH, int bagNum );
-	void train( string tName );
-	vector<double> predict( string pName, string treesFile );
-
-private:
-	int maxH;
-	int bagNum;
-};
 
 /*
 double bagging( int maxH, int bagNum, const vector<double> &a )
@@ -59,16 +48,21 @@ Bagging::Bagging( int maxH, int bagNum )
 {
 	this->maxH = maxH;
 	this->bagNum = bagNum;
+	this->baserV.resize( bagNum );
 }
 
-void Bagging::train( string tName )
+Bagging::~Bagging()
 {
-	BaggingData tSet( tName );
-	for ( int i = 0; i < this->bagNum; i++ )
-	{
-		tSet.reshuffling();
-		BinaryTree tree( tSet, tSet.cs, tSet.fs, this->maxH );
-		tree.saveTree( "trees/bagging.tree" );
+	for ( int i = 0; i < this->baserV.size(); i++ ) {
+		delete baserV[i];
+	}
+}
+
+void Bagging::train( const BaggingData& D )
+{
+	for ( int i = 0; i < this->bagNum; i++ ) {
+		D.reshuffling();
+		this->baserV[i] = new CART( D, D.cs, D.fs, -1, this->maxH );
 	}
 }
 
@@ -102,19 +96,39 @@ vector<double> Bagging::predict( string pName, string treesFile )
 	return p;
 }
 
+void saveModel( string filename ) const
+{
+	ofstream fobj( filename.c_str() );
+	for ( int i = 0; i < this->baserV.size(); i++ ) {
+		this->baserV.saveTrees( fobj );
+	}
+	fobj.close();
+}
+
 int main()
 {
 	time_t tic = clock();
 
-	//CsvData test("dataset/pro1.csv");
-	//cout << bagging( 2, 10, test ) << endl;
+	// data read
+	CsvData D, T;
+	D.csvread( "dataset/pro1.csv" );
+	T.csvread( "dataset/pro1_t.csv" );
 
-	Bagging bag( 2, 10 );
-	bag.train( "dataset/pro1.csv" );
-	vector<double> p =  bag.predict( "dataset/pro1_t.csv", "trees/bagging.tree" );
+	// train process
+	Bagging bag( 1, 3 );
+	bag.train( D );
+	bag.saveModel( "trees/bagging.tree" );
+
+	/*
+	// predict process
+	Model model;
+	model.treeread( "trees/bagging.tree" );
+	vector<double> p =  bag.predict( model, T );
+	
+	// result precess
 	save( "res", p );
 	cout << p.size() << endl;
-
+*/
 	time_t toc = clock();
 	double tt = (double)(toc-tic)/CLOCKS_PER_SEC;
 	cout << "Time: " << tt << "s" << endl;
