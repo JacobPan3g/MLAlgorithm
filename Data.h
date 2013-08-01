@@ -1,5 +1,5 @@
 /**********************************************************************
-	> File Name: CsvData.h
+	> File Name: Data.h
 	> Author: Jacob Pan
 	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Tue 23 Jul 2013 11:40:32 AM CST
@@ -7,8 +7,8 @@
 
 #pragma once
 
+
 #include "JPTool.cpp"
-using namespace std;
 
 class Data
 {
@@ -26,7 +26,7 @@ public:
 	const vector<double>& getL() const;
 	const vector< vector<double> >& getA() const;
 
-private:
+protected:
 	int m;
 	int n;
 	vector<double> L;
