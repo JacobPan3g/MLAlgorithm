@@ -1,23 +1,23 @@
 /**********************************************************************
-	> File Name: BGData.cpp
+	> File Name: BG_Data.cpp
 	> Author: Jacob Pan
 	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Tue 16 Jul 2013 07:30:40 PM CST
  *********************************************************************/
 
-#define _BGDATA_UTEST_
+#define _BG_DATA_UTEST_
 
 
-#include "BGData.h"
+#include "BG_Data.h"
 #include "Data.cpp"
 
-BGData::BGData()
+BG_Data::BG_Data()
 {
 	this->bm = 0;
 	this->bn = 0;
 }
 
-void BGData::csvread( const string& fNM )
+void BG_Data::csvread( const string& fNM )
 {
 	Data::csvread( fNM );
 	this->L_idx.resize( Data::m );
@@ -32,45 +32,45 @@ void BGData::csvread( const string& fNM )
 	this->reshuffling();
 }
 
-void BGData::reshuffling()
+void BG_Data::reshuffling()
 {
 	this->get80Labels();
 	this->get80Features();
 }
 
 // getter
-vector<int> BGData::getCs() const
+vector<int> BG_Data::getCs() const
 {
 	return this->cs;
 }
 
-vector<int> BGData::getFs() const
+vector<int> BG_Data::getFs() const
 {
 	return this->fs;
 }
 
-vector<int> BGData::getL_idx() const
+vector<int> BG_Data::getL_idx() const
 {
 	return this->L_idx;
 }
 
-vector<int> BGData::getA_idx() const
+vector<int> BG_Data::getA_idx() const
 {
 	return this->A_idx;
 }
 
-int BGData::getM() const
+int BG_Data::getM() const
 {
 	return this->bm;
 }
 
-int BGData::getN() const
+int BG_Data::getN() const
 {
 	return this->bn;
 }
 
 // Private
-void BGData::get80Labels()
+void BG_Data::get80Labels()
 {
 	this->cs = vector<int>( this->m, 0 );
 	shuffling( this->L_idx );				// shuffling
@@ -82,7 +82,7 @@ void BGData::get80Labels()
 	assert( cs[L_idx[rand()%bm]]==1 );
 }
 
-void BGData::get80Features()
+void BG_Data::get80Features()
 {
 	this->fs = vector<int>( this->n, 0 );
 	shuffling( this->A_idx );
@@ -95,11 +95,17 @@ void BGData::get80Features()
 }
 
 
-#ifdef _BGDATA_UTEST_
+
+/*********************************************************************
+ * Unit Test
+ * by Jacob Pan
+ *********************************************************************/
+
+#ifdef _BG_DATA_UTEST_
 
 void test1()
 {
-	BGData D;
+	BG_Data D;
 	D.csvread( "test/case1.csv" );
 	
 	vector<int> old_cs = D.getCs();
@@ -111,7 +117,7 @@ void test1()
 
 void liveTest()
 {
-	BGData D;
+	BG_Data D;
 	D.csvread( "dataset/pro1.csv" );
 	
 	// Test Size

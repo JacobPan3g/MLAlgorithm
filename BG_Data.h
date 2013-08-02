@@ -1,5 +1,5 @@
 /**********************************************************************
-	> File Name: BGData.h
+	> File Name: BG_Data.h
 	> Author: Jacob Pan
 	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Tue 23 Jul 2013 11:45:36 AM CST
@@ -10,10 +10,10 @@
 
 #include "Data.h"
 
-class BGData: public Data
+class BG_Data: public Data
 {
 public:
-	BGData();
+	BG_Data();
 	void csvread( const string& fNM );
 	void reshuffling();
 
