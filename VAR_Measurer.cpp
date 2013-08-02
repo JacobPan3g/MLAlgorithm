@@ -35,7 +35,7 @@ vector< vector<double> > VAR_Measurer::measure( const Data &D, const vector<int>
 			
 		vector<double> tmp;
 		vector<double> f = D.getFeatures(i);
-		this->sp[i] = getSplitPoints( f, cs );		// update the sp
+/**/	this->sp[i] = getSplitPoints( f, cs );		// update the sp
 
 		for ( int k = 0; k < this->sp[i].size(); k++ )
 		{
@@ -101,6 +101,23 @@ VAR_Measurer::VAR_Measurer( int saNum )
 	this->SPLIT_AREA_NUM = saNum;
 }
 
+double VAR_Measurer::getSpByValueIdx( int idx1, int idx2 )
+{
+	return this->sp[idx1][idx2];
+}
+
+// getter
+int VAR_Measurer::getSPLIT_AREA_NUM() const
+{
+	return this->SPLIT_AREA_NUM;
+}
+
+vector< vector<double> > VAR_Measurer::getSp() const
+{
+	return this->sp;
+}
+
+// Private Method
 vector<double> VAR_Measurer::getSplitPoints( const vector<double> &L, vector<int> cs )
 {
 	// Average Spilt the Area [0,1]
@@ -125,20 +142,9 @@ vector<double> VAR_Measurer::getSplitPoints( const vector<double> &L, vector<int
 	}
 }
 
-double VAR_Measurer::getSpByValueIdx( int idx1, int idx2 )
+vector<double> VAR_Measurer::getSplitPoints( const string& fNM )
 {
-	return this->sp[idx1][idx2];
-}
-
-// getter
-int VAR_Measurer::getSPLIT_AREA_NUM() const
-{
-	return this->SPLIT_AREA_NUM;
-}
-
-vector< vector<double> > VAR_Measurer::getSp() const
-{
-	return this->sp;
+	Data 
 }
 
 

@@ -20,6 +20,7 @@
 #include <set>
 #include <iterator>		// ostream_iterator
 #include <algorithm>	// copy()
+#include <list>
 using namespace std;
 
 #define EPS 1e-5
@@ -317,6 +318,24 @@ void disp( set<T> s )
 	copy( s.begin(), s.end(), out_it ); //array use as ( a, a+l, o )
 	cout << endl;
 }
+
+void disp( const string& str )
+{
+	cout << str << endl;
+}
+
+void disp( const list< pair<int,double> >& l )
+{
+	list< pair<int,double> >::const_iterator it = l.begin();
+	while ( it != l.end() ) {
+		cout << it->first << "|" << it->second << " ";
+		it++;
+	}
+	cout << endl;
+}
+
+//template <class T>
+//void disp( list )
 
 /*
  * string

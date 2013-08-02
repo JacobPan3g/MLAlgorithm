@@ -36,7 +36,7 @@ public:
 	void fmtread( const string& fNM );
 
 	// write
-	void csvwrite();
+	void csvwrite( const string& fNM );
 	void fmtwrite( const string& fNM ); 
 
 	vector<double> getFeatures( int fIdx, vector<int> fs=vector<int>() ) const;
@@ -48,11 +48,17 @@ public:
 	// big data getter
 	const vector<double>& getL() const;
 	const vector< vector<double> >& getA() const;
+	const vector< list< pair<int,double> > > getFmtV() const;
 
 protected:
+	void toFmt();
+	/**/void disp( const list< pair<int,double> >& l );
+
 	int m;
 	int n;
 	vector<double> L;
 	vector< vector<double> > A;
+	// Just for Tree algorthm
+	vector< list< pair<int,double> > > fmtV;
 };
 

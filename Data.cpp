@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 09:14:40 AM CST
  *********************************************************************/
 
-//#define _DATA_UTEST_
+#define _DATA_UTEST_
 
 
 #include "Data.h"
@@ -16,6 +16,11 @@ Data::Data()
 	this->n = 0;
 }
 
+void Data::dirread( const vector<double>& L, const vector< vector<double> >& A )
+{
+	this->L = L;
+	this->A = A;
+}
 
 /*
  * csvread()
@@ -45,6 +50,19 @@ void Data::csvread( const string& fNM )
 	this->n = A[0].size();
 }
 
+void Data::fmtread( const string& fNM )
+{
+
+}
+
+void Data::csvwrite( const string& fNM )
+{}
+
+void Data::fmtwrite( const string& fNM )
+{
+	this->toFmt();
+}
+
 vector<double> Data::getFeatures( int fIdx, vector<int> fs ) const
 {
 	if ( fs.size() == 0 )
@@ -61,7 +79,7 @@ void Data::disp() const
 {
 	for ( int i = 0; i < this->m; i++ )
 	{
-		cout << this->L[i] << " ";
+		cout << this->L[i] << "\t";
 		for ( int j = 0; j < this->n; j++ )
 			cout << this->A[i][j] << " ";
 		cout << endl;
@@ -89,6 +107,42 @@ const vector< vector<double> >& Data::getA() const
 	return this->A;
 }
 
+const vector< list< pair<int,double> > > Data::getFmtV() const
+{
+	return this->fmtV;
+}
+
+// cmp method
+bool cmp( const pair<int, double>& a, const pair<int, double>& b )
+{
+	return a.second < b.second;
+}
+
+void Data::disp( const list< pair<int,double> >& l )
+{
+	list< pair<int,double> >::const_iterator it = l.begin();
+	while ( it != l.end() ) {
+		cout << it->first << "|" << it->second << " ";
+		it++;
+	}
+	cout << endl;
+}
+
+// Private Methods
+void Data::toFmt()
+{
+	this->fmtV.resize( this->n );
+	for ( int j = 0; j < this->n; j++ ) {
+		for ( int i = 0; i < this->m; i++ ) {
+			this->fmtV[j].push_back( pair<int, double>( i, this->A[i][j] ) );
+		}
+		assert( this->fmtV[j].size()==this->m );
+		
+		disp( this->fmtV[j] );
+		this->fmtV[j].sort( cmp );
+		disp( this->fmtV[j] );
+	}
+}
 
 
 /*********************************************************************
@@ -141,6 +195,27 @@ void test2()
 	assert( isSame(D.getFeatures(2),a) );
 }
 
+void test3()
+{
+	Data D;
+	D.csvread( "test/case1.csv" );
+	D.fmtwrite( "test" );
+
+	vector< list< pair<int,double> > > fmtV = D.getFmtV();
+	assert( fmtV.size()==D.getN() );
+
+	list< pair<int,double> >::iterator it = fmtV[3].begin();
+	assert( it->first==2&&it->second==0 );
+
+	//cout << (++it)->first << "|" << it->second << endl;
+	/*ATTEND! There is a strange for ++it in cout << << */
+
+	assert( (++it)->first==0&&it->second-0.4<1e-5 );
+	assert( (++it)->first==1&&it->second-0.5<1e-5 );
+	assert( (++it)->first==3&&it->second-0.8<1e-5 );
+	assert( (++it)->first==4&&it->second-0.9<1e-5 );
+}
+
 void liveTest()
 {
 	Data D;
@@ -188,9 +263,10 @@ void liveTest()
 
 int main()
 {
-	test1();	// done
-	test2();	// done
-	
+//	test1();	// done
+//	test2();	// done
+	test3();
+
 	liveTest();
 
 	cout << "All Test Cases Passed." << endl;
