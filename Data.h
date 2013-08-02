@@ -10,11 +10,34 @@
 
 #include "JPTool.cpp"
 
+/*	Class Data
+ *		-- focus on Data read/write( or format)
+ *	
+ *	Type:	Tool Class
+ *	Inside:	sort L and A
+ *	
+ *	Capability:
+ *	1. Read from
+ *		a. directly
+ *		b. csv
+ *		c. format( VAR_Measurer )
+ *	2. Write to
+ *		a. csv
+ *		b. format( VAR_Measurer )
+ */
 class Data
 {
 public:
-	Data();
+	Data();		// do nothing
+
+	// read
+	void dirread( const vector<double>& L, const vector< vector<double> >& A );
 	void csvread( const string& fNM );
+	void fmtread( const string& fNM );
+
+	// write
+	void csvwrite();
+	void fmtwrite( const string& fNM ); 
 
 	vector<double> getFeatures( int fIdx, vector<int> fs=vector<int>() ) const;
 	void disp() const;
