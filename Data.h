@@ -40,7 +40,7 @@ public:
 	void fmtwrite( const string& fNM ); 
 
 	vector<double> getFeatures( int fIdx, vector<int> fs=vector<int>() ) const;
-	void disp() const;
+	void dispData() const;
 	
 	// getter
 	int getM() const;
@@ -52,7 +52,6 @@ public:
 
 protected:
 	void toFmt();
-	/**/void disp( const list< pair<int,double> >& l );
 
 	int m;
 	int n;
