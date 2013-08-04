@@ -29,6 +29,7 @@ using namespace std;
 #define round(x) ((int)(x+0.5))
 #define src(x) ( abs(x-round(x)) < EPS ? round(x) : x )
 
+#define isEqual(x,y) ( abs(x-y)<=EPS )
 
 /*
  * statistic
@@ -150,7 +151,7 @@ bool isSame( const vector<T> &v, const vector<T> &w )
 		res = false;
 	else
 		for( int i = 0; i < v.size(); i++ )
-			if ( v[i] - w[i] >= EPS )
+			if ( abs(v[i] - w[i]) >= EPS )
 			{
 				res = false;
 				break;
@@ -180,7 +181,7 @@ bool isSame( const vector< vector<T> > &v2, const vector< vector<T> > &w2 )
 			// size same
 			for ( int i = 0; i < v2.size(); i++ ) {
 				for ( int j = 0; j < v2[i].size(); j++ ) {
-					if ( v2[i][j] - w2[i][j] >= EPS ) {	
+					if ( abs(v2[i][j] - w2[i][j]) >= EPS ) {	
 						return false;
 					}
 				}

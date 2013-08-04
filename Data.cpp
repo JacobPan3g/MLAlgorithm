@@ -18,8 +18,7 @@ Data::Data()
 
 void Data::dirread( const vector<double>& L, const vector< vector<double> >& A )
 {
-	this->L = L;
-	this->A = A;
+	this->init();
 }
 
 /*
@@ -31,8 +30,7 @@ void Data::dirread( const vector<double>& L, const vector< vector<double> >& A )
  */
 void Data::csvread( const string& fNM )
 {
-	this->L.resize(0);
-	this->A.resize(0);
+	this->init();
 
 	string line;
 	ifstream fobj( fNM.c_str() );
@@ -52,12 +50,16 @@ void Data::csvread( const string& fNM )
 
 void Data::fmtread( const string& fNM )
 {
+	this->init();
+
 	ifstream fobj( fNM.c_str() );
 	// read the size
 	int fmtV_size;	// n
 	int list_size;	// m
-	fobj >> fmtV_size >> list_size;
+	char tmpC;
+	fobj >> tmpC >> fmtV_size >> tmpC >> list_size;
 	// read the L
+	fobj >> tmpC;
 	this->L = vector<double>( list_size );
 	this->A = vector< vector<double> >( list_size );
 	for ( int i = 0; i < list_size; i++ ) {
@@ -65,16 +67,20 @@ void Data::fmtread( const string& fNM )
 		this->A[i] = vector<double>( fmtV_size );
 	}
 	// read the fmt (A)
+	fobj >> tmpC;
 	this->fmtV = vector< list< pair<int,double> > >( fmtV_size );
 	for ( int i = 0; i < fmtV_size; i++ ) {
 		for ( int j = 0; j < list_size; j++ ) {
 			pair<int,double> tmpP;
-			fobj >> tmpP.first >> tmpP.second;
+			fobj >> tmpP.first >> tmpC >> tmpP.second;
 			fmtV[i].push_back( tmpP );
 			this->A[tmpP.first][i] = tmpP.second;
 		}
 	}
 	fobj.close();
+
+	this->m = A.size();
+	this->n = A[0].size();
 }
 
 void Data::csvwrite( const string& fNM )
@@ -86,17 +92,19 @@ void Data::fmtwrite( const string& fNM )
 
 	ofstream fobj( fNM.c_str() );
 	// save the size
-	fobj << this->fmtV.size() << " " << this->fmtV[0].size() << endl;
+	fobj << "n " << this->fmtV.size() << " m " << this->fmtV[0].size() << endl;
 	// save the L
+	fobj << "L" << endl;
 	for ( int i = 0; i < this->L.size(); i++ ) {
 		fobj << this->L[i] << " ";
 	}
 	fobj << endl;
 	// save the fmt (A)
+	fobj << "A" << endl; 
 	for ( int i = 0; i < this->fmtV.size(); i++ ) {
 		list< pair<int,double> >::iterator it;
 		for ( it = this->fmtV[i].begin(); it != this->fmtV[i].end(); it++ ) {
-			fobj << it->first << " " << it->second << " ";
+			fobj << it->first << "|" << it->second << " ";
 		}
 		fobj << endl;
 	}
@@ -159,6 +167,15 @@ bool cmp( const pair<int, double>& a, const pair<int, double>& b )
 }
 
 // Private Methods
+void Data::init()
+{
+	this->m = 0;
+	this->n = 0;
+	this->L.clear();
+	this->A.clear();
+	this->fmtV.clear();
+}
+
 void Data::toFmt()
 {
 	this->fmtV.resize( this->n );
@@ -200,20 +217,38 @@ void test1_check( const Data &D )
 	for( int i = 0; i < 5; i++ )
 		for ( int j = 0; j < 4; j++ )
 			A[i][j] = a[i][j];
-	
+
+	assert( D.getM()==5&&D.getN()==4 );
 	assert( isSame(D.getL(),L) );
 	assert( isSame(D.getA(),A) );
 }
 
 void test1()
 {
+
+#define _TEST_1_1_
+#define _TEST_1_2_
+
+#ifdef _TEST_1_1_
+/* Test 1.1
+ * Goal: 1. test read data from csv
+ */
 	Data D2csv;
 	D2csv.csvread( "test/case1.csv" );
 	test1_check( D2csv );
+#endif
 
+#ifdef _TEST_1_2_
+/* Test 1.2
+ * Goal: 1. test read data from csv
+ */
+	Data D;
+	D.csvread( "test/case1.csv" );
+	D.fmtwrite( "test/case1.fmt" );
 	Data D2fmt;
-	D2fmt.fmtread( "tree/test.fmt" );
+	D2fmt.fmtread( "test/case1.fmt" );
 	test1_check( D2fmt );
+#endif
 }
 
 void test2()
@@ -239,7 +274,7 @@ void test3()
 {
 	Data D;
 	D.csvread( "test/case1.csv" );
-	D.fmtwrite( "tree/test.fmt" );
+	D.fmtwrite( "test/case1.fmt" );
 
 	vector< list< pair<int,double> > > fmtV = D.getFmtV();
 	assert( fmtV.size()==D.getN() );
@@ -250,25 +285,25 @@ void test3()
 	//cout << (++it)->first << "|" << it->second << endl;
 	/*ATTEND! There is a strange for ++it in cout << << */
 
-	assert( (++it)->first==0&&it->second-0.4<1e-5 );
-	assert( (++it)->first==1&&it->second-0.5<1e-5 );
-	assert( (++it)->first==3&&it->second-0.8<1e-5 );
-	assert( (++it)->first==4&&it->second-0.9<1e-5 );
+	assert( (++it)->first==0&&isEqual(it->second,0.4) );
+	assert( (++it)->first==1&&isEqual(it->second,0.5) );
+	assert( (++it)->first==3&&isEqual(it->second,0.8) );
+	assert( (++it)->first==4&&isEqual(it->second,0.9) );
 }
+
 /*
+// just for output fmt
 void test4()
 {
 	Data D;
-	D.fmtread( "tree/test.fmt" );
+	D.fmtread( "test/case1.fmt" );
 	vector< list< pair<int,double> > > fmtV = D.getFmtV();
 	for ( int i = 0; i < fmtV.size(); i++ )
 		disp( fmtV[i] );
 }*/
 
-void liveTest()
+void liveTest_check( const Data& D )
 {
-	Data D;
-	D.csvread( "dataset/pro1.csv" );
 	vector<double> L = D.getL();
 	vector< vector<double> > A = D.getA();
 	
@@ -309,14 +344,53 @@ void liveTest()
 	assert( f[9025]==0 );	
 }
 
+void liveTest()
+{
+
+#define _LIVE_TEST_1
+#define _LIVE_TEST_2_
+#define _LIVE_TEST_3_
+
+
+#ifdef _LIVE_TEST_1_
+/* Live Test 1
+ * Goal: 1. test read data from csv
+ */
+	Data D1csv;
+	D1csv.csvread( "dataset/pro1.csv" );
+	liveTest_check( D1csv );
+#endif
+
+#ifdef _LIVE_TEST_2_
+/* Live Test 2
+ * Goal: 1. test read data write to fmt
+ */
+	Data D2csv;
+	D2csv.csvread( "dataset/pro1.csv" );
+	D2csv.fmtwrite( "dataset/pro1.fmt" );
+#endif
+
+#ifdef _LIVE_TEST_3_
+/* Live Test 3
+ * Goal: 1. test read data from csv
+ */
+	Data D3;
+	D3.csvread( "dataset/pro1.csv" );
+	D3.fmtwrite( "dataset/pro1.fmt" );
+	Data D3fmt;
+	D3fmt.fmtread( "dataset/pro1.fmt" );
+	liveTest_check( D3fmt );
+#endif
+}
+
 
 int main()
 {
 //	test1();	// done
 //	test2();	// done
-//	test3();	// done
+//	test3();	// done // for fmtwrite
 
-//	liveTest();
+	liveTest();
 
 	cout << "All Test Cases Passed." << endl;
 	return 0;

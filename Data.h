@@ -51,6 +51,7 @@ public:
 	const vector< list< pair<int,double> > > getFmtV() const;
 
 protected:
+	void init();
 	void toFmt();
 
 	int m;
