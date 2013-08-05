@@ -30,8 +30,10 @@ public:
 
 private:
 	vector<double> getSplitPoints( const vector<double> &f, vector<int> cs=vector<int>() );
-	vector<double> getSplitPoints( const list< pair<int,double> >& f, vector<int> cs );
+	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs );
 
 	int SPLIT_AREA_NUM;			// also a tag for averager
-	vector< vector<double> > sp;// will update every loop
+	// will update every loop
+	vector< vector<double> > sp;	// just use to test
+	vector< vector<int> > idxs;
 };

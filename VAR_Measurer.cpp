@@ -27,7 +27,8 @@ vector< vector<double> > VAR_Measurer::measure( const Data &D, const vector<int>
 	assert( cs.size()==m );
 	assert( fs.size()==n );
 
-	this->sp = vector< vector<double> >( n );
+	this->getSplitPoints( fmtV, m, n, cs );
+	
 	vector< vector<double> > vars( n );
 	for ( int i = 0; i < n; i++ )	
 	{
@@ -35,11 +36,8 @@ vector< vector<double> > VAR_Measurer::measure( const Data &D, const vector<int>
 			continue;
 			
 		vector<double> tmp;
-//		vector<double> f = D.getFeatures(i);
-//**/	this->sp[i] = getSplitPoints( f, cs );		// update the sp
-		this->sp[i] = getSplitPoints( fmtV[i], cs );
 	
-		int half = this->sp[i].size() / 2;
+		//cout << this->sp[i].size() << endl;
 		for ( int k = 0; k < this->sp[i].size(); k++ )
 		{
 			// desperate into two parts
@@ -47,82 +45,31 @@ vector< vector<double> > VAR_Measurer::measure( const Data &D, const vector<int>
 			vector<int> part2;
 			int num1 = 0;
 			int num2 = 0;
-
-			if ( k <= half ) {
-				part1 = vector<int>( m, 0 );
-				part2 = cs;
-				list< pair<int,double> >::const_iterator it = fmtV[i].begin();
-				for ( ; it != fmtV[i].end(); it++ ) {
-					if ( !cs[ it->first ] )
-						continue;
-					if ( it->second <= this->sp[i][k] ) {
-						part1[ it->first ] = 1;
-						num1++;
-						part2[ it->first ] = 0;
-					}
-					else {
-						break;
-					}
-				}
-	//			for ( ; it != fmtV[i].end(); it++ ) {
-	//				if ( !cs[ it->first ] )
-	//					continue;
-	//				part2[ it->first ] = 1;
-	//				num2++;
-	//			}
-				num2 = countTag( part2 );
-			}
-			else {
-				part1 = cs;
-				part2 = vector<int>( m, 0 );
-				list< pair<int,double> >::const_reverse_iterator it = fmtV[i].rbegin();
-				for ( ; it != fmtV[i].rend(); it++ ) {
-					if ( !cs[ it->first ] )
-						continue;
-					if ( it->second > this->sp[i][k] ) {
-						part2[ it->first ] = 1;
-						num2++;
-						part1[ it->first ] = 0;
-					}
-					else {
-						break;
-					}
-				}
-				num1 = countTag(part1);
-			}
-
-/*			
+			
 			part1 = vector<int>( m, 0 );
-			part2 = vector<int>( m, 0 );
-			for ( int j = 0; j < m; j++ )
-			{
-				if ( !cs[j] )
+			part2 = cs;
+			int idx = 0;
+			list< pair<int,double> >::const_iterator it = fmtV[i].begin();
+			for ( ; idx < this->idxs[i][k]; it++, idx++ ) {
+				if ( !cs[ it->first ] )
 					continue;
-
-				if ( f[j] <= this->sp[i][k] )
-				{
-					part1[j] = 1;	// reset the other side
-					num1++;
-				}
-				else
-				{
-					part2[j] = 1;
-					num2++;
-				}
+				part1[ it->first ] = 1;
+				num1++;
+				part2[ it->first ] = 0;
 			}
-*/
+			num2 = countTag( part2 );
+
 			assert( countTag(cs)==num1+num2 );
 			assert( countTag(cs)==countTag(part1)+countTag(part2) );
 
-			//disp( L, part1 );
-			//disp( L, part2 );
-
+	
+			// compute
 			double var1 = variance( L, part1 );
 			double var2 = variance( L, part2 );
 			double num = num1 + num2;
 			double var = num1/num * var1 + num2/num * var2;
 			tmp.push_back( var );
-
+	
 		}
 		vars[i] = tmp;
 	}
@@ -193,34 +140,39 @@ vector<double> VAR_Measurer::getSplitPoints( const vector<double> &L, vector<int
 	}
 }
 
-vector<double> VAR_Measurer::getSplitPoints( const list< pair<int,double> >& f, vector<int> cs )
+void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs )
 {
-	bool isFirst = true;
-	double beforeItem;
-	//cout << f.size() << endl;
-	vector<double> res( f.size() );
+	this->sp.resize( n );
+	this->idxs.resize( n );
+	for ( int i = 0; i < n; i++ ) {
+		this->sp[i] = vector<double>( m );
+		this->idxs[i] = vector<int>( m );
+		bool isFirst = true;
+		double beforeItem;
 
-	list< pair<int,double> >::const_iterator it = f.begin();
-	int num = 0;
-	for ( ; it != f.end(); it++ ) {
-		if ( cs[it->first] ) {
-			if ( isFirst ) {
-				isFirst = false;
-				beforeItem = it->second;
-				res[num] = it->second;
-				num++;
-			}
-			else {
-				if ( beforeItem != it->second ) {
+		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
+		int num = 0;
+		int idx = 0;
+		for ( ; it != fmtV[i].end(); it++, idx++ ) {
+			if ( cs[it->first] ) {
+				if ( isFirst ) {
+					isFirst = false;
 					beforeItem = it->second;
-					res[num] = it->second;
+					this->sp[i][num] = it->second;
 					num++;
+				}
+				else {
+					if ( beforeItem != it->second ) {
+						this->idxs[i][num-1] = idx;
+						beforeItem = it->second;
+						this->sp[i][num] = it->second;
+						num++;
+					}
 				}
 			}
 		}
+		this->sp[i].resize( (num==1? num:num-1) );
 	}
-	res.resize( (num==1? num:num-1) );
-	return res;
 }
 
 
