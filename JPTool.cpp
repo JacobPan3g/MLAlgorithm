@@ -405,6 +405,34 @@ void csvread( string filename, vector< vector<T> > &v2 )
 	fobj.close();
 }
 
+template <class T>
+void csvwrite( const string& fNM, const vector< vector<T> >& v2 )
+{
+	ofstream fout( fNM.c_str() );
+	for ( int i = 0; i < v2.size(); i++ ) {
+		int j;
+		for ( j = 0; j < v2[i].size()-1; j++ ) {
+			fout << v2[i][j] << ",";
+		}
+		fout << v2[i][j] << endl;
+	}
+	fout.close();
+}
+
+template <class T>
+void csvwrite( const string& fNM, const vector<T>& v1 )
+{
+	ofstream fout( fNM.c_str() );
+	int i;
+	for ( i = 0; i < v1.size() - 1; i++ ) {
+		fout << v1[i] << ",";
+	}
+	fout << v1[i] << endl;
+	fout.close();
+	cout << v1.size() << endl;
+}
+
+
 /*
  * init
  */

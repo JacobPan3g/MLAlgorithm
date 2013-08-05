@@ -37,7 +37,8 @@ vector< vector<double> > VAR_Measurer::measure( const Data &D, const vector<int>
 			
 		vector<double> tmp;
 	
-		//cout << this->sp[i].size() << endl;
+		int half = this->sp[i].size()/2;
+		// for each sp
 		for ( int k = 0; k < this->sp[i].size(); k++ )
 		{
 			// desperate into two parts
@@ -46,18 +47,36 @@ vector< vector<double> > VAR_Measurer::measure( const Data &D, const vector<int>
 			int num1 = 0;
 			int num2 = 0;
 			
-			part1 = vector<int>( m, 0 );
-			part2 = cs;
-			int idx = 0;
-			list< pair<int,double> >::const_iterator it = fmtV[i].begin();
-			for ( ; idx < this->idxs[i][k]; it++, idx++ ) {
-				if ( !cs[ it->first ] )
-					continue;
-				part1[ it->first ] = 1;
-				num1++;
-				part2[ it->first ] = 0;
+			if ( k < half )
+			{
+				part1 = vector<int>( m, 0 );
+				part2 = cs;
+				int idx = 0;
+				list< pair<int,double> >::const_iterator it = fmtV[i].begin();
+				for ( ; idx < this->idxs[i][k]; it++, idx++ ) {
+					if ( !cs[ it->first ] )
+						continue;
+					part1[ it->first ] = 1;
+					num1++;
+					part2[ it->first ] = 0;
+				}
+				num2 = countTag( part2 );
 			}
-			num2 = countTag( part2 );
+			else
+			{
+				part2 = vector<int>( m, 0 );
+				part1 = cs;
+				int idx = m - this->idxs[i][k];
+				list< pair<int,double> >::const_reverse_iterator it = fmtV[i].rbegin();
+				for ( ; idx > 0; it++, idx-- ) {
+					if ( !cs[ it->first ] )
+						continue;
+					part2[ it->first ] = 1;
+					num2++;
+					part1[ it->first ] = 0;
+				}
+				num1 = countTag( part1 );
+			}
 
 			assert( countTag(cs)==num1+num2 );
 			assert( countTag(cs)==countTag(part1)+countTag(part2) );
@@ -404,6 +423,9 @@ void liveTest()
 //	disp( res );
 
 	assert( res.size()==46 );
+
+	csvwrite( "ms86.csv", res[36] );
+	csvwrite( "sp86.csv", ms.getSp()[36] );
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;

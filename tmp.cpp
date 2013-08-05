@@ -12,11 +12,13 @@ void disp( T arr[], int len )
 	cout << endl;
 }
 
+
 int main()
 {
-	int *a;
-	a = { 1, 3, 5 };
+	vector< vector<double> > sp, ms;
+	csvread( "sp.csv", sp );
+	csvread( "ms.csv", ms );
+	cout << sp[36].size() << " " << ms[36].size() << endl;
 
-	disp( a, 3 );
 	return 0;
 }
