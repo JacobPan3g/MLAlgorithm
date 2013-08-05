@@ -14,6 +14,128 @@
 #define LEAF_MAX_NUM 5
 
 
+pair<int,double> VAR_Measurer::measurer( const Data &D, const vector<int> &cs, const vector<int> &fs )
+{
+	int m = D.getM();
+	int n = D.getN();
+	vector<double> L = D.getL();
+	vector< list< pair<int,double> > > fmtV = D.getFmtV();
+	assert( cs.size()==m );
+	assert( fs.size()==n );
+
+	this->getSplitPoints( fmtV, m, n, cs );
+
+	double minVar = 1e8;
+	int minIdx = -1;
+	for ( int i = 0; i < n; i++ )	
+	{
+		if ( !fs[i] )
+			continue;
+			
+		vector<double> tmp;
+		int sp_size = this->sp[i].size();
+		this->part1s = vector< vector<int> >( sp_size );
+		this->part2s = vector< vector<int> >( sp_size );
+		this->num1s = vector<int>( sp_size );
+		this->num2s = vector<int>( sp_size );
+	
+		int half = sp_size/2;
+		// for each sp
+		for ( int k = 0; k < sp_size; k++ )
+		{
+			// desperate into two parts
+			vector<int> part1;
+			vector<int> part2;
+			int num1 = 0;
+			int num2 = 0;
+			
+			if ( k < half )
+			{
+				part1 = vector<int>( m, 0 );
+				part2 = cs;
+				int idx = 0;
+				list< pair<int,double> >::const_iterator it = fmtV[i].begin();
+				for ( ; idx < this->idxs[i][k]; it++, idx++ ) {
+					if ( !cs[ it->first ] )
+						continue;
+					part1[ it->first ] = 1;
+					num1++;
+					part2[ it->first ] = 0;
+				}
+				num2 = countTag( part2 );
+			}
+			else
+			{
+				part2 = vector<int>( m, 0 );
+				part1 = cs;
+				int idx = m - this->idxs[i][k];
+				list< pair<int,double> >::const_reverse_iterator it = fmtV[i].rbegin();
+				for ( ; idx > 0; it++, idx-- ) {
+					if ( !cs[ it->first ] )
+						continue;
+					part2[ it->first ] = 1;
+					num2++;
+					part1[ it->first ] = 0;
+				}
+				num1 = countTag( part1 );
+			}
+
+			assert( countTag(cs)==num1+num2 );
+			assert( countTag(cs)==countTag(part1)+countTag(part2) );
+
+			this->part1s[k] = part1;
+			this->part2s[k] = part2;
+			this->num1s[k] = num1;
+			this->num2s[k] = num2;
+		}
+		// compute
+		int l_idx = 0;
+		int r_idx = sp_size - 1;
+		double VARl, VARr;
+		while ( r_idx - l_idx > 1 ) {
+			VARl = this->computeVAR( L, l_idx );
+			VARr = this->computeVAR( L, r_idx );
+
+			if ( VARl < VARr ) {
+				r_idx = (l_idx + r_idx) / 2;
+			}
+			else {
+				l_idx = (l_idx + r_idx) / 2;
+			}
+		}
+		double var;
+		if ( l_idx != r_idx ) {
+			VARl = this->computeVAR( L, l_idx );
+			VARr = this->computeVAR( L, r_idx );
+			var = VARl < VARr? VARl : VARr;	
+		}
+		else {
+			var = this->computeVAR( L, l_idx );
+		}
+
+		if ( var == 0 ) {
+			return pair<int,double>(i,var);	
+		}
+
+		if ( var < minVar ) {
+			minVar = var;
+			minIdx = i;
+		}
+	}
+	return pair<int,double>(minIdx,minVar);	
+}
+
+double VAR_Measurer::computeVAR( const vector<double>& L, int idx )
+{	
+	double num1 = this->num1s[idx];
+	double num2 = this->num2s[idx];
+	double var1 = variance( L, this->part1s[idx] );
+	double var2 = variance( L, this->part2s[idx] );
+	double num = num1 + num2;
+	double var = num1/num * var1 + num2/num * var2;
+	return var;
+}
+
 // some col tagged 0 will sort as a zero-size vector
 // Same as the averager and accurater
 //	just differ from:	getSplitPoints()
@@ -406,6 +528,21 @@ void test2()
 #endif
 }
 
+void test3()
+{
+	Data D;
+	VAR_Measurer ms;
+	vector<int> r, c;
+	pair<int,double> res;
+	D.fmtread( "test/case1.fmt" );
+
+	ms = VAR_Measurer();
+	r = vector<int>( D.getM(), 1 );
+	c = vector<int>( D.getN(), 1 );
+	res = ms.measurer( D, r, c );
+	cout << res.first << " " << res.second << endl;
+}
+
 void liveTest()
 {
 	time_t tic = clock();
@@ -419,13 +556,15 @@ void liveTest()
 	r = vector<int>( D.getM(), 1 );
 	c =vector<int>( D.getN(), 1 );
 	ms = VAR_Measurer();
-	res = ms.measure( D, r, c );
+//	res = ms.measure( D, r, c );
+	pair<int,double> p = ms.measurer( D, r, c );
+	cout << p.first << " " << p.second << endl;
 //	disp( res );
 
-	assert( res.size()==46 );
+	//assert( res.size()==46 );
 
-	csvwrite( "ms86.csv", res[36] );
-	csvwrite( "sp86.csv", ms.getSp()[36] );
+//	csvwrite( "ms86.csv", res[36] );
+//	csvwrite( "sp86.csv", ms.getSp()[36] );
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
@@ -435,6 +574,7 @@ int main()
 {
 //	test1();	// done
 //	test2();	// done
+//	test3();
 	liveTest();
 
 	cout << "All Unit Cases Passed." << endl;

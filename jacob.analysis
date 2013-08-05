@@ -22,9 +22,9 @@
 	cout << 0.999999 << endl;	output 0.999999
 
 6.	Tha main time-consuming in VAR_Measurer
-						origin	fmt		d_fmt	
-	total				174s	185s	181s	172s	
-	getSplitPoint()		0.5s	0.35s	0.37s	0.35s
+						origin	fmt		d_fmt			bin_c
+	total				174s	185s	181s	172s	95s
+	getSplitPoint()		0.5s	0.35s	0.37s	0.35s	
 	loopToSetTag		95s	 	104s	101s	91s 
 	complute():			79s		79s		80s		79s
 

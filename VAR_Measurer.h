@@ -19,6 +19,7 @@ public:
 	double estimateLabel( const vector<double> &L, const vector<int> &cs );
 	bool endCondition( const vector<double> &L, vector<int> cs, int num );
 
+	pair<int,double> measurer( const Data &D, const vector<int> &cs, const vector<int> &fs );
 	// own methods
 	VAR_Measurer();					// constructor for accurater
 	VAR_Measurer( int saNum );		// constructor for averager
@@ -31,9 +32,15 @@ public:
 private:
 	vector<double> getSplitPoints( const vector<double> &f, vector<int> cs=vector<int>() );
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs );
+	double computeVAR( const vector<double>& L, int idx );
 
 	int SPLIT_AREA_NUM;			// also a tag for averager
 	// will update every loop
 	vector< vector<double> > sp;	// just use to test
 	vector< vector<int> > idxs;
+
+	vector< vector<int> > part1s;
+	vector< vector<int> > part2s;
+	vector<int> num1s;
+	vector<int> num2s;
 };
