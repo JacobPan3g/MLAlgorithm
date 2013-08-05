@@ -22,7 +22,8 @@
 	cout << 0.999999 << endl;	output 0.999999
 
 6.	Tha main time-consuming in VAR_Measurer
+						origin	fmt
 	total				174s
-	getSplitPoint()		3s
-	loopToSetTag		91s
+	getSplitPoint()		0.5s	0.35s
+	loopToSetTag		95s	 	63s 
 	complute():			79s
