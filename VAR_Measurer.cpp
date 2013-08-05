@@ -144,7 +144,7 @@ vector<double> VAR_Measurer::getSplitPoints( const vector<double> &L, vector<int
 
 vector<double> VAR_Measurer::getSplitPoints( const string& fNM )
 {
-	Data 
+	//Data 
 }
 
 
@@ -156,20 +156,18 @@ vector<double> VAR_Measurer::getSplitPoints( const string& fNM )
 
 #ifdef _VAR_MEASURER_UTEST_
 
-void test1()
+void test1_check( const Data& D )
 {
 
 #define _TEST_1_1_
 #define _TEST_1_2_
 #define _TEST_1_3_
 	
-	Data D;
 	VAR_Measurer ms;
 	vector< vector<double> > res;
 	vector< vector<double> > var;
 	vector< vector<double> > sp;
 	vector<int> r, c;	
-	D.csvread( "test/case1.csv" );
 
 #ifdef _TEST_1_1_
 /* Test 1.1
@@ -254,6 +252,17 @@ void test1()
 	sp[3] = vv1( c13sp3, sizeof(c13sp3)/sizeof(double) );
 	assert( isSame(ms.getSp(),sp) );
 #endif
+}
+
+void test1()
+{
+	Data D1csv;
+	D1csv.csvread( "test/case1.csv" );
+	test1_check( D1csv );
+
+	Data D1fmt;
+	D1fmt.fmtread( "test/case1.fmt" );
+	test1_check( D1fmt );
 }
 
 // accurater
@@ -372,8 +381,8 @@ void liveTest()
 int main()
 {
 	test1();	// done
-	test2();	// done
-	liveTest();
+//	test2();	// done
+//	liveTest();
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
