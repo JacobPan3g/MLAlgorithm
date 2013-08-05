@@ -20,3 +20,9 @@
 5.	cout just output post-decimal point 6 bit.
 	cout << 0.9999999 << endl;  output 1
 	cout << 0.999999 << endl;	output 0.999999
+
+6.	Tha main time-consuming in VAR_Measurer
+	total				174s
+	getSplitPoint()		3s
+	loopToSetTag		91s
+	complute():			79s
