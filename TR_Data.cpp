@@ -5,7 +5,7 @@
 	> Created Time: Tue 06 Aug 2013 11:55:36 AM CST
  *********************************************************************/
 
-#define _TR_DATA_UTEST_
+//#define _TR_DATA_UTEST_
 #define _TR_DATA_IN_CHECK_
 
 

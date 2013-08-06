@@ -9,12 +9,12 @@
 
 
 #include "VAR_Measurer.h"
-#include "Data.cpp"
+#include "TR_Data.cpp"
 
 #define LEAF_MAX_NUM 5
 
 
-pair<int,double> VAR_Measurer::measure( const Data &D, const vector<int> &cs, const vector<int> &fs )
+pair<int,double> VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs )
 {
 	int m = D.getM();
 	int n = D.getN();
@@ -200,7 +200,7 @@ void test1()
 #define _TEST_1_1_
 #define _TEST_1_2_
 
-	Data D;	
+	TR_Data D;	
 	VAR_Measurer ms;
 	pair<int,double> res;
 	vector< vector<int> > idxs;
@@ -217,7 +217,7 @@ void test1()
 /* Test 1.1
  * Type: accurater
  * Data: all in case1
- * Goal: 1. test the calculation( ms.getIdxs() )
+ * Goal: 1. test the idxs
  */
  	assert( res.first==0&&res.second==0 );
  	
@@ -254,12 +254,71 @@ void test1()
 #endif
 }
 
+void test2()
+{
+#define _TEST_2_1_
+#define _TEST_2_2_
 
-void liveTest()
+	TR_Data D;	
+	VAR_Measurer ms;
+	pair<int,double> res;
+	vector< vector<int> > idxs;
+	vector< vector<double> > sp;
+	vector<int> r, c;	
+	
+	D.fmtread( "test/case2.fmt" );
+	ms = VAR_Measurer();
+	r = vector<int>( D.getM(), 1 );
+	c = vector<int>( D.getN(), 1 );
+	res = ms.measure( D, r, c );
+
+#ifdef _TEST_2_1_
+/* Test 1.1
+ * Type: accurater
+ * Data: all in case2
+ * Goal: 1. test the idxs
+ */
+ 	assert( res.first==2&&isEqual(res.second,0.13333) );
+ 	
+	idxs.resize( D.getN() );
+	int c11v0[] = { 5, 10 };
+	int c11v1[] = { 10 };
+	int c11v2[] = { 9 };
+	int c11v3[] = { 5, 11 };
+	idxs[0] = vv1( c11v0, sizeof(c11v0)/sizeof(int) );
+	idxs[1] = vv1( c11v1, sizeof(c11v1)/sizeof(int) );
+	idxs[2] = vv1( c11v2, sizeof(c11v2)/sizeof(int) );
+	idxs[3] = vv1( c11v3, sizeof(c11v3)/sizeof(int) );
+	//disp( ms.getIdxs() );
+	assert( isSame(ms.getIdxs(),idxs) );
+#endif
+
+#ifdef _TEST_2_2_
+/* Test 1.2
+ * Type: accurater
+ * Data: all in case2
+ * Goal: 1. test the sp
+ */	 
+	sp.resize( D.getN() );
+	double c12sp0[] = { 0, 1 };
+	double c12sp1[] = { 0 };
+	double c12sp2[] = { 0 };
+	double c12sp3[] = { 0, 1 };
+	sp[0] = vv1( c12sp0, sizeof(c12sp0)/sizeof(double) ); 
+	sp[1] = vv1( c12sp1, sizeof(c12sp1)/sizeof(double) ); 
+	sp[2] = vv1( c12sp2, sizeof(c12sp2)/sizeof(double) ); 
+	sp[3] = vv1( c12sp3, sizeof(c12sp3)/sizeof(double) );
+	//disp( ms.getSp() );
+	assert( isSame(ms.getSp(),sp) );
+#endif
+
+}
+
+void pro1Test()
 {
 	time_t tic = clock();
 
-	Data D;
+	TR_Data D;
 	VAR_Measurer ms;
 	pair<int,double> res;
 	vector<int> r, c;	
@@ -269,7 +328,7 @@ void liveTest()
 	c =vector<int>( D.getN(), 1 );
 	ms = VAR_Measurer();
 	res = ms.measure( D, r, c );
-	cout << res.first << " " << res.second << endl;
+	//cout << res.first << " " << res.second << endl;
 	assert( res.first==38&&isEqual(res.second,0.280569) );
 
 	time_t toc = clock();
@@ -279,8 +338,9 @@ void liveTest()
 int main()
 {
 	test1();	//done
-
-	liveTest();
+	test2();	//done
+	
+	pro1Test();	//done
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
