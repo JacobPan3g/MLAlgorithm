@@ -6,19 +6,24 @@
  *********************************************************************/
 
 //#define _DATA_UTEST_
+#define _DATA_IN_CHECK_
 
 
 #include "Data.h"
 
 Data::Data()
 {
-	this->m = 0;
-	this->n = 0;
+	this->init();
 }
 
 void Data::dirread( const vector<double>& L, const vector< vector<double> >& A )
 {
 	this->init();
+	this->L = L;
+	this->A = A;
+
+	this->m = A.size();
+	this->n = A[0].size();
 }
 
 /*
@@ -48,68 +53,8 @@ void Data::csvread( const string& fNM )
 	this->n = A[0].size();
 }
 
-void Data::fmtread( const string& fNM )
-{
-	this->init();
-
-	ifstream fobj( fNM.c_str() );
-	// read the size
-	int fmtV_size;	// n
-	int list_size;	// m
-	char tmpC;
-	fobj >> tmpC >> fmtV_size >> tmpC >> list_size;
-	// read the L
-	fobj >> tmpC;
-	this->L = vector<double>( list_size );
-	this->A = vector< vector<double> >( list_size );
-	for ( int i = 0; i < list_size; i++ ) {
-		fobj >> this->L[i];
-		this->A[i] = vector<double>( fmtV_size );
-	}
-	// read the fmt (A)
-	fobj >> tmpC;
-	this->fmtV = vector< list< pair<int,double> > >( fmtV_size );
-	for ( int i = 0; i < fmtV_size; i++ ) {
-		for ( int j = 0; j < list_size; j++ ) {
-			pair<int,double> tmpP;
-			fobj >> tmpP.first >> tmpC >> tmpP.second;
-			fmtV[i].push_back( tmpP );
-			this->A[tmpP.first][i] = tmpP.second;
-		}
-	}
-	fobj.close();
-
-	this->m = A.size();
-	this->n = A[0].size();
-}
-
 void Data::csvwrite( const string& fNM )
 {}
-
-void Data::fmtwrite( const string& fNM )
-{
-	this->toFmt();
-
-	ofstream fobj( fNM.c_str() );
-	// save the size
-	fobj << "n " << this->fmtV.size() << " m " << this->fmtV[0].size() << endl;
-	// save the L
-	fobj << "L" << endl;
-	for ( int i = 0; i < this->L.size(); i++ ) {
-		fobj << this->L[i] << " ";
-	}
-	fobj << endl;
-	// save the fmt (A)
-	fobj << "A" << endl; 
-	for ( int i = 0; i < this->fmtV.size(); i++ ) {
-		list< pair<int,double> >::iterator it;
-		for ( it = this->fmtV[i].begin(); it != this->fmtV[i].end(); it++ ) {
-			fobj << it->first << "|" << it->second << " ";
-		}
-		fobj << endl;
-	}
-	fobj.close();
-}
 
 vector<double> Data::getFeatures( int fIdx, vector<int> fs ) const
 {
@@ -155,17 +100,6 @@ const vector< vector<double> >& Data::getA() const
 	return this->A;
 }
 
-const vector< list< pair<int,double> > > Data::getFmtV() const
-{
-	return this->fmtV;
-}
-
-// cmp method
-bool cmp( const pair<int, double>& a, const pair<int, double>& b )
-{
-	return a.second < b.second;
-}
-
 // Private Methods
 void Data::init()
 {
@@ -173,34 +107,26 @@ void Data::init()
 	this->n = 0;
 	this->L.clear();
 	this->A.clear();
-	this->fmtV.clear();
-}
-
-void Data::toFmt()
-{
-	this->fmtV.resize( this->n );
-	for ( int j = 0; j < this->n; j++ ) {
-		for ( int i = 0; i < this->m; i++ ) {
-			this->fmtV[j].push_back( pair<int, double>( i, this->A[i][j] ) );
-		}
-		assert( this->fmtV[j].size()==this->m );
-		
-		//disp( this->fmtV[j] );
-		this->fmtV[j].sort( cmp );
-		//disp( this->fmtV[j] );
-	}
 }
 
 
 /*********************************************************************
- * Unit Test
+ * Unit Test for SubClass
  * by Jacob Pan
  *********************************************************************/
 
-#ifdef _DATA_UTEST_
+#ifdef _DATA_IN_CHECK_
 
-void test1_check( const Data &D )
+void Data_case1_check( const Data& D )
 {
+
+#define _DATA_IN_CASE_1_1_
+#define _DATA_IN_CASE_1_2_
+
+#ifdef _DATA_IN_CASE_1_1_
+/* Case 1.1
+ * Goal: 1. test read data from csv
+ */
 	double l[5] = { 1, 1, 1, 2, 2 };
 	double a[5][4] = {	0,   0,   0.5, 0.4,
 						0,   0,   0.5, 0.5,
@@ -221,40 +147,34 @@ void test1_check( const Data &D )
 	assert( D.getM()==5&&D.getN()==4 );
 	assert( isSame(D.getL(),L) );
 	assert( isSame(D.getA(),A) );
-}
-
-void test1()
-{
-
-#define _TEST_1_1_
-#define _TEST_1_2_
-
-#ifdef _TEST_1_1_
-/* Test 1.1
- * Goal: 1. test read data from csv
- */
-	Data D2csv;
-	D2csv.csvread( "test/case1.csv" );
-	test1_check( D2csv );
 #endif
 
-#ifdef _TEST_1_2_
-/* Test 1.2
- * Goal: 1. test read data from csv
+#ifdef _DATA_IN_CASE_1_2_
+/* Case 1.2
+ * Goal: 1. test getFeatures( int )
  */
-	Data D;
-	D.csvread( "test/case1.csv" );
-	D.fmtwrite( "test/case1.fmt" );
-	Data D2fmt;
-	D2fmt.fmtread( "test/case1.fmt" );
-	test1_check( D2fmt );
+	double f0[] = {0,   0,   0.5, 0.7, 0.9};
+	double f1[] = {0,   0,   0,   0.5, 0.5};
+	double f2[] = {0.5, 0.5, 0.5, 0.5, 0.5};
+	double f3[] = {0.4, 0.5, 0,   0.8, 0.9};
+	
+	assert( isSame(D.getFeatures(0),f0,5) );
+	assert( isSame(D.getFeatures(1),f1,5) );
+	assert( isSame(D.getFeatures(2),f2,5) );
+	assert( isSame(D.getFeatures(3),f3,5) );
 #endif
 }
 
-void test2()
+void Data_case2_check( const Data& D )
 {
-	Data D;
-	D.csvread( "test/case2.csv" );
+
+#define _DATA_IN_CASE_2_1_
+#define _DATA_IN_CASE_2_2_
+
+#ifdef _DATA_IN_CASE_2_1_
+/* Case 2.1
+ * Goal: 1. test read data from csv
+ */
 	vector<double> L = D.getL();
 	vector< vector<double> > A = D.getA();
 	
@@ -264,50 +184,35 @@ void test2()
 	double ll[15] = {0,0,1,1,0,0,0,1,1,1,1,1,1,1,0};
 	vector<double> l = vv1( ll, 15 );
 	assert( isSame( L, l ) );
+	double a0[] = {0,0,0,0};
+	double a8[] = {1,0,1,2};
+	assert( isSame(A[0],a0,4) );
+	assert( isSame(A[8],a8,4) );
+#endif
+
+#ifdef _DATA_IN_CASE_2_2_
+/* Case 2.1
+ * Goal: 1. test getFeatures( int )
+ */
 	double aa[15] = {0,0,0,1,0,0,0,1,1,1,1,1,0,0,0};
 	vector<double> a = vv1( aa, 15 );
-	assert( isSame(D.getFeatures(2),a) );
+	assert( isSame(D.getFeatures(2),a) );	
+#endif
 }
 
-// test for fmtwrite()
-void test3()
+void Data_pro1_check( const Data& D )
 {
-	Data D;
-	D.csvread( "test/case1.csv" );
-	D.fmtwrite( "test/case1.fmt" );
 
-	vector< list< pair<int,double> > > fmtV = D.getFmtV();
-	assert( fmtV.size()==D.getN() );
+#define _DATA_IN_PRO_1_1_
+#define _DATA_IN_PRO_1_2_
 
-	list< pair<int,double> >::iterator it = fmtV[3].begin();
-	assert( it->first==2&&it->second==0 );
-
-	//cout << (++it)->first << "|" << it->second << endl;
-	/*ATTEND! There is a strange for ++it in cout << << */
-
-	assert( (++it)->first==0&&isEqual(it->second,0.4) );
-	assert( (++it)->first==1&&isEqual(it->second,0.5) );
-	assert( (++it)->first==3&&isEqual(it->second,0.8) );
-	assert( (++it)->first==4&&isEqual(it->second,0.9) );
-}
-
-/*
-// just for output fmt
-void test4()
-{
-	Data D;
-	D.fmtread( "test/case1.fmt" );
-	vector< list< pair<int,double> > > fmtV = D.getFmtV();
-	for ( int i = 0; i < fmtV.size(); i++ )
-		disp( fmtV[i] );
-}*/
-
-void liveTest_check( const Data& D )
-{
 	vector<double> L = D.getL();
 	vector< vector<double> > A = D.getA();
 	
-	// Test: Constructor
+#ifdef _DATA_IN_PRO_1_1_
+/* Pro1 Test 1
+ * Goal: 1. test read data from csv
+ */
 	assert( D.getM()==9126&&D.getN()==46 );
 	assert( L.size()==9126&&A.size()==9126&&A[0].size()==46 );
 
@@ -326,8 +231,12 @@ void liveTest_check( const Data& D )
 	assert( A[2][17]==0 );
 	assert( abs(A[8][18]-0.54546)<1e-5 );
 	assert( A[9][25]==0);
+#endif
 
-	// Test: getFeatures( int )
+#ifdef _DATA_IN_PRO_1_2_
+/* Pro1 Test 2
+ * Goal: 1. test getFeatures( int )
+ */
 	int _test1[] = {0, 46, 1, 3, 8, 18 };
 	for ( int i = 0; i < 6; i++ )
 	{
@@ -342,55 +251,46 @@ void liveTest_check( const Data& D )
 	assert( f[818]==0 );
 	assert( f[217]==0 );
 	assert( f[9025]==0 );	
+#endif
 }
 
-void liveTest()
+#endif
+
+
+/*********************************************************************
+ * Unit Test
+ * by Jacob Pan
+ *********************************************************************/
+
+#ifdef _DATA_UTEST_
+
+void test1()
 {
-
-#define _LIVE_TEST_1
-#define _LIVE_TEST_2_
-#define _LIVE_TEST_3_
-
-
-#ifdef _LIVE_TEST_1_
-/* Live Test 1
- * Goal: 1. test read data from csv
- */
-	Data D1csv;
-	D1csv.csvread( "dataset/pro1.csv" );
-	liveTest_check( D1csv );
-#endif
-
-#ifdef _LIVE_TEST_2_
-/* Live Test 2
- * Goal: 1. test read data write to fmt
- */
-	Data D2csv;
-	D2csv.csvread( "dataset/pro1.csv" );
-	D2csv.fmtwrite( "dataset/pro1.fmt" );
-#endif
-
-#ifdef _LIVE_TEST_3_
-/* Live Test 3
- * Goal: 1. test read data from csv
- */
-	Data D3;
-	D3.csvread( "dataset/pro1.csv" );
-	D3.fmtwrite( "dataset/pro1.fmt" );
-	Data D3fmt;
-	D3fmt.fmtread( "dataset/pro1.fmt" );
-	liveTest_check( D3fmt );
-#endif
+	Data D;
+	D.csvread( "test/case1.csv" );
+	Data_case1_check( D );	
 }
 
+void test2()
+{
+	Data D;
+	D.csvread( "test/case2.csv" );
+	Data_case2_check( D );
+}
+
+void pro1Test()
+{
+	Data D;
+	D.csvread( "dataset/pro1.csv" );
+	Data_pro1_check( D );
+}
 
 int main()
 {
-//	test1();	// done
-//	test2();	// done
-//	test3();	// done // for fmtwrite
+	test1();	// done
+	test2();	// done
 
-	liveTest();
+	pro1Test();	// done
 
 	cout << "All Test Cases Passed." << endl;
 	return 0;

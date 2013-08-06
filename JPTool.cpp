@@ -159,7 +159,22 @@ bool isSame( const vector<T> &v, const vector<T> &w )
 	return res;
 }
 
-// the v2 and w2 is a rectangle matrix
+template <class T>
+bool isSame( const vector<T> &v, const T w[], int len )
+{
+	bool res = true;
+	if ( v.size() != len )
+		res = false;
+	else
+		for( int i = 0; i < len; i++ )
+			if ( abs(v[i] - w[i]) >= EPS )
+			{
+				res = false;
+				break;
+			}
+	return res;
+}
+
 template <class T>
 bool isSame( const vector< vector<T> > &v2, const vector< vector<T> > &w2 )
 {
@@ -317,21 +332,6 @@ void disp( set<T> s )
 {
 	ostream_iterator<T> out_it(cout, " ");
 	copy( s.begin(), s.end(), out_it ); //array use as ( a, a+l, o )
-	cout << endl;
-}
-
-void disp( const string& str )
-{
-	cout << str << endl;
-}
-
-void disp( const list< pair<int,double> >& l )
-{
-	list< pair<int,double> >::const_iterator it = l.begin();
-	while ( it != l.end() ) {
-		cout << it->first << "|" << it->second << " ";
-		it++;
-	}
 	cout << endl;
 }
 
