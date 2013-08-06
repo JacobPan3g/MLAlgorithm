@@ -14,7 +14,7 @@
 #define LEAF_MAX_NUM 5
 
 
-pair<int,double> VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs )
+MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs )
 {
 	int m = D.getM();
 	int n = D.getN();
@@ -25,8 +25,10 @@ pair<int,double> VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs,
 
 	this->getSplitPoints( fmtV, m, n, cs );
 
-	double minVar = 1e8;
 	int minIdx = -1;
+	double minObVal = 0;
+	double minVar = 1e8;
+
 	for ( int i = 0; i < n; i++ )	
 	{
 		if ( !fs[i] )
@@ -52,22 +54,24 @@ pair<int,double> VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs,
 		if ( l_idx != r_idx ) {
 			VARl = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
 			VARr = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
-			var = VARl < VARr? VARl : VARr;	
+			var = VARl < VARr? VARl : VARr;
+			r_idx = VARl < VARr? l_idx : r_idx;
 		}
 		else {
-			var = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
+			var = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
 		}
 
 		if ( var == 0 ) {
-			return pair<int,double>(i,var);	
+			return MS(i, this->sp[i][r_idx], var);	
 		}
 
 		if ( var < minVar ) {
-			minVar = var;
 			minIdx = i;
+			minObVal = this->sp[i][r_idx];	
+			minVar = var;
 		}
 	}
-	return pair<int,double>(minIdx,minVar);	
+	return MS(minIdx,minObVal,minVar);
 }
 
 double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs )
@@ -202,13 +206,12 @@ void test1()
 
 	TR_Data D;	
 	VAR_Measurer ms;
-	pair<int,double> res;
+	MS res;
 	vector< vector<int> > idxs;
 	vector< vector<double> > sp;
 	vector<int> r, c;	
 	
 	D.fmtread( "test/case1.fmt" );
-	ms = VAR_Measurer();
 	r = vector<int>( D.getM(), 1 );
 	c = vector<int>( D.getN(), 1 );
 	res = ms.measure( D, r, c );
@@ -219,7 +222,7 @@ void test1()
  * Data: all in case1
  * Goal: 1. test the idxs
  */
- 	assert( res.first==0&&res.second==0 );
+ 	assert( res.fIdx==0&&res.obVal==0.5&&res.msVal==0 );
  	
 	idxs.resize( D.getN() );
 	int c11v0[] = { 2, 3, 4 };
@@ -261,7 +264,7 @@ void test2()
 
 	TR_Data D;	
 	VAR_Measurer ms;
-	pair<int,double> res;
+	MS res;
 	vector< vector<int> > idxs;
 	vector< vector<double> > sp;
 	vector<int> r, c;	
@@ -278,7 +281,7 @@ void test2()
  * Data: all in case2
  * Goal: 1. test the idxs
  */
- 	assert( res.first==2&&isEqual(res.second,0.13333) );
+ 	assert( res.fIdx==2&&res.obVal==0&&isEqual(res.msVal,0.13333) );
  	
 	idxs.resize( D.getN() );
 	int c11v0[] = { 5, 10 };
@@ -320,7 +323,7 @@ void pro1Test()
 
 	TR_Data D;
 	VAR_Measurer ms;
-	pair<int,double> res;
+	MS res;
 	vector<int> r, c;	
 
 	D.fmtread("dataset/pro1.fmt");
@@ -328,8 +331,8 @@ void pro1Test()
 	c =vector<int>( D.getN(), 1 );
 	ms = VAR_Measurer();
 	res = ms.measure( D, r, c );
-	//cout << res.first << " " << res.second << endl;
-	assert( res.first==38&&isEqual(res.second,0.280569) );
+	//cout << res.obVal << endl;
+	assert( res.fIdx==38&&isEqual(res.obVal,0.604861)&&isEqual(res.msVal,0.280569) );
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;

@@ -5,87 +5,54 @@
 	> Created Time: Sun 07 Jul 2013 10:57:34 AM CST
  ************************************************************************/
 
-#define _CART_UTEST_
+#define _CART_PREDICOTR_UTEST_
 
 
-#include "CART.h"
-#include "VAR.cpp"
-#include "SingleTree.cpp"
+#include "CART_Predictor.h"
+#include "VAR_Measurer.cpp"
+#include "ST_Model.cpp"
 
-CART::CART( const CsvData &D, int spNum, int maxH )
+
+void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vector<int>& fs )
 {
-	vector<int> cs(D.m, 1);
-	vector<int> fs(D.n, 1);
-	this->init( D, cs, fs, spNum, maxH );
-}
+	vector<double> L = D.getL();
+	int m = D.getM();
+	int n = D.getN();
 
-CART::CART( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int spNum, int maxH )
-{
-	this->init( D, cs, fs, spNum, maxH );
-}
-
-CART::~CART()
-{
-	queue<Node*> q;
-	q.push( this->root );
-	while( !q.empty() )
-	{
-		Node *node = q.front();
-		q.pop();
-		if ( node->left != NULL )
-			q.push( node->left );
-		if ( node->right != NULL )
-			q.push( node->right );
-
-		delete node;
-	}
-}
-
-void CART::init( const CsvData &D, const vector<int> &cs, const vector<int> &fs, int spNum, int maxH )
-{
-	this->c_msr = VAR( spNum );
-	this->MAX_HIGH = maxH;
-	this->high = 0;
-	this->features = fs;
-	this->bulidTree( D, cs );
-}
-
-void CART::bulidTree( const CsvData &D, const vector<int> &rows )
-{
 	queue<Node*> q;
 	this->sinNodeNum = 0;
 	
-	this->root = new Node( rows, D.m, 0 );
+	this->root = new Node( cs, m, 0 );	/*?m?*/
 	q.push( this->root );
 	while ( !q.empty() )
 	{
 		Node *node = q.front();
 		q.pop();
 		// end 1
-		if ( node->high >= MAX_HIGH )
+		if ( node->high >= this->MAX_HIGH )
 		{
-			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
+			this->foundALeaf( node, L ); 	// a leaf needn't find minF
 			continue;
 		}
 		// end 2
 		/// is all features used
-		if ( isAll( this->features, 0 ) )
+		if ( isAll( this->fs, 0 ) )
 		{
-			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
+			this->foundALeaf( node, L ); 	// a leaf needn't find minF
 			continue;
 		}
 		// end 3
 		// is all same label
-		if ( isAllSame( D.L, node->cases ) )
+		if ( isAllSame( L, node->cs ) )
 		{
-			this->foundALeaf( node, D.L );
+			this->foundALeaf( node, L );
 			continue;
 		}
 		// end 4
 		/// the measure's end condition
-		if ( c_msr.endCondition( D.L, node->cases, node->cnum ) )
+		if ( c_msr.endCondition( L, node->cs, node->cnum ) )
 		{
-			this->foundALeaf( node, D.L ); 	// a leaf needn't find minF
+			this->foundALeaf( node, L ); 	// a leaf needn't find minF
 			continue;
 		}
 		
@@ -93,8 +60,7 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 		inNode.push_back( node );
 
 		// get the optimal feature
-		vector< vector<double> > ms = c_msr.measure( D, node->cases, this->features );
-		vector<double> tmp = min( ms, this->features );
+		pair<int,double> ms = c_msr.measure( D, node->cases, this->features );
 		double minMS = tmp[0];
 		int minF = (int)tmp[1];		// ms start at first feature
 		double obValue = c_msr.getSpByValueIdx( minF, (int)tmp[2] );
@@ -163,7 +129,33 @@ void CART::bulidTree( const CsvData &D, const vector<int> &rows )
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
 
-void CART::foundALeaf( Node *node, const vector<double> &L )
+
+CART_Predictor::CART_Predictor( int maxH )
+{
+	this->c_msr = VAR();
+	this->MAX_HIGH = maxH;
+	this->high = 0;
+}
+
+CART_Predictor::~CART()
+{
+	queue<Node*> q;
+	q.push( this->root );
+	while( !q.empty() )
+	{
+		Node *node = q.front();
+		q.pop();
+		if ( node->left != NULL )
+			q.push( node->left );
+		if ( node->right != NULL )
+			q.push( node->right );
+
+		delete node;
+	}
+}
+
+
+void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
 {
 	node->lIdx = this->leaf.size();
 	this->high = node->high > this->high? node->high : this->high;
@@ -171,7 +163,7 @@ void CART::foundALeaf( Node *node, const vector<double> &L )
 	this->labels.push_back( c_msr.estimateLabel( L, node->cases ) );
 }
 
-void CART::dispTree()
+void CART_Predictor::dispTree()
 {
 	queue<Node*> q;
 	q.push(this->root);
@@ -201,7 +193,7 @@ void CART::dispTree()
 }
 
 
-void CART::dispLeaves()
+void CART_Predictor::dispLeaves()
 {
 	cout << "lIdx\tcnum\thigh\tlabel\t" << endl;
 	for ( int i = 0; i < this->leaf.size(); i++ )
@@ -213,7 +205,7 @@ void CART::dispLeaves()
 
 }
 
-double CART::predict( const vector<double> &a )
+double CART_Predictor::predict( const vector<double> &a )
 {
 
 	Node *node = this->root;
@@ -228,7 +220,7 @@ double CART::predict( const vector<double> &a )
 	return this->labels[node->lIdx];
 }
 
-vector<double> CART::predict( const CsvData &test )
+vector<double> CART_Predictor::predict( const TR_Data &test )
 {
 	vector<double> res( test.m );
 	for ( int i = 0; i < test.m; i++ )
@@ -236,7 +228,7 @@ vector<double> CART::predict( const CsvData &test )
 	return res;
 }
 
-void CART::saveTree( string filename )
+void CART_Predictor::saveTree( string filename )
 {
 /*	queue<Node*> q;
 	vector<int> fIdxV;
@@ -244,7 +236,7 @@ void CART::saveTree( string filename )
 	vector<int> rightV;
 	vector<double> oValV;
 */
-	SingleTree m( this );	
+	ST_Model m( this );	
 
 /*	disp( fIdxV );
 	disp( oValV );
@@ -261,12 +253,12 @@ void CART::saveTree( string filename )
 	obj.close();
 }
 
-void CART::saveTrees( ofstream &fobj )
+void CART_Predictor::saveTrees( ofstream &fobj )
 {
 	
 }
 
-#ifdef _CART_UTEST_
+#ifdef _CART_Predictor_UTEST_
 
 void test1()
 {
@@ -274,7 +266,7 @@ void test1()
 #define _TEST_1_1_
 #define _TEST_1_2_
 	
-	CsvData D;
+	TR_Data D;
 	D.csvread( "test/case1.csv" );
 	vector<int> tag(D.n, 1);	// just for first assert in each test
 	tag[0] = 0;					// mean just choose F0
@@ -285,7 +277,7 @@ void test1()
  * Goal: 1. calculation
  *		 2. tree-build
  */
-	CART c1T( D, 2 );
+	CART_Predictor c1T( D, 2 );
 	c1T.dispTree();
 
 	assert( isAll(c1T.features, 1, tag) );
@@ -303,7 +295,7 @@ void test1()
  * Goal: 1. calculation
  *		 2. tree-build
  */
-	CART c2T( D, -1 );
+	CART_Predictor c2T( D, -1 );
 	c2T.dispTree();
 	
 	assert( isAll(c2T.features, 1, tag) );
@@ -321,7 +313,7 @@ void test2()
 
 #define _TEST_2_1_
 
-	CsvData D;
+	TR_Data D;
 	D.csvread( "test/case2.csv" );
 
 #ifdef _TEST_2_1_
@@ -330,7 +322,7 @@ void test2()
  * Goal: 1. calculation
  *		 2. Tree-bulid
  */
-	CART t1( D, -1 );
+	CART_Predictor t1( D, -1 );
 	t1.dispTree();
 
 	vector<int> tag( D.n, 1 ); tag[1]=0; tag[2]=0;
@@ -352,9 +344,9 @@ void liveTest( int spNum, int maxH )
 {
 	time_t tic = clock();
 
-	CsvData D;
+	TR_Data D;
 	D.csvread("dataset/pro1.csv");
-	CART tree(D, spNum, maxH);
+	CART_Predictor tree(D, spNum, maxH);
 
 	tree.dispTree();
 	tree.dispLeaves();

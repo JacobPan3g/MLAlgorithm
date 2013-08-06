@@ -7,8 +7,8 @@
 
 #pragma once
 
+
 #include "CART.h"
-using namespace std;
 
 class Model
 {

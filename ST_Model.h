@@ -10,7 +10,7 @@
 #include "Model.h"
 using namespace std;
 
-class SingleTree: Model
+class ST_Model: public Model
 {
 public:
 	void load( const CART* pdPtr );

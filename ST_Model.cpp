@@ -1,13 +1,13 @@
 /**********************************************************************
-	> File Name: SingleTree.cpp
+	> File Name: ST_Model.cpp
 	> Author: Jacob Pan
 	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Thu 01 Aug 2013 04:15:49 PM CST
  *********************************************************************/
 
-#include "SingleTree.h"
+#include "ST_Model.h"
 
-SingleTree::SingleTree( const CART *pdPtr )
+ST_Model::ST_Model( const CART *pdPtr )
 {
 	queue<Node*> q;
 
@@ -51,12 +51,12 @@ SingleTree::SingleTree( const CART *pdPtr )
 	
 }
 
-void SingleTree::load( const CART* pdPtr )
+void ST_Model::load( const CART* pdPtr )
 {
 
 }
 
-void SingleTree::save( string fNM )
+void ST_Model::save( string fNM )
 {
 
 }

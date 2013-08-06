@@ -15,7 +15,7 @@ class VAR_Measurer: public Measurer
 {	
 public:
 	// implement virtual methods
-	pair<int,double> measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs );
+	MS measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs );
 	double estimateLabel( const vector<double> &L, const vector<int> &cs );
 	bool endCondition( const vector<double> &L, vector<int> cs, int num );
 
