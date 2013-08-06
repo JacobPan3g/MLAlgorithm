@@ -31,70 +31,15 @@ pair<int,double> VAR_Measurer::measurer( const Data &D, const vector<int> &cs, c
 	{
 		if ( !fs[i] )
 			continue;
-			
-		vector<double> tmp;
-		int sp_size = this->sp[i].size();
-		this->part1s = vector< vector<int> >( sp_size );
-		this->part2s = vector< vector<int> >( sp_size );
-		this->num1s = vector<int>( sp_size );
-		this->num2s = vector<int>( sp_size );
-	
-		int half = sp_size/2;
-		// for each sp
-		for ( int k = 0; k < sp_size; k++ )
-		{
-			// desperate into two parts
-			vector<int> part1;
-			vector<int> part2;
-			int num1 = 0;
-			int num2 = 0;
-			
-			if ( k < half )
-			{
-				part1 = vector<int>( m, 0 );
-				part2 = cs;
-				int idx = 0;
-				list< pair<int,double> >::const_iterator it = fmtV[i].begin();
-				for ( ; idx < this->idxs[i][k]; it++, idx++ ) {
-					if ( !cs[ it->first ] )
-						continue;
-					part1[ it->first ] = 1;
-					num1++;
-					part2[ it->first ] = 0;
-				}
-				num2 = countTag( part2 );
-			}
-			else
-			{
-				part2 = vector<int>( m, 0 );
-				part1 = cs;
-				int idx = m - this->idxs[i][k];
-				list< pair<int,double> >::const_reverse_iterator it = fmtV[i].rbegin();
-				for ( ; idx > 0; it++, idx-- ) {
-					if ( !cs[ it->first ] )
-						continue;
-					part2[ it->first ] = 1;
-					num2++;
-					part1[ it->first ] = 0;
-				}
-				num1 = countTag( part1 );
-			}
-
-			assert( countTag(cs)==num1+num2 );
-			assert( countTag(cs)==countTag(part1)+countTag(part2) );
-
-			this->part1s[k] = part1;
-			this->part2s[k] = part2;
-			this->num1s[k] = num1;
-			this->num2s[k] = num2;
-		}
-		// compute
+		
+		// Binary Search
 		int l_idx = 0;
-		int r_idx = sp_size - 1;
+		int r_idx = this->sp[i].size() - 1;
 		double VARl, VARr;
 		while ( r_idx - l_idx > 1 ) {
-			VARl = this->computeVAR( L, l_idx );
-			VARr = this->computeVAR( L, r_idx );
+
+			VARl = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
+			VARr = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
 
 			if ( VARl < VARr ) {
 				r_idx = (l_idx + r_idx) / 2;
@@ -105,12 +50,12 @@ pair<int,double> VAR_Measurer::measurer( const Data &D, const vector<int> &cs, c
 		}
 		double var;
 		if ( l_idx != r_idx ) {
-			VARl = this->computeVAR( L, l_idx );
-			VARr = this->computeVAR( L, r_idx );
+			VARl = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
+			VARr = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
 			var = VARl < VARr? VARl : VARr;	
 		}
 		else {
-			var = this->computeVAR( L, l_idx );
+			var = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
 		}
 
 		if ( var == 0 ) {
@@ -125,12 +70,52 @@ pair<int,double> VAR_Measurer::measurer( const Data &D, const vector<int> &cs, c
 	return pair<int,double>(minIdx,minVar);	
 }
 
-double VAR_Measurer::computeVAR( const vector<double>& L, int idx )
+double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs )
 {	
-	double num1 = this->num1s[idx];
-	double num2 = this->num2s[idx];
-	double var1 = variance( L, this->part1s[idx] );
-	double var2 = variance( L, this->part2s[idx] );
+	// desperate into two parts
+	vector<int> part1;
+	vector<int> part2;
+	int num1 = 0;
+	int num2 = 0;
+	int half = this->idxs[i].size() / 2;
+	
+	if ( k < half )
+	{
+		part1 = vector<int>( m, 0 );
+		part2 = cs;
+		int idx = 0;
+		list< pair<int,double> >::const_iterator it = fmt.begin();
+		for ( ; idx < this->idxs[i][k]; it++, idx++ ) {
+			if ( !cs[ it->first ] )
+				continue;
+			part1[ it->first ] = 1;
+			num1++;
+			part2[ it->first ] = 0;
+		}
+		num2 = countTag( part2 );
+	}
+	else
+	{
+		part2 = vector<int>( m, 0 );
+		part1 = cs;
+		int idx = m - this->idxs[i][k];
+		list< pair<int,double> >::const_reverse_iterator it = fmt.rbegin();
+		for ( ; idx > 0; it++, idx-- ) {
+			if ( !cs[ it->first ] )
+				continue;
+			part2[ it->first ] = 1;
+			num2++;
+			part1[ it->first ] = 0;
+		}
+		num1 = countTag( part1 );
+	}
+
+	assert( countTag(cs)==num1+num2 );
+	assert( countTag(cs)==countTag(part1)+countTag(part2) );
+	
+	// compute
+	double var1 = variance( L, part1 );
+	double var2 = variance( L, part2 );
 	double num = num1 + num2;
 	double var = num1/num * var1 + num2/num * var2;
 	return var;
@@ -541,6 +526,8 @@ void test3()
 	c = vector<int>( D.getN(), 1 );
 	res = ms.measurer( D, r, c );
 	cout << res.first << " " << res.second << endl;
+
+	assert( res.first==0&&res.second==0 );
 }
 
 void liveTest()
@@ -574,6 +561,8 @@ int main()
 {
 //	test1();	// done
 //	test2();	// done
+
+/* test1 & test2 is not suit and Binary Method anymore */
 //	test3();
 	liveTest();
 

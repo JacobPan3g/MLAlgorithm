@@ -32,7 +32,7 @@ public:
 private:
 	vector<double> getSplitPoints( const vector<double> &f, vector<int> cs=vector<int>() );
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs );
-	double computeVAR( const vector<double>& L, int idx );
+	double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
 
 	int SPLIT_AREA_NUM;			// also a tag for averager
 	// will update every loop
