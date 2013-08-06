@@ -53,12 +53,12 @@ public:
 	CART_Predictor( int maxH=10 );
 	~CART_Predictor();
 
-	double predict( const vector<double>&  );
+	double predict( const vector<double>& a );
 	void saveTrees( ofstream &fobj ) const;
 	
 	// disp
-	void dispTree();
-	void dispLeaves();
+	void dispTree() const;
+	void dispLeaves() const;
 
 	// getter
 	const Node* getRoot() const;

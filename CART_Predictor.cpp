@@ -22,7 +22,7 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	queue<Node*> q;
 	this->sinNodeNum = 0;
 	
-	this->root = new Node( cs, m, 0 );	/*?m?*/
+	this->root = new Node( cs, countTag(cs), 0 );
 	q.push( this->root );
 	while ( !q.empty() )
 	{
@@ -60,24 +60,23 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		inNode.push_back( node );
 
 		// get the optimal feature
-		pair<int,double> ms = c_msr.measure( D, node->cases, this->features );
-		double minMS = tmp[0];
-		int minF = (int)tmp[1];		// ms start at first feature
-		double obValue = c_msr.getSpByValueIdx( minF, (int)tmp[2] );
+		MS ms = c_msr.measure( D, node->cs, this->fs );
 		/// tag and asign
-		this->features[minF] = 0;
-		node->fIdx = minF;
-		node->obValue = obValue;
+		this->features[ms.fIdx] = 0;
+		node->fIdx = ms.fIdx;
+		node->obValue = ms.obVal;
+
 		// separate the data by minF( need to know the minF )
-		vector<int> part1( D.m, 0 );
-		vector<int> part2( D.m, 0 );
+		/**/ // can optimize here
+		vector<int> part1( m, 0 );
+		vector<int> part2( m, 0 );
 		int num1 = 0;
 		int num2 = 0;
-		for ( int i = 0; i < D.m; i++ )
+		for ( int i = 0; i < m; i++ )
 		{
-			if ( !node->cases[i] )
+			if ( !node->cs[i] )
 				continue;
-			if ( D.A[i][node->fIdx] <= obValue )
+			if ( D.A[i][node->fIdx] <=  )
 			{
 				num1++;
 				part1[i] = 1;
@@ -91,19 +90,14 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 
 		assert( countTag(part1)==num1 );
 		assert( countTag(part2)==num2 );
-		assert( num1+num2==countTag(node->cases) );
+		assert( num1+num2==countTag(node->cs) );
 		
 		// handle the single node
 		if ( num1 == 0 || num2 == 0 )
 		{
 			node->single = 1;
 			this->sinNodeNum++;
-
-			/*node->fIdx = -1;
-			this->features[minF] = 1;
-			q.push( node );*/
 		}
-		//else{
 
 		int h = node->high + 1;
 		if ( num1 != 0 )
@@ -116,20 +110,51 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 			node->right = new Node( part2, num2, h );
 			q.push(node->right);
 		}
-		//}
-
 	}
 
 	assert( this->high <= MAX_HIGH );
 	assert( root!=NULL );
 	assert( leaf.size()!=0 );
 	assert( leaf.size()==labels.size() );
-	assert( countTag(this->features)+inNode.size()==D.n );
+	assert( countTag(this->fs)+inNode.size()==D.n );
 	assert( high <= (int)log2(D.n)+1 );
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
 
+vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
+{
+	vector<double> res( test.m );
+	for ( int i = 0; i < test.m; i++ )
+		res[i] = this->predict( test.A[i] );
+	return res;
+}
 
+void CART_Predictor::saveModel( string fNM ) const
+{
+/*	queue<Node*> q;
+	vector<int> fIdxV;
+	vector<int> leftV;
+	vector<int> rightV;
+	vector<double> oValV;
+*/
+	ST_Model m( this );	
+
+/*	disp( fIdxV );
+	disp( oValV );
+	disp( leftV );
+	disp( rightV );
+	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
+*/
+	// save
+	ofstream obj( filename.c_str()/*, ofstream::app*/ );
+	save( obj, m.fIdxV, "," );
+	save( obj, m.leftV, "," );
+	save( obj, m.rightV, ",");
+	save( obj, m.obValV, "," );
+	obj.close();
+}
+
+// Own Method
 CART_Predictor::CART_Predictor( int maxH )
 {
 	this->c_msr = VAR();
@@ -154,16 +179,27 @@ CART_Predictor::~CART()
 	}
 }
 
-
-void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
+double CART_Predictor::predict( const vector<double> &a )
 {
-	node->lIdx = this->leaf.size();
-	this->high = node->high > this->high? node->high : this->high;
-	this->leaf.push_back( node );
-	this->labels.push_back( c_msr.estimateLabel( L, node->cases ) );
+
+	Node *node = this->root;
+	while( node->fIdx != -1 )
+	{
+
+		if ( a[node->fIdx] <= node->obValue )
+			node = node->left;
+		else
+			node = node->right;
+	}
+	return this->labels[node->lIdx];
 }
 
-void CART_Predictor::dispTree()
+void CART_Predictor::saveTrees( ofstream &fobj ) const
+{
+	
+}
+
+void CART_Predictor::dispTree() const
 {
 	queue<Node*> q;
 	q.push(this->root);
@@ -193,7 +229,7 @@ void CART_Predictor::dispTree()
 }
 
 
-void CART_Predictor::dispLeaves()
+void CART_Predictor::dispLeaves() const
 {
 	cout << "lIdx\tcnum\thigh\tlabel\t" << endl;
 	for ( int i = 0; i < this->leaf.size(); i++ )
@@ -205,69 +241,71 @@ void CART_Predictor::dispLeaves()
 
 }
 
-double CART_Predictor::predict( const vector<double> &a )
+// getter
+const Node* CART_Predictor::getRoot() const
 {
-
-	Node *node = this->root;
-	while( node->fIdx != -1 )
-	{
-
-		if ( a[node->fIdx] <= node->obValue )
-			node = node->left;
-		else
-			node = node->right;
-	}
-	return this->labels[node->lIdx];
+	return this->root;
 }
 
-vector<double> CART_Predictor::predict( const TR_Data &test )
+vector<int> CART_Predictor::getFs() const
 {
-	vector<double> res( test.m );
-	for ( int i = 0; i < test.m; i++ )
-		res[i] = this->predict( test.A[i] );
-	return res;
+	return this->fs;
 }
 
-void CART_Predictor::saveTree( string filename )
+int CART_Predictor::getMAX_HIGH() const
 {
-/*	queue<Node*> q;
-	vector<int> fIdxV;
-	vector<int> leftV;
-	vector<int> rightV;
-	vector<double> oValV;
-*/
-	ST_Model m( this );	
-
-/*	disp( fIdxV );
-	disp( oValV );
-	disp( leftV );
-	disp( rightV );
-	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
-*/
-	// save
-	ofstream obj( filename.c_str()/*, ofstream::app*/ );
-	save( obj, m.fIdxV, "," );
-	save( obj, m.leftV, "," );
-	save( obj, m.rightV, ",");
-	save( obj, m.obValV, "," );
-	obj.close();
+	return this->MAX_HIGH;
 }
 
-void CART_Predictor::saveTrees( ofstream &fobj )
+int CART_Predictor::getHigh() const
 {
-	
+	return this->high;
 }
+
+// big data getter
+const vector<double>& CART_Predictor::getLabels() const
+{
+	return this->labels;
+}
+
+const vector<Node*>& CART_Predictor::getLeaf() const
+{
+	return this->getLeaf;
+}
+
+const vector<Node*>& CART_Predictor::getInNode() const
+{
+	return this->inNode;
+}
+
+// Private Method
+void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
+{
+	node->lIdx = this->leaf.size();
+	this->high = node->high > this->high? node->high : this->high;
+	this->leaf.push_back( node );
+	this->labels.push_back( c_msr.estimateLabel( L, node->cases ) );
+}
+
+
+
+
+/*********************************************************************
+ * Unit Test
+ * by Jacob Pan
+ *********************************************************************/
 
 #ifdef _CART_Predictor_UTEST_
 
+// just a tree build
 void test1()
 {
 
-#define _TEST_1_1_
+//#define _TEST_1_1_
 #define _TEST_1_2_
 	
 	TR_Data D;
-	D.csvread( "test/case1.csv" );
+	D.fmtread( "test/case1.fmt" );
 	vector<int> tag(D.n, 1);	// just for first assert in each test
 	tag[0] = 0;					// mean just choose F0
 
@@ -277,7 +315,7 @@ void test1()
  * Goal: 1. calculation
  *		 2. tree-build
  */
-	CART_Predictor c1T( D, 2 );
+/*	CART_Predictor c1T( D, 2 );
 	c1T.dispTree();
 
 	assert( isAll(c1T.features, 1, tag) );
@@ -286,7 +324,7 @@ void test1()
 	assert( c1T.inNode[0]->obValue==0.5 );
 	assert( c1T.high==1 );
 	assert( c1T.leaf.size()==2 );
-	assert( c1T.labels[0]==1&&c1T.labels[1]==2);
+	assert( c1T.labels[0]==1&&c1T.labels[1]==2);*/
 #endif
 
 #ifdef _TEST_1_2_
@@ -295,23 +333,24 @@ void test1()
  * Goal: 1. calculation
  *		 2. tree-build
  */
-	CART_Predictor c2T( D, -1 );
+	CART_Predictor c2T( D );
 	c2T.dispTree();
-	
-	assert( isAll(c2T.features, 1, tag) );
-	assert( c2T.inNode.size()==1 );
-	assert( c2T.inNode[0]->fIdx==0 );
-	assert( c2T.inNode[0]->obValue==0.5 );
-	assert( c2T.high==1 );
-	assert( c2T.leaf.size()==2 );
-	assert( c2T.labels[0]==1&&c2T.labels[1]==2);
+
+	vector<Node*> inNode = c2T.getInNode();
+	assert( isAll(c2T.getFs(), 1, tag) );
+	assert( inNode.size()==1 );
+	assert( inNode[0]->fIdx==0 );
+	assert( inNode[0]->obValue==0.5 );
+	assert( c2T.getHigh()==1 );
+	assert( c2T.getLeaf().size()==2 );
+	assert( c2T.getLabels()[0]==1&&c2T.getLabels()[1]==2);
 #endif
 }
 
 void test2()
 {
 
-#define _TEST_2_1_
+//#define _TEST_2_1_
 
 	TR_Data D;
 	D.csvread( "test/case2.csv" );
@@ -322,7 +361,7 @@ void test2()
  * Goal: 1. calculation
  *		 2. Tree-bulid
  */
-	CART_Predictor t1( D, -1 );
+	CART_Predictor t1();
 	t1.dispTree();
 
 	vector<int> tag( D.n, 1 ); tag[1]=0; tag[2]=0;
@@ -340,7 +379,7 @@ void test2()
  * @param1: spNum	the num of sp | -1 for accurater
  * @param2:	maxH	the max high of tree
  */
-void liveTest( int spNum, int maxH )
+/*void liveTest( int spNum, int maxH )
 {
 	time_t tic = clock();
 
@@ -360,14 +399,14 @@ void liveTest( int spNum, int maxH )
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
-}
+}*/
 
 int main()
 {
-//	test1();	// done
+	test1();	// done
 //	test2();	// done
 	
-	liveTest( -1, 1 );
+//	liveTest( -1, 1 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
