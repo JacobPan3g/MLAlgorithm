@@ -15,32 +15,22 @@ class VAR_Measurer: public Measurer
 {	
 public:
 	// implement virtual methods
-	vector< vector<double> > measure( const Data &D, const vector<int> &cs, const vector<int> &fs );
+	pair<int,double> measure( const Data &D, const vector<int> &cs, const vector<int> &fs );
 	double estimateLabel( const vector<double> &L, const vector<int> &cs );
 	bool endCondition( const vector<double> &L, vector<int> cs, int num );
 
-	pair<int,double> measurer( const Data &D, const vector<int> &cs, const vector<int> &fs );
 	// own methods
 	VAR_Measurer();					// constructor for accurater
-	VAR_Measurer( int saNum );		// constructor for averager
-	double getSpByValueIdx( int idx1, int idx2 );
 
 	// getter
-	int getSPLIT_AREA_NUM() const;
 	vector< vector<double> > getSp() const;
+	vector< vector<int> > getIdxs() const;
 
 private:
-	vector<double> getSplitPoints( const vector<double> &f, vector<int> cs=vector<int>() );
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs );
 	double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
 
-	int SPLIT_AREA_NUM;			// also a tag for averager
 	// will update every loop
 	vector< vector<double> > sp;	// just use to test
-	vector< vector<int> > idxs;
-
-	vector< vector<int> > part1s;
-	vector< vector<int> > part2s;
-	vector<int> num1s;
-	vector<int> num2s;
+	vector< vector<int> > idxs;		// record cs for sp
 };
