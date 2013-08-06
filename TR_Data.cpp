@@ -264,7 +264,8 @@ void test1()
 	TR_Data D4csv;
 	D4csv.csvread( "test/case1.csv" );
 	D4csv.fmtwrite( "tmp/tCase1.fmt" );
-	
+	TR_Data_case1_check( D4csv );
+
 	TR_Data D;
 	D.fmtread( "tmp/tCase1.fmt" );
 	TR_Data_case1_check( D );
@@ -275,6 +276,7 @@ void test2()
 	TR_Data D4csv;
 	D4csv.csvread( "test/case2.csv" );
 	D4csv.fmtwrite( "tmp/tCase2.fmt" );
+	TR_Data_case2_check( D4csv );
 	
 	TR_Data D;
 	D.fmtread( "tmp/tCase2.fmt" );
@@ -283,10 +285,14 @@ void test2()
 
 void pro1Test()
 {
+	TR_Data D4csv;
+	D4csv.csvread( "dataset/pro1.csv" );
+	D4csv.fmtwrite( "tmp/tPro1.fmt" );
+	TR_Data_pro1_check( D4csv );
+	
 	TR_Data D;
-	D.fmtread( "dataset/pro1.fmt" );
+	D.fmtread( "tmp/tPro1.fmt" );
 	TR_Data_pro1_check( D );
-
 }
 
 int main()

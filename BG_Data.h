@@ -8,13 +8,14 @@
 #pragma once
 
 
-#include "Data.h"
+#include "TR_Data.h"
 
-class BG_Data: public Data
+class BG_Data: public TR_Data
 {
 public:
 	BG_Data();
 	void csvread( const string& fNM );
+	void fmtread( const string& fNM );
 	void reshuffling();
 
 	// getter
@@ -26,6 +27,7 @@ public:
 	int getN() const;
 
 protected:
+	void prepare4Shuffling();
 	void get80Labels();
 	void get80Features();
 	
