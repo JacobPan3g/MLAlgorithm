@@ -109,12 +109,6 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		int num1 = c_msr.getNum1();
 		int num2 = c_msr.getNum2();
 
-		cout << "num1: " << num1 << endl;
-		disp( c_msr.getPart1() );
-		cout << "num2: " << num2 << endl;
-		disp( c_msr.getPart2() );
-
-
 		// handle the single node
 		if ( num1 == 0 || num2 == 0 )
 		{
@@ -320,7 +314,7 @@ void test1()
 {
 
 //#define _TEST_1_1_
-//#define _TEST_1_2_
+#define _TEST_1_2_
 	
 	TR_Data D;
 	D.fmtread( "test/case1.fmt" );
@@ -395,23 +389,20 @@ void test2()
 #endif
 }
 
-/*
- * @param1: spNum	the num of sp | -1 for accurater
- * @param2:	maxH	the max high of tree
- */
-/*void liveTest( int spNum, int maxH )
+void pro1Test( int maxH )
 {
 	time_t tic = clock();
 
 	TR_Data D;
 	D.csvread("dataset/pro1.csv");
-	CART_Predictor tree(D, spNum, maxH);
+	CART_Predictor tree( maxH );
+	tree.train( D );
 
 	tree.dispTree();
 	tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveTree( "trees/UT_test" );
+//	tree.saveTree( "trees/UT_test" );
 	//cout << tree.inNode[17]->obValue << endl;
 	
 	// all use
@@ -419,14 +410,14 @@ void test2()
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
-}*/
+}
 
 int main()
 {
 	test1();	// done
 	test2();	// done
 	
-//	liveTest( -1, 1 );
+	pro1Test( 10 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

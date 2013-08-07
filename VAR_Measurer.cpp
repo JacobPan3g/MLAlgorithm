@@ -35,6 +35,11 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	int minIdx = -1;
 	double minObVal = 0;
 	double minVar = 1e8;
+	// record
+	int n1 = -1;
+	int n2 = -1;
+	vector<int> p1;
+	vector<int> p2;
 
 	for ( int i = 0; i < n; i++ )	
 	{
@@ -68,16 +73,35 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 			var = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
 		}
 
-		if ( var == 0 ) {
-			return MS(i, this->sp[i][r_idx], var);	
-		}
+//		if ( var == 0 ) {
+//			return MS(i, this->sp[i][r_idx], var);	
+//		}
 
 		if ( var < minVar ) {
 			minIdx = i;
 			minObVal = this->sp[i][r_idx];	
 			minVar = var;
+			n1 = this->num1;
+			n2 = this->num2;
+			p1 = this->part1;
+			p2 = this->part2;
+
+			if ( var == 0 ) {
+				break;
+			}
 		}
 	}
+
+	this->num1 = n1;
+	this->num2 = n2;
+	this->part1 = p1;
+	this->part2 = p2;
+
+	assert( countTag(cs)==this->num1+this->num2 );
+	assert( countTag(this->part1)==this->num1 );
+	assert( countTag(this->part2)==this->num2 );
+	assert( minIdx < n );
+
 	return MS(minIdx,minObVal,minVar);
 }
 
@@ -255,6 +279,7 @@ void test1()
 
 #define _TEST_1_1_
 #define _TEST_1_2_
+#define _TEST_1_3_
 
 	TR_Data D;	
 	VAR_Measurer ms;
@@ -274,7 +299,6 @@ void test1()
  * Data: all in case1
  * Goal: 1. test the idxs
  */
- 	assert( res.fIdx==0&&res.obVal==0.5&&res.msVal==0 );
  	
 	idxs.resize( D.getN() );
 	int c11v0[] = { 2, 3, 4 };
@@ -307,12 +331,34 @@ void test1()
 	//disp( ms.getSp() );
 	assert( isSame(ms.getSp(),sp) );
 #endif
+
+#ifdef _TEST_1_3_
+/* Test 1.3
+ * Type: accurater
+ * Data: all in case1
+ * Goal: 1. test the calculation
+ */
+	// res
+ 	assert( res.fIdx==0&&res.obVal==0.5&&res.msVal==0 );
+	// part & num
+	int num1 = ms.getNum1();
+	int num2 = ms.getNum2();
+	vector<int> part1 = ms.getPart1();
+	vector<int> part2 = ms.getPart2();
+	assert( num1==3&num2==2 );
+	int p1[] = {1,1,1,0,0};
+	int p2[] = {0,0,0,1,1};
+	assert( isSame(part1,p1,sizeof(p1)/sizeof(int)) );
+	assert( isSame(part2,p2,sizeof(p2)/sizeof(int)) );
+
+#endif
 }
 
 void test2()
 {
 #define _TEST_2_1_
 #define _TEST_2_2_
+#define _TEST_2_3_
 
 	TR_Data D;	
 	VAR_Measurer ms;
@@ -333,8 +379,6 @@ void test2()
  * Data: all in case2
  * Goal: 1. test the idxs
  */
- 	assert( res.fIdx==2&&res.obVal==0&&isEqual(res.msVal,0.13333) );
- 	
 	idxs.resize( D.getN() );
 	int c11v0[] = { 5, 10 };
 	int c11v1[] = { 10 };
@@ -367,6 +411,26 @@ void test2()
 	assert( isSame(ms.getSp(),sp) );
 #endif
 
+#ifdef _TEST_2_3_
+/* Test 2.3
+ * Type: accurater
+ * Data: all in case2
+ * Goal: 1. test the calculation
+ */
+	// res
+ 	assert( res.fIdx==2&&res.obVal==0&&isEqual(res.msVal,0.13333) );
+ 	// num & part
+	int num1 = ms.getNum1();
+	int num2 = ms.getNum2();
+	vector<int> part1 = ms.getPart1();
+	vector<int> part2 = ms.getPart2();
+	assert( num1==9&num2==6 );
+	int p1[] = {1,1,1,0,1,1,1,0,0,0,0,0,1,1,1};
+	int p2[] = {0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,};
+	assert( isSame(part1,p1,sizeof(p1)/sizeof(int)) );
+	assert( isSame(part2,p2,sizeof(p2)/sizeof(int)) );
+
+#endif
 }
 
 void pro1Test()
