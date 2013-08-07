@@ -376,7 +376,7 @@ double rmse( const vector<T> &p, const vector<T> &r )
  * Persistence
  */
 template <class T>
-void save( string filename, const vector<T> &v ) 
+void txtwrite( string filename, const vector<T> &v ) 
 {
 	ofstream fobj( filename.c_str() );
 	for ( int i = 0; i < v.size(); i++ )
@@ -385,7 +385,7 @@ void save( string filename, const vector<T> &v )
 }
 
 template <class T>
-void save( ofstream &fobj, const vector<T> &v, string d=" " )
+void txtwrite( ofstream &fobj, const vector<T> &v, string d=" " )
 {
 	for ( int i = 0; i < v.size(); i++ )
 		fobj << v[i] << d;

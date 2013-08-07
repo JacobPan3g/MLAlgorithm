@@ -149,27 +149,8 @@ vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
  */
 void CART_Predictor::saveModel( const string& fNM ) const
 {
-//	queue<Node*> q;
-//	vector<int> fIdxV;
-//	vector<int> leftV;
-//	vector<int> rightV;
-//	vector<double> oValV;
-
-	ST_Model m( this );	
-
-//	disp( fIdxV );
-//	disp( oValV );
-//	disp( leftV );
-//	disp( rightV );
-//	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
-
-	// save
-	ofstream obj( fNM.c_str() ); //, ofstream::app );
-	save( obj, m.fIdxV, "," );
-	save( obj, m.leftV, "," );
-	save( obj, m.rightV, ",");
-	save( obj, m.obValV, "," );
-	obj.close();
+	ST_Model m( this );
+	m.save( fNM );
 }
 
 // Own Method

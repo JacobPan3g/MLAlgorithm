@@ -51,15 +51,75 @@ ST_Model::ST_Model( const CART_Predictor *pdPtr )
 			this->rightV.push_back( -1 );
 		}
 	}
-	
+ 
+	assert( this->fIdxV.size()==this->leftV.size() );
+	assert( this->rightV.size()==this->obValV.size() );
+	assert( this->leftV.size()==this->rightV.size() );
 }
 
-void ST_Model::load( const CART_Predictor* pdPtr )
+void ST_Model::load( const string& fNM )
 {
+	ifstream fin( fNM.c_str() );
+	string tmpS;
+	int size;
 
+	fin >> tmpS >> size;
+	this->fIdxV = vector<int>( size );
+	this->leftV = vector<int>( size );
+	this->rightV = vector<int>( size );
+	this->obValV = vector<double>( size );
+
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->fIdxV[i];
+	}
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->leftV[i];
+	}
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->rightV[i];
+	}
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->obValV[i];
+	}
+	fin.close();
 }
 
-void ST_Model::save( const string& fNM )
+void ST_Model::save( const string& fNM ) const
 {
+	assert( this->fIdxV.size()==this->leftV.size() );
+	assert( this->rightV.size()==this->obValV.size() );
+	assert( this->leftV.size()==this->rightV.size() );
 
+	ofstream fout( fNM.c_str() );
+	fout << "Size: " <<  this->fIdxV.size() << endl;
+	fout << "fIdxV" << endl;
+	txtwrite( fout, this->fIdxV );
+	fout << "leftV" << endl;
+	txtwrite( fout, this->leftV );
+	fout << "rightV" << endl;
+	txtwrite( fout, this->rightV );
+	fout << "obValV" << endl;
+	txtwrite( fout, this->obValV );
+	fout.close();
+}
+
+// getter
+const vector<int>& ST_Model::getFIdxV()
+{
+	return this->fIdxV;
+}
+
+const vector<int>& ST_Model::getLeftV()
+{
+	return this->leftV;
+}
+
+const vector<int>& ST_Model::getRightV()
+{
+	return this->rightV;
+}
+
+const vector<double>& ST_Model::getObValV()
+{
+	return this->obValV;
 }

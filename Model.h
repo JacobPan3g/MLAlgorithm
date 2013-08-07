@@ -8,12 +8,10 @@
 #pragma once
 
 
-#include "CART_Predictor.h"
-
 class Model
 {
 public:
-	virtual void load( const CART_Predictor* pdPtr ) = 0;
-	virtual void save( const string& fNM ) = 0;
+	virtual void load( const string& fNM ) = 0;
+	virtual void save( const string& fNM ) const = 0;
 };
 

@@ -13,12 +13,21 @@ using namespace std;
 class ST_Model: public Model
 {
 public:
-	void load( const CART_Predictor* pdPtr );
-	void save( const string& fNM );
+	// Virtual Method
+	void load( const string& fNM );
+	void save( const string& fNM ) const;
 	
-	ST_Model( const CART_Predictor* pdPtr );	
+	// Own Method
+	ST_Model( const CART_Predictor* pdPtr );
+	ST_Model( const string& fNM );
 
-//private:
+	// getter
+	const vector<int>& getFIdxV();
+	const vector<int>& getLeftV();
+	const vector<int>& getRightV();
+	const vector<double>& getObValV();
+
+private:
 	vector<int> fIdxV;
 	vector<int> leftV;
 	vector<int> rightV;
