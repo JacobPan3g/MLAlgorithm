@@ -9,14 +9,17 @@
 
 ST_Model::ST_Model( const CART_Predictor *pdPtr )
 {
-	queue<Node*> q;
+	queue<const Node*> q;
 
-	this->fIdxV.push_back( pdPtr->root->fIdx );
-	q.push( pdPtr->root );
+	const Node* root = pdPtr->getRoot();
+	vector<double> labels = pdPtr->getLabels();
+
+	this->fIdxV.push_back( root->fIdx );
+	q.push( root );
 	
 	while ( !q.empty() )
 	{
-		Node *node = q.front();
+		const Node *node = q.front();
 		q.pop();
 
 		if ( node->fIdx != -1 )
@@ -43,7 +46,7 @@ ST_Model::ST_Model( const CART_Predictor *pdPtr )
 		}
 		else
 		{
-			this->obValV.push_back( pdPtr->labels[node->lIdx] );	// save the labels
+			this->obValV.push_back( labels[node->lIdx] );	// save the labels
 			this->leftV.push_back( -1 );
 			this->rightV.push_back( -1 );
 		}
@@ -56,7 +59,7 @@ void ST_Model::load( const CART_Predictor* pdPtr )
 
 }
 
-void ST_Model::save( string fNM )
+void ST_Model::save( const string& fNM )
 {
 
 }

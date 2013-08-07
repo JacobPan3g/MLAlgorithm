@@ -14,9 +14,9 @@ class ST_Model: public Model
 {
 public:
 	void load( const CART_Predictor* pdPtr );
-	void save( string fNM );
+	void save( const string& fNM );
 	
-	SingleTree( const CART_Predictor* pdPtr );	
+	ST_Model( const CART_Predictor* pdPtr );	
 
 //private:
 	vector<int> fIdxV;

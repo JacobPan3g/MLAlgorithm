@@ -9,19 +9,13 @@
 
 #include "CART_Predictor.h"
 #include "VAR_Measurer.cpp"
-//#include "ST_Model.cpp"
+#include "ST_Model.cpp"
 
 
-void CART_Predictor::train( const TR_Data& D )
-{
-	vector<int> cs( D.getM(), 1 );
-	vector<int> fs( D.getN(), 1 );
-	this->train( D, cs, fs );
-}
 /* Function: train()
  *		-- train for a model from data
  *	Call: foundALeaf(), 
- *	Update:	c_msr, root, fs, high, labels, leaf, inNode, sinNodeNum
+ *	Update:	c_msr, root, high, labels, leaf, inNode, sinNodeNum
  *	Return: void 
  */
 void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vector<int>& fs )
@@ -145,8 +139,15 @@ vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
 		res[i] = this->predict( test.A[i] );
 	return res;
 }
+*/
 
-void CART_Predictor::saveModel( string fNM ) const
+/* Function: saveModel()
+ *		-- train for a model from data
+ *	Call: foundALeaf(), 
+ *	Update:	c_msr, root, fs, high, labels, leaf, inNode, sinNodeNum
+ *	Return: void 
+ */
+void CART_Predictor::saveModel( const string& fNM ) const
 {
 //	queue<Node*> q;
 //	vector<int> fIdxV;
@@ -163,14 +164,14 @@ void CART_Predictor::saveModel( string fNM ) const
 //	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
 
 	// save
-	ofstream obj( filename.c_str() ); //, ofstream::app );
+	ofstream obj( fNM.c_str() ); //, ofstream::app );
 	save( obj, m.fIdxV, "," );
 	save( obj, m.leftV, "," );
 	save( obj, m.rightV, ",");
 	save( obj, m.obValV, "," );
 	obj.close();
 }
-*/
+
 // Own Method
 CART_Predictor::CART_Predictor( int maxH )
 {
@@ -194,6 +195,13 @@ CART_Predictor::~CART_Predictor()
 
 		delete node;
 	}
+}
+
+void CART_Predictor::train( const TR_Data& D )
+{
+	vector<int> cs( D.getM(), 1 );
+	vector<int> fs( D.getN(), 1 );
+	this->train( D, cs, fs );
 }
 
 double CART_Predictor::predict( const vector<double> &a )
@@ -394,7 +402,7 @@ void pro1Test( int maxH )
 	time_t tic = clock();
 
 	TR_Data D;
-	D.csvread("dataset/pro1.csv");
+	D.fmtread("dataset/pro1.fmt");
 	CART_Predictor tree( maxH );
 	tree.train( D );
 
@@ -402,7 +410,7 @@ void pro1Test( int maxH )
 	tree.dispLeaves();
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-//	tree.saveTree( "trees/UT_test" );
+	tree.saveModel( "trees/CART_Tree_B_1" );
 	//cout << tree.inNode[17]->obValue << endl;
 	
 	// all use

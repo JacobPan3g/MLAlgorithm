@@ -47,7 +47,7 @@ public:
 	// virtual method	
 	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
 	//vector<double> predict( const Model& model, const TR_Data& T );
-	//void saveModel( const string& fNM ) const;
+	void saveModel( const string& fNM ) const;
 
 	// own method
 	CART_Predictor( int maxH=10 );
