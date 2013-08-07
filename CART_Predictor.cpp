@@ -5,20 +5,35 @@
 	> Created Time: Sun 07 Jul 2013 10:57:34 AM CST
  ************************************************************************/
 
-#define _CART_PREDICOTR_UTEST_
-
+#define _CART_PREDICTOR_UTEST_
 
 #include "CART_Predictor.h"
 #include "VAR_Measurer.cpp"
-#include "ST_Model.cpp"
+//#include "ST_Model.cpp"
 
 
+void CART_Predictor::train( const TR_Data& D )
+{
+	vector<int> cs( D.getM(), 1 );
+	vector<int> fs( D.getN(), 1 );
+	this->train( D, cs, fs );
+}
+/* Function: train()
+ *		-- train for a model from data
+ *	Call: foundALeaf(), 
+ *	Update:	c_msr, root, fs, high, labels, leaf, inNode, sinNodeNum
+ *	Return: void 
+ */
 void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vector<int>& fs )
 {
 	vector<double> L = D.getL();
 	int m = D.getM();
 	int n = D.getN();
 
+	assert( cs.size()==m );
+	assert( fs.size()==n );
+
+	vector<int> myFs = fs;
 	queue<Node*> q;
 	this->sinNodeNum = 0;
 	
@@ -36,7 +51,7 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		}
 		// end 2
 		/// is all features used
-		if ( isAll( this->fs, 0 ) )
+		if ( isAll( myFs, 0 ) )
 		{
 			this->foundALeaf( node, L ); 	// a leaf needn't find minF
 			continue;
@@ -60,14 +75,13 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		inNode.push_back( node );
 
 		// get the optimal feature
-		MS ms = c_msr.measure( D, node->cs, this->fs );
+		MS ms = c_msr.measure( D, node->cs, myFs );
 		/// tag and asign
-		this->features[ms.fIdx] = 0;
+		myFs[ms.fIdx] = 0;
 		node->fIdx = ms.fIdx;
 		node->obValue = ms.obVal;
-
+	/*
 		// separate the data by minF( need to know the minF )
-		/**/ // can optimize here
 		vector<int> part1( m, 0 );
 		vector<int> part2( m, 0 );
 		int num1 = 0;
@@ -91,7 +105,16 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		assert( countTag(part1)==num1 );
 		assert( countTag(part2)==num2 );
 		assert( num1+num2==countTag(node->cs) );
-		
+	*/
+		int num1 = c_msr.getNum1();
+		int num2 = c_msr.getNum2();
+
+		cout << "num1: " << num1 << endl;
+		disp( c_msr.getPart1() );
+		cout << "num2: " << num2 << endl;
+		disp( c_msr.getPart2() );
+
+
 		// handle the single node
 		if ( num1 == 0 || num2 == 0 )
 		{
@@ -102,12 +125,12 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		int h = node->high + 1;
 		if ( num1 != 0 )
 		{
-			node->left = new Node( part1, num1, h );
+			node->left = new Node( c_msr.getPart1(), num1, h );
 			q.push(node->left);
 		}
 		if ( num2 != 0 )
 		{
-			node->right = new Node( part2, num2, h );
+			node->right = new Node( c_msr.getPart2(), num2, h );
 			q.push(node->right);
 		}
 	}
@@ -116,11 +139,11 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	assert( root!=NULL );
 	assert( leaf.size()!=0 );
 	assert( leaf.size()==labels.size() );
-	assert( countTag(this->fs)+inNode.size()==D.n );
-	assert( high <= (int)log2(D.n)+1 );
+	assert( countTag(myFs)+inNode.size()==countTag(fs) );
+	assert( high <= (int)log2(n)+1 );
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
-
+/*
 vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
 {
 	vector<double> res( test.m );
@@ -131,38 +154,38 @@ vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
 
 void CART_Predictor::saveModel( string fNM ) const
 {
-/*	queue<Node*> q;
-	vector<int> fIdxV;
-	vector<int> leftV;
-	vector<int> rightV;
-	vector<double> oValV;
-*/
+//	queue<Node*> q;
+//	vector<int> fIdxV;
+//	vector<int> leftV;
+//	vector<int> rightV;
+//	vector<double> oValV;
+
 	ST_Model m( this );	
 
-/*	disp( fIdxV );
-	disp( oValV );
-	disp( leftV );
-	disp( rightV );
-	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
-*/
+//	disp( fIdxV );
+//	disp( oValV );
+//	disp( leftV );
+//	disp( rightV );
+//	cout << fIdxV.size() << endl << oValV.size() << endl << leftV.size() << endl << rightV.size() << endl;
+
 	// save
-	ofstream obj( filename.c_str()/*, ofstream::app*/ );
+	ofstream obj( filename.c_str() ); //, ofstream::app );
 	save( obj, m.fIdxV, "," );
 	save( obj, m.leftV, "," );
 	save( obj, m.rightV, ",");
 	save( obj, m.obValV, "," );
 	obj.close();
 }
-
+*/
 // Own Method
 CART_Predictor::CART_Predictor( int maxH )
 {
-	this->c_msr = VAR();
+	this->c_msr = VAR_Measurer();
 	this->MAX_HIGH = maxH;
 	this->high = 0;
 }
 
-CART_Predictor::~CART()
+CART_Predictor::~CART_Predictor()
 {
 	queue<Node*> q;
 	q.push( this->root );
@@ -247,11 +270,6 @@ const Node* CART_Predictor::getRoot() const
 	return this->root;
 }
 
-vector<int> CART_Predictor::getFs() const
-{
-	return this->fs;
-}
-
 int CART_Predictor::getMAX_HIGH() const
 {
 	return this->MAX_HIGH;
@@ -270,7 +288,7 @@ const vector<double>& CART_Predictor::getLabels() const
 
 const vector<Node*>& CART_Predictor::getLeaf() const
 {
-	return this->getLeaf;
+	return this->leaf;
 }
 
 const vector<Node*>& CART_Predictor::getInNode() const
@@ -284,7 +302,7 @@ void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
 	node->lIdx = this->leaf.size();
 	this->high = node->high > this->high? node->high : this->high;
 	this->leaf.push_back( node );
-	this->labels.push_back( c_msr.estimateLabel( L, node->cases ) );
+	this->labels.push_back( c_msr.estimateLabel( L, node->cs ) );
 }
 
 
@@ -295,19 +313,19 @@ void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
  * by Jacob Pan
  *********************************************************************/
 
-#ifdef _CART_Predictor_UTEST_
+#ifdef _CART_PREDICTOR_UTEST_
 
 // just a tree build
 void test1()
 {
 
 //#define _TEST_1_1_
-#define _TEST_1_2_
+//#define _TEST_1_2_
 	
 	TR_Data D;
 	D.fmtread( "test/case1.fmt" );
-	vector<int> tag(D.n, 1);	// just for first assert in each test
-	tag[0] = 0;					// mean just choose F0
+	int m = D.getM();
+	int n = D.getN();
 
 #ifdef _TEST_1_1_
 /* Test 1.1 
@@ -333,11 +351,11 @@ void test1()
  * Goal: 1. calculation
  *		 2. tree-build
  */
-	CART_Predictor c2T( D );
+	CART_Predictor c2T;
+	c2T.train( D );
 	c2T.dispTree();
 
 	vector<Node*> inNode = c2T.getInNode();
-	assert( isAll(c2T.getFs(), 1, tag) );
 	assert( inNode.size()==1 );
 	assert( inNode[0]->fIdx==0 );
 	assert( inNode[0]->obValue==0.5 );
@@ -350,10 +368,11 @@ void test1()
 void test2()
 {
 
-//#define _TEST_2_1_
+#define _TEST_2_1_
 
 	TR_Data D;
-	D.csvread( "test/case2.csv" );
+	//D.csvread( "test/case2.csv" );
+	D.fmtread( "test/case2.fmt" );
 
 #ifdef _TEST_2_1_
 /* Test 2.1
@@ -361,17 +380,18 @@ void test2()
  * Goal: 1. calculation
  *		 2. Tree-bulid
  */
-	CART_Predictor t1();
+	CART_Predictor t1;
+	t1.train( D );
 	t1.dispTree();
 
-	vector<int> tag( D.n, 1 ); tag[1]=0; tag[2]=0;
-	assert( isAll(t1.features,1,tag) );
-	assert( t1.inNode.size()==2 );
-	assert( t1.inNode[0]->fIdx==2&&t1.inNode[1]->fIdx==1 );
-	assert( t1.inNode[0]->obValue==0&&t1.inNode[1]->obValue==0 );
-	assert( t1.high==2 );
-	assert( t1.leaf.size()==3 );
-	assert( t1.labels[0]==1&&t1.labels[1]==0&&t1.labels[2]==1 );
+	vector<Node*> inNode = t1.getInNode();
+	vector<double> labels = t1.getLabels();
+	assert( inNode.size()==2 );
+	assert( inNode[0]->fIdx==2&&inNode[1]->fIdx==1 );
+	assert( inNode[0]->obValue==0&&inNode[1]->obValue==0 );
+	assert( t1.getHigh()==2 );
+	assert( t1.getLeaf().size()==3 );
+	assert( labels[0]==1&&labels[1]==0&&labels[2]==1 );
 #endif
 }
 
@@ -404,7 +424,7 @@ void test2()
 int main()
 {
 	test1();	// done
-//	test2();	// done
+	test2();	// done
 	
 //	liveTest( -1, 1 );
 

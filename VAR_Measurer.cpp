@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  *********************************************************************/
 
-#define _VAR_MEASURER_UTEST_
+//#define _VAR_MEASURER_UTEST_
 
 
 #include "VAR_Measurer.h"
@@ -14,12 +14,19 @@
 #define LEAF_MAX_NUM 5
 
 
+/* Function: measure()
+ *		-- get the min VAR value for all f
+ *	Call:	getSplitPoints(), computeVAR()
+ *	Update:	sp, idxs, part1, part2, num1, num2
+ *	Return: MS 
+ */
 MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs )
 {
 	int m = D.getM();
 	int n = D.getN();
 	vector<double> L = D.getL();
 	vector< list< pair<int,double> > > fmtV = D.getFmtV();
+	
 	assert( cs.size()==m );
 	assert( fs.size()==n );
 
@@ -74,13 +81,123 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	return MS(minIdx,minObVal,minVar);
 }
 
+double VAR_Measurer::estimateLabel( const vector<double> &L, const vector<int> &cs )
+{
+	return mean(L, cs);
+}
+
+bool VAR_Measurer::endCondition( const vector<double> &L, vector<int> cs, int num )
+{
+	return num < LEAF_MAX_NUM;
+}
+
+// own methods
+VAR_Measurer::VAR_Measurer()
+{
+}
+
+// getter
+vector< vector<int> > VAR_Measurer::getIdxs() const
+{
+	return this->idxs;
+}
+
+vector< vector<double> > VAR_Measurer::getSp() const
+{
+	return this->sp;
+}
+
+const vector<int>& VAR_Measurer::getPart1() const
+{
+	return this->part1;
+}
+
+const vector<int>& VAR_Measurer::getPart2() const
+{
+	return this->part2;
+}
+
+int VAR_Measurer::getNum1() const
+{
+	return this->num1;
+}
+
+int VAR_Measurer::getNum2() const
+{
+	return this->num2;
+}
+
+
+// Private Method
+
+/* Function: getSplitPoints()
+ *		-- use fmtV to find all sp for all F
+ *	Update:	sp, idxs
+ *	Return: void 
+ */
+void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs )
+{
+	assert( fmtV.size()==n );
+	assert( fmtV[0].size()==m );
+	assert( cs.size()==m );
+
+	this->sp.resize( n );
+	this->idxs.resize( n );
+	for ( int i = 0; i < n; i++ ) {
+		this->sp[i] = vector<double>( m );
+		this->idxs[i] = vector<int>( m );
+		bool isFirst = true;
+		double beforeItem;
+
+		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
+		int num = 0;
+		int idx = 0;
+		for ( ; it != fmtV[i].end(); it++, idx++ ) {
+			if ( cs[it->first] ) {
+				if ( isFirst ) {
+					isFirst = false;
+					beforeItem = it->second;
+					this->sp[i][num] = it->second;
+					num++;
+				}
+				else {
+					if ( beforeItem != it->second ) {
+						this->idxs[i][num-1] = idx;
+						beforeItem = it->second;
+						this->sp[i][num] = it->second;
+						num++;
+					}
+				}
+			}
+		}
+		int sz = num==1? num : num-1;
+		this->sp[i].resize( sz );
+		this->idxs[i].resize( sz );
+	
+		assert( this->sp[i].size() <= m );
+		assert( this->sp[i].size()==this->idxs[i].size() );
+	}
+}
+
+/* Function: computeVAR()
+ *		-- use a sp to compute the VAR value
+ *	Update:	part1, part2, num1, num2
+ *	Return: the VAR value 
+ */
 double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs )
 {	
+	assert( fmt.size()==m );
+	assert( cs.size()==m );
+	assert( i < n );
+	assert( k < this->sp[i].size() );
+	assert( this->sp[i].size()==this->idxs[i].size() );
+	assert( L.size()==m );
+
 	// desperate into two parts
-	vector<int> part1;
-	vector<int> part2;
-	int num1 = 0;
-	int num2 = 0;
+	this->part1.clear();
+	this->part2.clear();
+	this->num1 = 0;
+	this->num2 = 0;
 	int half = this->idxs[i].size() / 2;
 	
 	if ( k < half )
@@ -124,71 +241,6 @@ double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& f
 	double var = num1/num * var1 + num2/num * var2;
 	return var;
 }
-
-double VAR_Measurer::estimateLabel( const vector<double> &L, const vector<int> &cs )
-{
-	return mean(L, cs);
-}
-
-bool VAR_Measurer::endCondition( const vector<double> &L, vector<int> cs, int num )
-{
-	return num < LEAF_MAX_NUM;
-}
-
-// own methods
-VAR_Measurer::VAR_Measurer()
-{
-}
-
-// getter
-vector< vector<int> > VAR_Measurer::getIdxs() const
-{
-	return this->idxs;
-}
-
-vector< vector<double> > VAR_Measurer::getSp() const
-{
-	return this->sp;
-}
-
-// Private Method
-void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs )
-{
-	this->sp.resize( n );
-	this->idxs.resize( n );
-	for ( int i = 0; i < n; i++ ) {
-		this->sp[i] = vector<double>( m );
-		this->idxs[i] = vector<int>( m );
-		bool isFirst = true;
-		double beforeItem;
-
-		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
-		int num = 0;
-		int idx = 0;
-		for ( ; it != fmtV[i].end(); it++, idx++ ) {
-			if ( cs[it->first] ) {
-				if ( isFirst ) {
-					isFirst = false;
-					beforeItem = it->second;
-					this->sp[i][num] = it->second;
-					num++;
-				}
-				else {
-					if ( beforeItem != it->second ) {
-						this->idxs[i][num-1] = idx;
-						beforeItem = it->second;
-						this->sp[i][num] = it->second;
-						num++;
-					}
-				}
-			}
-		}
-		int sz = num==1? num : num-1;
-		this->sp[i].resize( sz );
-		this->idxs[i].resize( sz );
-	}
-}
-
 
 
 /*********************************************************************

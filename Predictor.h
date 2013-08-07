@@ -9,11 +9,12 @@
 
 
 #include "TR_Data.h"
+//#include "Model.h"
 
 class Predictor
 {
 public:
-	virtual void train( const TR_Data& D, const vector<int>& cs ) = 0;
-	virtual vector<double> predict( const Model& model, const TR_Data& T ) = 0;
-	virtual void saveModel( const string& fNM ) const = 0;
+	virtual void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs ) = 0;
+	//virtual vector<double> predict( const Model& model, const TR_Data& T ) = 0;
+	//virtual void saveModel( const string& fNM ) const = 0;
 };

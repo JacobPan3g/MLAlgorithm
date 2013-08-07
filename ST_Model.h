@@ -13,10 +13,10 @@ using namespace std;
 class ST_Model: public Model
 {
 public:
-	void load( const CART* pdPtr );
+	void load( const CART_Predictor* pdPtr );
 	void save( string fNM );
 	
-	SingleTree( const CART* pdPtr );	
+	SingleTree( const CART_Predictor* pdPtr );	
 
 //private:
 	vector<int> fIdxV;

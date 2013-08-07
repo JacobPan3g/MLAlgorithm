@@ -7,7 +7,7 @@
 
 #include "ST_Model.h"
 
-ST_Model::ST_Model( const CART *pdPtr )
+ST_Model::ST_Model( const CART_Predictor *pdPtr )
 {
 	queue<Node*> q;
 
@@ -51,7 +51,7 @@ ST_Model::ST_Model( const CART *pdPtr )
 	
 }
 
-void ST_Model::load( const CART* pdPtr )
+void ST_Model::load( const CART_Predictor* pdPtr )
 {
 
 }

@@ -25,6 +25,10 @@ public:
 	// getter
 	vector< vector<double> > getSp() const;
 	vector< vector<int> > getIdxs() const;
+	const vector<int>& getPart1() const;
+	const vector<int>& getPart2() const;
+	int getNum1() const;
+	int getNum2() const;
 
 private:
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs );
@@ -33,4 +37,8 @@ private:
 	// will update every loop
 	vector< vector<double> > sp;	// just use to test
 	vector< vector<int> > idxs;		// record cs for sp
+	vector<int> part1;
+	vector<int> part2;
+	int num1;
+	int num2;
 };

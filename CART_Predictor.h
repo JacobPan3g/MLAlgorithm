@@ -46,12 +46,13 @@ class CART_Predictor: public Predictor
 public:
 	// virtual method	
 	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
-	vector<double> predict( const Model& model, const TR_Data& T );
-	void saveModel( const string& fNM ) const;
+	//vector<double> predict( const Model& model, const TR_Data& T );
+	//void saveModel( const string& fNM ) const;
 
 	// own method
 	CART_Predictor( int maxH=10 );
 	~CART_Predictor();
+	void train( const TR_Data& D );
 
 	double predict( const vector<double>& a );
 	void saveTrees( ofstream &fobj ) const;
@@ -62,7 +63,6 @@ public:
 
 	// getter
 	const Node* getRoot() const;
-	vector<int> getFs() const;
 	int getMAX_HIGH() const;
 	int getHigh() const;
 	// big data getter
@@ -74,7 +74,6 @@ private:
 	void foundALeaf( Node *node, const vector<double> &L );
 
 	Node *root;
-	vector<int> fs;			// tag which feature can be considered
 	int MAX_HIGH;
 	int high;
 	vector<double> labels;
