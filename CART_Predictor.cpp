@@ -137,12 +137,12 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
 
-vector<double> CART_Predictor::predict( const Model& mdl, const Data& T ) const
+vector<double> CART_Predictor::predict( const ST_Model& mdl, const Data& T ) const
 {
 	int m = T.getM();
 	vector<double> res( m );
 	for ( int i = 0; i < m; i++ ) {
-		res[i] = this->predict( (ST_Model)mdl, T.getA()[i] );
+		res[i] = this->predict( mdl, T.getA()[i] );
 	}
 	return res;
 }
@@ -234,12 +234,12 @@ double CART_Predictor::predict( const vector<double> &a ) const
 	
 }
 
-double CART_Predictor::predict( const ST_Model& m, const vector<double> &a ) const
+double CART_Predictor::predict( const ST_Model& mdl, const vector<double> &a ) const
 {
-	vector<int> fIdxV = m.getFIdxV();
-	vector<int> leftV = m.getLeftV();
-	vector<int> rightV = m.getRightV();
-	vector<double> obValV = m.getObValV();
+	vector<int> fIdxV = mdl.getFIdxV();
+	vector<int> leftV = mdl.getLeftV();
+	vector<int> rightV = mdl.getRightV();
+	vector<double> obValV = mdl.getObValV();
 	
 	int i = 0;
 	while ( fIdxV[i] != -1 ) {

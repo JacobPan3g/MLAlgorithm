@@ -46,7 +46,7 @@ class CART_Predictor: public Predictor
 public:
 	// virtual method	
 	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
-	vector<double> predict( const Model& mdl, const Data& T ) const;
+	vector<double> predict( const ST_Model& mdl, const Data& T ) const;
 	void saveModel( const string& fNM ) const;
 
 	// own method
@@ -56,7 +56,7 @@ public:
 
 	vector<double> predict( const Data& T ) const;
 	double predict( const vector<double>& a ) const;
-	double predict( const ST_Model& m, const vector<double>& a ) const;
+	double predict( const ST_Model& mdl, const vector<double>& a ) const;
 	void saveTrees( ofstream &fobj ) const;
 	
 	// disp
