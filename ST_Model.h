@@ -25,10 +25,10 @@ public:
 	ST_Model( const string& fNM );
 
 	// getter
-	const vector<int>& getFIdxV();
-	const vector<int>& getLeftV();
-	const vector<int>& getRightV();
-	const vector<double>& getObValV();
+	const vector<int>& getFIdxV() const;
+	const vector<int>& getLeftV() const;
+	const vector<int>& getRightV() const;
+	const vector<double>& getObValV() const;
 
 private:
 	vector<int> fIdxV;

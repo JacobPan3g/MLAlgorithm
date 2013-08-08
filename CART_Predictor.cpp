@@ -7,6 +7,9 @@
 
 #define _CART_PREDICTOR_UTEST_
 
+
+#include <queue>
+
 #include "CART_Predictor.h"
 #include "VAR_Measurer.cpp"
 #include "ST_Model.cpp"
@@ -133,15 +136,17 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	assert( high <= (int)log2(n)+1 );
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
-/*
-vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
+
+vector<double> CART_Predictor::predict( const Model& mdl, const Data& T ) const
 {
-	vector<double> res( test.m );
-	for ( int i = 0; i < test.m; i++ )
-		res[i] = this->predict( test.A[i] );
+	int m = T.getM();
+	vector<double> res( m );
+	for ( int i = 0; i < m; i++ ) {
+		res[i] = this->predict( (ST_Model)mdl, T.getA()[i] );
+	}
 	return res;
 }
-*/
+
 
 /* Function: saveModel()
  *		-- train for a model from data
@@ -191,14 +196,14 @@ vector<double> CART_Predictor::predict( const Data& T ) const
 	int m = T.getM();
 	vector<double> res( m );
 	for ( int i = 0; i < m; i++ ) {
-		
+		res[i] = this->predict( T.getA()[i] );
 	}
 	return res;
 }
 
-double CART_Predictor::predict( const vector<double> &a )
+double CART_Predictor::predict( const vector<double> &a ) const
 {
-
+/*
 	Node *node = this->root;
 	while( node->fIdx != -1 )
 	{
@@ -209,6 +214,43 @@ double CART_Predictor::predict( const vector<double> &a )
 			node = node->right;
 	}
 	return this->labels[node->lIdx];
+	*/
+	
+	vector<int> fIdxV = this->model.getFIdxV();
+	vector<int> leftV = this->model.getLeftV();
+	vector<int> rightV = this->model.getRightV();
+	vector<double> obValV = this->model.getObValV();
+	
+	int i = 0;
+	while ( fIdxV[i] != -1 ) {
+		if ( a[fIdxV[i]] <= obValV[i] ) {
+			i = leftV[i];
+		}
+		else {
+			i = rightV[i];
+		}
+	}
+	return obValV[i];
+	
+}
+
+double CART_Predictor::predict( const ST_Model& m, const vector<double> &a ) const
+{
+	vector<int> fIdxV = m.getFIdxV();
+	vector<int> leftV = m.getLeftV();
+	vector<int> rightV = m.getRightV();
+	vector<double> obValV = m.getObValV();
+	
+	int i = 0;
+	while ( fIdxV[i] != -1 ) {
+		if ( a[fIdxV[i]] <= obValV[i] ) {
+			i = leftV[i];
+		}
+		else {
+			i = rightV[i];
+		}
+	}
+	return obValV[i];	
 }
 
 void CART_Predictor::saveTrees( ofstream &fobj ) const
@@ -318,10 +360,11 @@ void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
 void test1()
 {
 
-#define _TEST_1_1_
-#define _TEST_1_2_
-#define _TEST_1_3_
+//#define _TEST_1_1_
+//#define _TEST_1_2_
+//#define _TEST_1_3_
 //#define _TEST_1_4_
+#define _TEST_1_5_
 	
 	TR_Data D;
 	D.fmtread( "test/case1.fmt" );
@@ -393,15 +436,37 @@ void test1()
 #endif
 
 #ifdef _TEST_1_4_
-/* Test 1.r
+/* Test 1.4
  * Type: accurater
  * Goal: 1. predict after train
  */
 	Data T;
-	T.csvread( "case1.csv" );
-	vector<int> p = c1T.predict( T );
+	T.csvread( "test/case1.csv" );
+	vector<double> p = c1T.predict( T );
+	//disp( p );
+	//cout << rmse( p, T.getL() ) << endl;
+
+	double pp[] = {1,1,1,2,2};
+	assert( isSame(p,pp,sizeof(pp)/sizeof(double)) );
+	assert( rmse(p,T.getL())==0 );
+#endif
+
+#ifdef _TEST_1_5_
+/* Test 1.5
+ * Type: accurater
+ * Goal: 1. predict away train
+ */
+	Data T;
+	T.csvread( "test/case1.csv" );
+	ST_Model m15( "model/case1.mdl" );
+
+	vector<double> p = c1T.predict( m15, T );
+	disp( p );
 	cout << rmse( p, T.getL() ) << endl;
 
+	double pp[] = {1,1,1,2,2};
+	assert( isSame(p,pp,sizeof(pp)/sizeof(double)) );
+	assert( rmse(p,T.getL())==0 );
 #endif
 }
 

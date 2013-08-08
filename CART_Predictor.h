@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <queue>
 #include "Predictor.h"
 #include "VAR_Measurer.h"
 #include "ST_Model.h"
@@ -47,7 +46,7 @@ class CART_Predictor: public Predictor
 public:
 	// virtual method	
 	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
-	vector<double> predict( const Model& model, const TR_Data& T );
+	vector<double> predict( const Model& mdl, const Data& T ) const;
 	void saveModel( const string& fNM ) const;
 
 	// own method
@@ -56,7 +55,8 @@ public:
 	void train( const TR_Data& D );
 
 	vector<double> predict( const Data& T ) const;
-	double predict( const vector<double>& a );
+	double predict( const vector<double>& a ) const;
+	double predict( const ST_Model& m, const vector<double>& a ) const;
 	void saveTrees( ofstream &fobj ) const;
 	
 	// disp

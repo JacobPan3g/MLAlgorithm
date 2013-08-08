@@ -120,22 +120,22 @@ ST_Model::ST_Model( const string& fNM )
 }
 
 // getter
-const vector<int>& ST_Model::getFIdxV()
+const vector<int>& ST_Model::getFIdxV() const
 {
 	return this->fIdxV;
 }
 
-const vector<int>& ST_Model::getLeftV()
+const vector<int>& ST_Model::getLeftV() const
 {
 	return this->leftV;
 }
 
-const vector<int>& ST_Model::getRightV()
+const vector<int>& ST_Model::getRightV() const
 {
 	return this->rightV;
 }
 
-const vector<double>& ST_Model::getObValV()
+const vector<double>& ST_Model::getObValV() const
 {
 	return this->obValV;
 }
