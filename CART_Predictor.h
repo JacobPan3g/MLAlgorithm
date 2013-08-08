@@ -10,6 +10,7 @@
 #include <queue>
 #include "Predictor.h"
 #include "VAR_Measurer.h"
+#include "ST_Model.h"
 using namespace std;
 
 
@@ -46,7 +47,7 @@ class CART_Predictor: public Predictor
 public:
 	// virtual method	
 	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
-	//vector<double> predict( const Model& model, const TR_Data& T );
+	vector<double> predict( const Model& model, const TR_Data& T );
 	void saveModel( const string& fNM ) const;
 
 	// own method
@@ -54,6 +55,7 @@ public:
 	~CART_Predictor();
 	void train( const TR_Data& D );
 
+	vector<double> predict( const Data& T ) const;
 	double predict( const vector<double>& a );
 	void saveTrees( ofstream &fobj ) const;
 	
@@ -69,6 +71,7 @@ public:
 	const vector<double>& getLabels() const;
 	const vector<Node*>& getLeaf() const;
 	const vector<Node*>& getInNode() const;
+	const ST_Model& getModel() const;
 
 private:
 	void foundALeaf( Node *node, const vector<double> &L );
@@ -79,6 +82,8 @@ private:
 	vector<double> labels;
 	vector<Node*> leaf;
 	vector<Node*> inNode;	// for test
+
+	ST_Model model;
 
 	VAR_Measurer c_msr;		// default use accurater
 	//GINI d_msr;

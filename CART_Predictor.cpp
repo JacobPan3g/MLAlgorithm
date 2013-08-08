@@ -123,6 +123,8 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		}
 	}
 
+	this->model = ST_Model( this );
+
 	assert( this->high <= MAX_HIGH );
 	assert( root!=NULL );
 	assert( leaf.size()!=0 );
@@ -149,8 +151,7 @@ vector<double> CART_Predictor::predict( const Model& model, const TR_Data &T )
  */
 void CART_Predictor::saveModel( const string& fNM ) const
 {
-	ST_Model m( this );
-	m.save( fNM );
+	this->model.save( fNM );
 }
 
 // Own Method
@@ -183,6 +184,16 @@ void CART_Predictor::train( const TR_Data& D )
 	vector<int> cs( D.getM(), 1 );
 	vector<int> fs( D.getN(), 1 );
 	this->train( D, cs, fs );
+}
+
+vector<double> CART_Predictor::predict( const Data& T ) const
+{
+	int m = T.getM();
+	vector<double> res( m );
+	for ( int i = 0; i < m; i++ ) {
+		
+	}
+	return res;
 }
 
 double CART_Predictor::predict( const vector<double> &a )
@@ -279,6 +290,11 @@ const vector<Node*>& CART_Predictor::getInNode() const
 	return this->inNode;
 }
 
+const ST_Model& CART_Predictor::getModel() const
+{
+	return this->model;
+}
+
 // Private Method
 void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
 {
@@ -302,49 +318,90 @@ void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
 void test1()
 {
 
-//#define _TEST_1_1_
+#define _TEST_1_1_
 #define _TEST_1_2_
+#define _TEST_1_3_
+//#define _TEST_1_4_
 	
 	TR_Data D;
 	D.fmtread( "test/case1.fmt" );
 	int m = D.getM();
 	int n = D.getN();
+	
+	CART_Predictor c1T;
+	c1T.train( D );
 
 #ifdef _TEST_1_1_
-/* Test 1.1 
- * Type: averager
- * Goal: 1. calculation
- *		 2. tree-build
+/* Test 1.1
+ * Type: accurater
+ * Goal: 1. tree-build
  */
-/*	CART_Predictor c1T( D, 2 );
-	c1T.dispTree();
+	//c1T.dispTree();
 
-	assert( isAll(c1T.features, 1, tag) );
-	assert( c1T.inNode.size()==1 );
-	assert( c1T.inNode[0]->fIdx==0 );
-	assert( c1T.inNode[0]->obValue==0.5 );
-	assert( c1T.high==1 );
-	assert( c1T.leaf.size()==2 );
-	assert( c1T.labels[0]==1&&c1T.labels[1]==2);*/
+	vector<Node*> inNode = c1T.getInNode();
+	assert( inNode.size()==1 );
+	assert( inNode[0]->fIdx==0 );
+	assert( inNode[0]->obValue==0.5 );
+	assert( c1T.getHigh()==1 );
+	assert( c1T.getLeaf().size()==2 );
+	assert( c1T.getLabels()[0]==1&&c1T.getLabels()[1]==2);
 #endif
 
 #ifdef _TEST_1_2_
 /* Test 1.2
  * Type: accurater
- * Goal: 1. calculation
- *		 2. tree-build
+ * Goal: 1. test model
  */
-	CART_Predictor c2T;
-	c2T.train( D );
-	c2T.dispTree();
+	ST_Model model = c1T.getModel();
+	//disp( model.getFIdxV() );
+	//disp( model.getLeftV() );
+	//disp( model.getRightV() );
+	//disp( model.getObValV() );
+	
+	int m12f[] = { 0, -1, -1 };
+	int m12l[] = { 1, -1, -1 };
+	int m12r[] = { 2, -1, -1 };
+	double m12o[] = { 0.5, 1, 2 };
+	
+	assert( isSame(model.getFIdxV(),m12f,sizeof(m12f)/sizeof(int)) );
+	assert( isSame(model.getLeftV(),m12l,sizeof(m12l)/sizeof(int)) );
+	assert( isSame(model.getRightV(),m12r,sizeof(m12r)/sizeof(int)) );
+	assert( isSame(model.getObValV(),m12o,sizeof(m12o)/sizeof(double)) );
+#endif
 
-	vector<Node*> inNode = c2T.getInNode();
-	assert( inNode.size()==1 );
-	assert( inNode[0]->fIdx==0 );
-	assert( inNode[0]->obValue==0.5 );
-	assert( c2T.getHigh()==1 );
-	assert( c2T.getLeaf().size()==2 );
-	assert( c2T.getLabels()[0]==1&&c2T.getLabels()[1]==2);
+#ifdef _TEST_1_3_
+/* Test 1.3
+ * Type: accurater
+ * Goal: 1. test saveModel()
+ */
+	c1T.saveModel( "model/case1.mdl" );
+	ST_Model m13( "model/case1.mdl" );
+	//disp( m13.getFIdxV() );
+	//disp( m13.getLeftV() );
+	//disp( m13.getRightV() );
+	//disp( m13.getObValV() );
+	
+	int m13f[] = { 0, -1, -1 };
+	int m13l[] = { 1, -1, -1 };
+	int m13r[] = { 2, -1, -1 };
+	double m13o[] = { 0.5, 1, 2 };
+	
+	assert( isSame(m13.getFIdxV(),m13f,sizeof(m13f)/sizeof(int)) );
+	assert( isSame(m13.getLeftV(),m13l,sizeof(m13l)/sizeof(int)) );
+	assert( isSame(m13.getRightV(),m13r,sizeof(m13r)/sizeof(int)) );
+	assert( isSame(m13.getObValV(),m13o,sizeof(m13o)/sizeof(double)) );
+#endif
+
+#ifdef _TEST_1_4_
+/* Test 1.r
+ * Type: accurater
+ * Goal: 1. predict after train
+ */
+	Data T;
+	T.csvread( "case1.csv" );
+	vector<int> p = c1T.predict( T );
+	cout << rmse( p, T.getL() ) << endl;
+
 #endif
 }
 
@@ -404,9 +461,9 @@ void pro1Test( int maxH )
 int main()
 {
 	test1();	// done
-	test2();	// done
+//	test2();	// done
 	
-	pro1Test( 10 );
+//	pro1Test( 10 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

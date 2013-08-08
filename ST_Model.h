@@ -10,6 +10,8 @@
 #include "Model.h"
 using namespace std;
 
+class CART_Predictor;
+
 class ST_Model: public Model
 {
 public:
@@ -18,6 +20,7 @@ public:
 	void save( const string& fNM ) const;
 	
 	// Own Method
+	ST_Model();
 	ST_Model( const CART_Predictor* pdPtr );
 	ST_Model( const string& fNM );
 
