@@ -5,7 +5,7 @@
 	> Created Time: Tue 16 Jul 2013 07:30:40 PM CST
  *********************************************************************/
 
-#define _BG_DATA_UTEST_
+//#define _BG_DATA_UTEST_
 #define _BG_DATA_IN_IN_CHECK_
 
 

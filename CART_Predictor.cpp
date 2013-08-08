@@ -5,7 +5,7 @@
 	> Created Time: Sun 07 Jul 2013 10:57:34 AM CST
  ************************************************************************/
 
-#define _CART_PREDICTOR_UTEST_
+//#define _CART_PREDICTOR_UTEST_
 
 
 #include <queue>
@@ -162,6 +162,7 @@ void CART_Predictor::saveModel( const string& fNM ) const
 // Own Method
 CART_Predictor::CART_Predictor( int maxH )
 {
+	this->root = NULL;
 	this->c_msr = VAR_Measurer();
 	this->MAX_HIGH = maxH;
 	this->high = 0;
@@ -169,6 +170,9 @@ CART_Predictor::CART_Predictor( int maxH )
 
 CART_Predictor::~CART_Predictor()
 {
+	if ( this->root == NULL )
+		return;
+
 	queue<Node*> q;
 	q.push( this->root );
 	while( !q.empty() )
@@ -193,45 +197,12 @@ void CART_Predictor::train( const TR_Data& D )
 
 vector<double> CART_Predictor::predict( const Data& T ) const
 {
-	int m = T.getM();
-	vector<double> res( m );
-	for ( int i = 0; i < m; i++ ) {
-		res[i] = this->predict( T.getA()[i] );
-	}
-	return res;
+	return this->predict( this->model, T );
 }
 
 double CART_Predictor::predict( const vector<double> &a ) const
 {
-/*
-	Node *node = this->root;
-	while( node->fIdx != -1 )
-	{
-
-		if ( a[node->fIdx] <= node->obValue )
-			node = node->left;
-		else
-			node = node->right;
-	}
-	return this->labels[node->lIdx];
-	*/
-	
-	vector<int> fIdxV = this->model.getFIdxV();
-	vector<int> leftV = this->model.getLeftV();
-	vector<int> rightV = this->model.getRightV();
-	vector<double> obValV = this->model.getObValV();
-	
-	int i = 0;
-	while ( fIdxV[i] != -1 ) {
-		if ( a[fIdxV[i]] <= obValV[i] ) {
-			i = leftV[i];
-		}
-		else {
-			i = rightV[i];
-		}
-	}
-	return obValV[i];
-	
+	return this->predict( this->model, a );
 }
 
 double CART_Predictor::predict( const ST_Model& mdl, const vector<double> &a ) const
@@ -258,7 +229,7 @@ void CART_Predictor::saveTrees( ofstream &fobj ) const
 	
 }
 
-void CART_Predictor::dispTree() const
+void CART_Predictor::dispModel() const
 {
 	queue<Node*> q;
 	q.push(this->root);
@@ -360,17 +331,20 @@ void CART_Predictor::foundALeaf( Node *node, const vector<double> &L )
 void test1()
 {
 
-//#define _TEST_1_1_
-//#define _TEST_1_2_
-//#define _TEST_1_3_
-//#define _TEST_1_4_
+#define _TEST_1_1_
+#define _TEST_1_2_
+#define _TEST_1_3_
+#define _TEST_1_4_
 #define _TEST_1_5_
 	
 	TR_Data D;
 	D.fmtread( "test/case1.fmt" );
+	Data T;
+	T.csvread( "test/case1.csv" );
 	int m = D.getM();
 	int n = D.getN();
-	
+	vector<double> p;
+
 	CART_Predictor c1T;
 	c1T.train( D );
 
@@ -379,7 +353,7 @@ void test1()
  * Type: accurater
  * Goal: 1. tree-build
  */
-	//c1T.dispTree();
+	//c1T.dispModel();
 
 	vector<Node*> inNode = c1T.getInNode();
 	assert( inNode.size()==1 );
@@ -440,14 +414,12 @@ void test1()
  * Type: accurater
  * Goal: 1. predict after train
  */
-	Data T;
-	T.csvread( "test/case1.csv" );
-	vector<double> p = c1T.predict( T );
+	p = c1T.predict( T );
 	//disp( p );
 	//cout << rmse( p, T.getL() ) << endl;
 
-	double pp[] = {1,1,1,2,2};
-	assert( isSame(p,pp,sizeof(pp)/sizeof(double)) );
+	double p4[] = {1,1,1,2,2};
+	assert( isSame(p,p4,sizeof(p4)/sizeof(double)) );
 	assert( rmse(p,T.getL())==0 );
 #endif
 
@@ -456,16 +428,15 @@ void test1()
  * Type: accurater
  * Goal: 1. predict away train
  */
-	Data T;
-	T.csvread( "test/case1.csv" );
+	CART_Predictor c5T;
 	ST_Model m15( "model/case1.mdl" );
 
-	vector<double> p = c1T.predict( m15, T );
-	disp( p );
-	cout << rmse( p, T.getL() ) << endl;
+	p = c5T.predict( m15, T );
+	//disp( p );
+	//cout << rmse( p, T.getL() ) << endl;
 
-	double pp[] = {1,1,1,2,2};
-	assert( isSame(p,pp,sizeof(pp)/sizeof(double)) );
+	double p5[] = {1,1,1,2,2};
+	assert( isSame(p,p5,sizeof(p5)/sizeof(double)) );
 	assert( rmse(p,T.getL())==0 );
 #endif
 }
@@ -474,10 +445,19 @@ void test2()
 {
 
 #define _TEST_2_1_
+#define _TEST_2_2_
+#define _TEST_2_3_
+#define _TEST_2_4_
+#define _TEST_2_5_
 
 	TR_Data D;
 	//D.csvread( "test/case2.csv" );
 	D.fmtread( "test/case2.fmt" );
+	Data T;
+	T.csvread( "test/case2.csv" );
+	int m = D.getM();
+	int n = D.getN();
+	vector<double> p;
 
 #ifdef _TEST_2_1_
 /* Test 2.1
@@ -485,18 +465,94 @@ void test2()
  * Goal: 1. calculation
  *		 2. Tree-bulid
  */
-	CART_Predictor t1;
-	t1.train( D );
-	t1.dispTree();
+	CART_Predictor c1T;
+	c1T.train( D );
+	//c1T.dispModel();
 
-	vector<Node*> inNode = t1.getInNode();
-	vector<double> labels = t1.getLabels();
+	vector<Node*> inNode = c1T.getInNode();
+	vector<double> labels = c1T.getLabels();
 	assert( inNode.size()==2 );
 	assert( inNode[0]->fIdx==2&&inNode[1]->fIdx==1 );
 	assert( inNode[0]->obValue==0&&inNode[1]->obValue==0 );
-	assert( t1.getHigh()==2 );
-	assert( t1.getLeaf().size()==3 );
+	assert( c1T.getHigh()==2 );
+	assert( c1T.getLeaf().size()==3 );
 	assert( labels[0]==1&&labels[1]==0&&labels[2]==1 );
+#endif
+
+#ifdef _TEST_2_2_
+/* Test 2.2
+ * Type: accurater
+ * Goal: 1. test model
+ */
+	ST_Model model = c1T.getModel();
+	//disp( model.getFIdxV() );
+	//disp( model.getLeftV() );
+	//disp( model.getRightV() );
+	//disp( model.getObValV() );
+	
+	int m12f[] = { 2, 1, -1, -1, -1 };
+	int m12l[] = { 1, 3, -1, -1, -1 };
+	int m12r[] = { 2, 4, -1, -1, -1 };
+	double m12o[] = { 0, 0, 1, 0, 1 };
+	
+	assert( isSame(model.getFIdxV(),m12f,sizeof(m12f)/sizeof(int)) );
+	assert( isSame(model.getLeftV(),m12l,sizeof(m12l)/sizeof(int)) );
+	assert( isSame(model.getRightV(),m12r,sizeof(m12r)/sizeof(int)) );
+	assert( isSame(model.getObValV(),m12o,sizeof(m12o)/sizeof(double)) );
+#endif
+
+#ifdef _TEST_2_3_
+/* Test 2.3
+ * Type: accurater
+ * Goal: 1. test saveModel()
+ */
+	c1T.saveModel( "model/case2.mdl" );
+	ST_Model m13( "model/case2.mdl" );
+	//disp( m13.getFIdxV() );
+	//disp( m13.getLeftV() );
+	//disp( m13.getRightV() );
+	//disp( m13.getObValV() );
+	
+	int m13f[] = { 2, 1, -1, -1, -1 };
+	int m13l[] = { 1, 3, -1, -1, -1 };
+	int m13r[] = { 2, 4, -1, -1, -1 };
+	double m13o[] = { 0, 0, 1, 0, 1 };
+	
+	assert( isSame(m13.getFIdxV(),m13f,sizeof(m13f)/sizeof(int)) );
+	assert( isSame(m13.getLeftV(),m13l,sizeof(m13l)/sizeof(int)) );
+	assert( isSame(m13.getRightV(),m13r,sizeof(m13r)/sizeof(int)) );
+	assert( isSame(m13.getObValV(),m13o,sizeof(m13o)/sizeof(double)) );
+#endif
+
+#ifdef _TEST_2_4_
+/* Test 2.4
+ * Type: accurater
+ * Goal: 1. predict after train
+ */
+	p = c1T.predict( T );
+	//disp( p );
+	//cout << rmse( p, T.getL() ) << endl;
+
+	double p4[] = {0,0,1,1,0,0,0,1,1,1,1,1,1,1,0};
+	assert( isSame(p,p4,sizeof(p4)/sizeof(double)) );
+	assert( rmse(p,T.getL())==0 );
+#endif
+
+#ifdef _TEST_2_5_
+/* Test 2.5
+ * Type: accurater
+ * Goal: 1. predict away train
+ */
+	CART_Predictor c5T;
+	ST_Model m15( "model/case2.mdl" );
+
+	p = c5T.predict( m15, T );
+	//disp( p );
+	//cout << rmse( p, T.getL() ) << endl;
+
+	double p5[] = {0,0,1,1,0,0,0,1,1,1,1,1,1,1,0};
+	assert( isSame(p,p5,sizeof(p5)/sizeof(double)) );
+	assert( rmse(p,T.getL())==0 );
 #endif
 }
 
@@ -509,11 +565,12 @@ void pro1Test( int maxH )
 	CART_Predictor tree( maxH );
 	tree.train( D );
 
-	tree.dispTree();
-	tree.dispLeaves();
+	//tree.dispModel();
+	//tree.dispLeaves();
+	
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveModel( "trees/CART_Tree_B_1" );
+	tree.saveModel( "model/pro1_all" );
 	//cout << tree.inNode[17]->obValue << endl;
 	
 	// all use
@@ -526,9 +583,9 @@ void pro1Test( int maxH )
 int main()
 {
 	test1();	// done
-//	test2();	// done
+	test2();	// done
 	
-//	pro1Test( 10 );
+	pro1Test( 10 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

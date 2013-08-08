@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Predictor.h"
+//#include "Predictor.h"
 #include "VAR_Measurer.h"
 #include "ST_Model.h"
 using namespace std;
@@ -40,27 +40,30 @@ struct Node
 };
 
 
-class CART_Predictor: public Predictor
+class CART_Predictor//: public Predictor
 {
 
 public:
 	// virtual method	
-	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
-	vector<double> predict( const ST_Model& mdl, const Data& T ) const;
-	void saveModel( const string& fNM ) const;
 
 	// own method
 	CART_Predictor( int maxH=10 );
 	~CART_Predictor();
+	void saveModel( const string& fNM ) const;
+	void saveTrees( ofstream &fobj ) const;
+	
 	void train( const TR_Data& D );
+	void train( const TR_Data& D, const vector<int>& cs, const vector<int>& fs );
 
 	vector<double> predict( const Data& T ) const;
 	double predict( const vector<double>& a ) const;
+	
+	// use in predict part
+	vector<double> predict( const ST_Model& mdl, const Data& T ) const;
 	double predict( const ST_Model& mdl, const vector<double>& a ) const;
-	void saveTrees( ofstream &fobj ) const;
 	
 	// disp
-	void dispTree() const;
+	void dispModel() const;
 	void dispLeaves() const;
 
 	// getter
