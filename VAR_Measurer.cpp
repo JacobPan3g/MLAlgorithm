@@ -5,7 +5,7 @@
 	> Created Time: Mon 08 Jul 2013 01:36:58 PM CST
  *********************************************************************/
 
-//#define _VAR_MEASURER_UTEST_
+#define _VAR_MEASURER_UTEST_
 
 
 #include "VAR_Measurer.h"
@@ -45,46 +45,67 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	{
 		if ( !fs[i] )
 			continue;
-		
+
 		// Binary Search
-		int l_idx = 0;
-		int r_idx = this->sp[i].size() - 1;
-		double VARl, VARr;
-		while ( r_idx - l_idx > 1 ) {
+		int step, a_idx, b_idx, c_idx, a1_idx, b1_idx;
+		double a_VAR, b_VAR, c_VAR, a1_VAR, b1_VAR;
 
-			VARl = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
-			VARr = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
+		a_idx = 0;
+		b_idx = this->sp[i].size() - 1;
+		
+		while ( b_idx - a_idx > 2 ) {
+			step = (b_idx - a_idx) / 4;
+			c_idx = a_idx + 2*step;
+			a1_idx = a_idx + step;
+			b1_idx = b_idx - step;
+			
+			//a_VAR = this->computeVAR( i, a_idx, fmtV[i], L, m, n, cs );
+			//b_VAR = this->computeVAR( i, b_idx, fmtV[i], L, m, n, cs );
+			c_VAR = this->computeVAR( i, c_idx, fmtV[i], L, m, n, cs );
+			a1_VAR = this->computeVAR( i, a1_idx, fmtV[i], L, m, n, cs );
+			b1_VAR = this->computeVAR( i, b1_idx, fmtV[i], L, m, n, cs );
 
-			if ( VARl < VARr ) {
-				r_idx = (l_idx + r_idx) / 2;
+			if ( c_VAR <= a1_VAR && c_VAR <= b1_VAR ) {
+				a_idx = a1_idx;
+				b_idx = b1_idx;
+			}
+			else if ( c_VAR > a1_VAR && c_VAR <= b1_VAR ) {
+				b_idx = c_idx;
+			}
+			else if ( c_VAR <= a1_VAR && c_VAR > b1_VAR ) {
+				a_idx = c_idx;
 			}
 			else {
-				l_idx = (l_idx + r_idx) / 2;
+				cout << "!! else" << endl;
 			}
 		}
-		double var;
-		if ( l_idx != r_idx ) {
-			VARl = this->computeVAR( i, l_idx, fmtV[i], L, m, n, cs );
-			VARr = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
-			var = VARl < VARr? VARl : VARr;
-			r_idx = VARl < VARr? l_idx : r_idx;
-		}
-		else {
-			var = this->computeVAR( i, r_idx, fmtV[i], L, m, n, cs );
-		}
 
-//		if ( var == 0 ) {
-//			return MS(i, this->sp[i][r_idx], var);	
-//		}
+		// while b_idx - a_idx <= 2, i.e. size<=3
+		double var = 1e8;
+		int idx;
+		double tmp;
+		int nn1, nn2;
+		vector<int> pp1, pp2;
+		for ( int k = a_idx; k <= b_idx; k++  ) {
+			tmp = this->computeVAR( i, k, fmtV[i], L, m, n, cs );
+			if ( tmp < var ) {
+				var = tmp;
+				idx = k;
+				nn1 = this->num1;
+				nn2 = this->num2;
+				pp1 = this->part1;
+				pp2 = this->part2;
+			}
+		}
 
 		if ( var < minVar ) {
 			minIdx = i;
-			minObVal = this->sp[i][r_idx];	
+			minObVal = this->sp[i][idx];	
 			minVar = var;
-			n1 = this->num1;
-			n2 = this->num2;
-			p1 = this->part1;
-			p2 = this->part2;
+			n1 = nn1;
+			n2 = nn2;
+			p1 = pp1;
+			p2 = pp2;
 
 			if ( var == 0 ) {
 				break;
@@ -97,6 +118,7 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	this->part1 = p1;
 	this->part2 = p2;
 
+	//cout << countTag(cs) << " " << this->num1 << " " << this->num2 << endl; 
 	assert( countTag(cs)==this->num1+this->num2 );
 	assert( countTag(this->part1)==this->num1 );
 	assert( countTag(this->part2)==this->num2 );
@@ -339,6 +361,7 @@ void test1()
  * Goal: 1. test the calculation
  */
 	// res
+	cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
  	assert( res.fIdx==0&&res.obVal==0.5&&res.msVal==0 );
 	// part & num
 	int num1 = ms.getNum1();
@@ -418,6 +441,7 @@ void test2()
  * Goal: 1. test the calculation
  */
 	// res
+	cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
  	assert( res.fIdx==2&&res.obVal==0&&isEqual(res.msVal,0.13333) );
  	// num & part
 	int num1 = ms.getNum1();
@@ -456,8 +480,8 @@ void pro1Test()
 
 int main()
 {
-	test1();	//done
-	test2();	//done
+//	test1();	//done
+//	test2();	//done
 	
 	pro1Test();	//done
 
