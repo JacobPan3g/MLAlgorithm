@@ -21,7 +21,7 @@ public:
 
 	// own methods
 	VAR_Measurer();					// constructor for accurater
-
+/*
 	// getter
 	vector< vector<double> > getSp() const;
 	vector< vector<int> > getIdxs() const;
@@ -29,16 +29,23 @@ public:
 	const vector<int>& getPart2() const;
 	int getNum1() const;
 	int getNum2() const;
-
+*/
 private:
-	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs );
+	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, const vector<double>& L, int m, int n, vector<int> cs );
 	double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
 
 	// will update every loop
 	vector< vector<double> > sp;	// just use to test
-	vector< vector<int> > idxs;		// record cs for sp
-	vector<int> part1;
-	vector<int> part2;
-	int num1;
-	int num2;
+	vector< vector<int> > idxs;		// record num for each sp
+	vector< vector<double> > vars;	// for variance calculate
+	
+	vector< vector< vector<int> > > part1s;
+	vector< vector< vector<int> > > part2s;
+	vector< vector<int> > num1s;
+	vector< vector<int> > num2s;
+
+	vector< vector<double> > sums1;
+	vector< vector<double> > sqSums1;
+	vector<double> sums;
+	vector<double> sqSums;
 };

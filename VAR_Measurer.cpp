@@ -30,101 +30,60 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	assert( cs.size()==m );
 	assert( fs.size()==n );
 
-	this->getSplitPoints( fmtV, m, n, cs );
-
-	int minIdx = -1;
-	double minObVal = 0;
+	this->getSplitPoints( fmtV, L, m, n, cs );
+/*
+	this->vars.resize( n );
+	int minFIdx = -1;
+	int minSpIdx = -1;
 	double minVar = 1e8;
-	// record
-	int n1 = -1;
-	int n2 = -1;
-	vector<int> p1;
-	vector<int> p2;
 
 	for ( int i = 0; i < n; i++ )	
 	{
 		if ( !fs[i] )
 			continue;
+	
+		int sz = this->sp[i].size();
+		this->vars[i] = vector<double>( sz );
+		double sum = this->sums[i];
+		double aver = this->avers[i];
+		for ( int k = 0; k < sz; k++ ) {
+			// for calculation
+			int N1 = this->num1s[i][k];
+			int N2 = this->num2s[i][k];
+			double sqSum1 = this->sqSums1[i][k];
+			double sqSum2 = this->sqSums[i] - this->sqSums1[i][k];
+			double sum1 = this->sums1[i][k];
+			double sum2 = this->sums[i] - this->sums1[i][k];
+			double aver1 = sum1/N1;
+			double aver2 = sum2/N2;
+			double sqAver1 = pow( aver1, 2 );
+			double sqAver2 = pow( aver2, 2 );
 
-		// Binary Search
-		int step, a_idx, b_idx, c_idx, a1_idx, b1_idx;
-		double a_VAR, b_VAR, c_VAR, a1_VAR, b1_VAR;
-
-		a_idx = 0;
-		b_idx = this->sp[i].size() - 1;
-		
-		while ( b_idx - a_idx > 2 ) {
-			step = (b_idx - a_idx) / 4;
-			c_idx = a_idx + 2*step;
-			a1_idx = a_idx + step;
-			b1_idx = b_idx - step;
+			double var1 = sqSum1/N1 + 2*aver1*sum1/N1 + sqAver1;
+			double var2 = sqSum2/N2 + 2*aver2*sum1/N1 + sqAver2;
 			
-			//a_VAR = this->computeVAR( i, a_idx, fmtV[i], L, m, n, cs );
-			//b_VAR = this->computeVAR( i, b_idx, fmtV[i], L, m, n, cs );
-			c_VAR = this->computeVAR( i, c_idx, fmtV[i], L, m, n, cs );
-			a1_VAR = this->computeVAR( i, a1_idx, fmtV[i], L, m, n, cs );
-			b1_VAR = this->computeVAR( i, b1_idx, fmtV[i], L, m, n, cs );
+			int N = N1 + N2;
+			double var = N1/N*var1 + N2/N*var2;
+			var[i][k] = var;
 
-			if ( c_VAR <= a1_VAR && c_VAR <= b1_VAR ) {
-				a_idx = a1_idx;
-				b_idx = b1_idx;
-			}
-			else if ( c_VAR > a1_VAR && c_VAR <= b1_VAR ) {
-				b_idx = c_idx;
-			}
-			else if ( c_VAR <= a1_VAR && c_VAR > b1_VAR ) {
-				a_idx = c_idx;
-			}
-			else {
-				cout << "!! else" << endl;
-			}
-		}
-
-		// while b_idx - a_idx <= 2, i.e. size<=3
-		double var = 1e8;
-		int idx;
-		double tmp;
-		int nn1, nn2;
-		vector<int> pp1, pp2;
-		for ( int k = a_idx; k <= b_idx; k++  ) {
-			tmp = this->computeVAR( i, k, fmtV[i], L, m, n, cs );
-			if ( tmp < var ) {
-				var = tmp;
-				idx = k;
-				nn1 = this->num1;
-				nn2 = this->num2;
-				pp1 = this->part1;
-				pp2 = this->part2;
-			}
-		}
-
-		if ( var < minVar ) {
-			minIdx = i;
-			minObVal = this->sp[i][idx];	
-			minVar = var;
-			n1 = nn1;
-			n2 = nn2;
-			p1 = pp1;
-			p2 = pp2;
-
-			if ( var == 0 ) {
-				break;
+			if ( var < minVar ) {
+				minFIdx = i;
+				minSpIdx = k;
+				minVar = var;
 			}
 		}
 	}
-
-	this->num1 = n1;
-	this->num2 = n2;
-	this->part1 = p1;
-	this->part2 = p2;
 
 	//cout << countTag(cs) << " " << this->num1 << " " << this->num2 << endl; 
 	assert( countTag(cs)==this->num1+this->num2 );
 	assert( countTag(this->part1)==this->num1 );
 	assert( countTag(this->part2)==this->num2 );
-	assert( minIdx < n );
+	assert( minFIdx < n );
+	assert( minSpIdx < this->sp[minFidx].size() );
 
-	return MS(minIdx,minObVal,minVar);
+	return MS(minFIdx,this->sp[minSpIdx],minVar);
+*/
+	return MS( 0, 0, 0 );
 }
 
 double VAR_Measurer::estimateLabel( const vector<double> &L, const vector<int> &cs )
@@ -141,7 +100,7 @@ bool VAR_Measurer::endCondition( const vector<double> &L, vector<int> cs, int nu
 VAR_Measurer::VAR_Measurer()
 {
 }
-
+/*
 // getter
 vector< vector<int> > VAR_Measurer::getIdxs() const
 {
@@ -172,7 +131,7 @@ int VAR_Measurer::getNum2() const
 {
 	return this->num2;
 }
-
+*/
 
 // Private Method
 
@@ -181,7 +140,7 @@ int VAR_Measurer::getNum2() const
  *	Update:	sp, idxs
  *	Return: void 
  */
-void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmtV, int m, int n, vector<int> cs )
+void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmtV, const vector<double>& L, int m, int n, vector<int> cs )
 {
 	assert( fmtV.size()==n );
 	assert( fmtV[0].size()==m );
@@ -189,33 +148,61 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 
 	this->sp.resize( n );
 	this->idxs.resize( n );
+	this->sums1.resize( n );
+	this->sqSums1.resize( n );
+
+	this->sums = vector<double>( n, 0 );
+	this->sqSums = vector<double>( n, 0 );
+
+	//this->num1s.resize( n );
+	//this->part1s.resize( n );
+	//this->part2s.resize( n );
+	
 	for ( int i = 0; i < n; i++ ) {
 		this->sp[i] = vector<double>( m );
 		this->idxs[i] = vector<int>( m );
+		this->sums1[i] = vector<double>( m, 0 );
+		this->sqSums1[i] = vector<double>( m, 0 );
 		bool isFirst = true;
-		double beforeItem;
+		double beforeItem;		// the front diff Item
+
+		double sum = 0;
+		double sqSum = 0;
 
 		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
-		int num = 0;
-		int idx = 0;
+		int num = 0;	// num of sp
+		int num1 = 0;	// num of 1st part
+		int idx = 0;	// idx at all cases
 		for ( ; it != fmtV[i].end(); it++, idx++ ) {
 			if ( cs[it->first] ) {
+				num1++;
 				if ( isFirst ) {
 					isFirst = false;
 					beforeItem = it->second;
-					this->sp[i][num] = it->second;
-					num++;
 				}
 				else {
 					if ( beforeItem != it->second ) {
-						this->idxs[i][num-1] = idx;
+						
+						this->idxs[i][num] = idx;
+						this->sp[i][num] = (it->second+beforeItem)/2;
+						this->sums1[i][num] = sum;
+						this->sqSums1[i][num] = sqSum;
+						
+						//this->num1s[i][num] = num1;
+
+
 						beforeItem = it->second;
-						this->sp[i][num] = it->second;
 						num++;
 					}
 				}
+				// calculate the sum
+				sum += L[it->first];
+				sqSum += pow( L[it->first], 2 );
 			}
 		}
+		this->sums[i] = sum;
+		this->sqSums[i] = sqSum;
+
 		int sz = num==1? num : num-1;
 		this->sp[i].resize( sz );
 		this->idxs[i].resize( sz );
@@ -230,7 +217,7 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
  *	Update:	part1, part2, num1, num2
  *	Return: the VAR value 
  */
-double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs )
+/*double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs )
 {	
 	assert( fmt.size()==m );
 	assert( cs.size()==m );
@@ -287,7 +274,7 @@ double VAR_Measurer::computeVAR( int i, int k, const list< pair<int,double> >& f
 	double var = num1/num * var1 + num2/num * var2;
 	return var;
 }
-
+*/
 
 /*********************************************************************
  * Unit Test
