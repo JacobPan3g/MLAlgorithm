@@ -100,7 +100,7 @@ bool VAR_Measurer::endCondition( const vector<double> &L, vector<int> cs, int nu
 VAR_Measurer::VAR_Measurer()
 {
 }
-/*
+
 // getter
 vector< vector<int> > VAR_Measurer::getIdxs() const
 {
@@ -111,7 +111,7 @@ vector< vector<double> > VAR_Measurer::getSp() const
 {
 	return this->sp;
 }
-
+/*
 const vector<int>& VAR_Measurer::getPart1() const
 {
 	return this->part1;
@@ -154,28 +154,38 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 	this->sums = vector<double>( n, 0 );
 	this->sqSums = vector<double>( n, 0 );
 
-	//this->num1s.resize( n );
-	//this->part1s.resize( n );
-	//this->part2s.resize( n );
+	this->num1s.resize( n );
+	this->part1s.resize( n );
+	this->part2s.resize( n );
+	this->nums.resize( n );
 	
 	for ( int i = 0; i < n; i++ ) {
 		this->sp[i] = vector<double>( m );
 		this->idxs[i] = vector<int>( m );
 		this->sums1[i] = vector<double>( m, 0 );
 		this->sqSums1[i] = vector<double>( m, 0 );
+
+		this->num1s[i] = vector<int>( m, 0 );
+		this->part1s[i].resize( m );
+		this->part2s[i].resize( m );
+
 		bool isFirst = true;
 		double beforeItem;		// the front diff Item
 
-		double sum = 0;
-		double sqSum = 0;
+		double sum1 = 0;
+		double sqSum1 = 0;
+		int num1 = 0;	// num of 1st part
+		vector<int> p1( m, 0 );
+		vector<int> p2( cs );
 
 		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
 		int num = 0;	// num of sp
-		int num1 = 0;	// num of 1st part
 		int idx = 0;	// idx at all cases
 		for ( ; it != fmtV[i].end(); it++, idx++ ) {
+			//this->part1s[i][idx] = vector<int>( m, 0 );
+			//this->part2s[i][idx] = cs;
 			if ( cs[it->first] ) {
-				num1++;
+				//num1++;
 				if ( isFirst ) {
 					isFirst = false;
 					beforeItem = it->second;
@@ -185,30 +195,60 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 						
 						this->idxs[i][num] = idx;
 						this->sp[i][num] = (it->second+beforeItem)/2;
-						this->sums1[i][num] = sum;
-						this->sqSums1[i][num] = sqSum;
+						this->sums1[i][num] = sum1;
+						this->sqSums1[i][num] = sqSum1;
 						
-						//this->num1s[i][num] = num1;
-
+						this->num1s[i][num] = num1;
+						this->part1s[i][num] = p1;
+						this->part2s[i][num] = p2;
 
 						beforeItem = it->second;
 						num++;
 					}
 				}
+				// set the part
+				p1[num1] = 1;
+				p2[num1] = 0;
 				// calculate the sum
-				sum += L[it->first];
-				sqSum += pow( L[it->first], 2 );
+				sum1 += L[it->first];
+				sqSum1 += pow( L[it->first], 2 );
+				num1++;
 			}
 		}
-		this->sums[i] = sum;
-		this->sqSums[i] = sqSum;
+		// set the total
+		this->sums[i] = sum1;
+		this->sqSums[i] = sqSum1;
+		this->nums[i] = num1;
 
-		int sz = num==1? num : num-1;
+		// correct the size
+		int sz = num;
 		this->sp[i].resize( sz );
 		this->idxs[i].resize( sz );
+		this->sums1[i].resize( sz );
+		this->sqSums1[i].resize( sz );
+		this->num1s[i].resize( sz );
+		this->part1s[i].resize( sz );
+		this->part2s[i].resize( sz );
 	
-		assert( this->sp[i].size() <= m );
-		assert( this->sp[i].size()==this->idxs[i].size() );
+		// Assert
+		int ass_sp_num = this->sp[i].size();
+		assert( ass_sp_num <= m );
+		assert( ass_sp_num==this->idxs[i].size() );
+		assert( ass_sp_num==this->sums1[i].size() );
+		assert( ass_sp_num==this->sqSums1[i].size() );
+		assert( ass_sp_num==this->num1s[i].size() );
+		assert( ass_sp_num==this->part1s[i].size() );
+		assert( ass_sp_num==this->part2s[i].size() );
+		
+		srand( (int)time(0) );
+		if ( ass_sp_num != 0 ) {
+			int ass_idx = rand() % ass_sp_num;
+			assert( this->sums1[i][ass_idx] < this->sums[i] );
+			assert( this->sqSums1[i][ass_idx] < this->sqSums[i] );
+			assert( this->num1s[i][ass_idx] < this->nums[i] );
+			assert( this->num1s[i][ass_idx] <= this->idxs[i][ass_idx] );
+			assert( countTag(this->part1s[i][ass_idx])+countTag(this->part2s[i][ass_idx])==this->nums[i] );	
+		}
 	}
 }
 
@@ -287,8 +327,8 @@ void test1()
 {
 
 #define _TEST_1_1_
-#define _TEST_1_2_
-#define _TEST_1_3_
+//#define _TEST_1_2_
+//#define _TEST_1_3_
 
 	TR_Data D;	
 	VAR_Measurer ms;
@@ -312,13 +352,14 @@ void test1()
 	idxs.resize( D.getN() );
 	int c11v0[] = { 2, 3, 4 };
 	int c11v1[] = { 3 };
-	int c11v2[] = { 0 };
+	//int c11v2[] = { 0 };
 	int c11v3[] = { 1, 2, 3, 4 };
 	idxs[0] = vv1( c11v0, sizeof(c11v0)/sizeof(int) );
 	idxs[1] = vv1( c11v1, sizeof(c11v1)/sizeof(int) );
-	idxs[2] = vv1( c11v2, sizeof(c11v2)/sizeof(int) );
+	idxs[2].resize(0);
+	//idxs[2] = vv1( c11v2, sizeof(c11v2)/sizeof(int) );
 	idxs[3] = vv1( c11v3, sizeof(c11v3)/sizeof(int) );
-	//disp( ms.getIdxs() );
+	disp( ms.getIdxs() );
 	assert( isSame(ms.getIdxs(),idxs) );
 #endif
 
@@ -366,9 +407,9 @@ void test1()
 
 void test2()
 {
-#define _TEST_2_1_
-#define _TEST_2_2_
-#define _TEST_2_3_
+//#define _TEST_2_1_
+//#define _TEST_2_2_
+//#define _TEST_2_3_
 
 	TR_Data D;	
 	VAR_Measurer ms;
@@ -443,7 +484,7 @@ void test2()
 
 #endif
 }
-
+/*
 void pro1Test()
 {
 	time_t tic = clock();
@@ -463,14 +504,14 @@ void pro1Test()
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
-}
+}*/
 
 int main()
 {
-//	test1();	//done
+	test1();	//done
 //	test2();	//done
 	
-	pro1Test();	//done
+//	pro1Test();	//done
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

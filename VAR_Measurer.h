@@ -21,15 +21,15 @@ public:
 
 	// own methods
 	VAR_Measurer();					// constructor for accurater
-/*
+
 	// getter
 	vector< vector<double> > getSp() const;
 	vector< vector<int> > getIdxs() const;
-	const vector<int>& getPart1() const;
-	const vector<int>& getPart2() const;
-	int getNum1() const;
-	int getNum2() const;
-*/
+//	const vector<int>& getPart1() const;
+//	const vector<int>& getPart2() const;
+//	int getNum1() const;
+//	int getNum2() const;
+
 private:
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, const vector<double>& L, int m, int n, vector<int> cs );
 	double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
@@ -42,7 +42,7 @@ private:
 	vector< vector< vector<int> > > part1s;
 	vector< vector< vector<int> > > part2s;
 	vector< vector<int> > num1s;
-	vector< vector<int> > num2s;
+	vector<int> nums;
 
 	vector< vector<double> > sums1;
 	vector< vector<double> > sqSums1;
