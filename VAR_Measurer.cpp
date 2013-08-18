@@ -215,6 +215,20 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 				num1++;
 			}
 		}
+
+		if ( num == 0 ) {
+			this->idxs[i][num] = idx;
+			this->sp[i][num] = fmtV[i].begin()->second;
+			this->sums1[i][num] = sum1;
+			this->sqSums1[i][num] = sqSum1;
+			
+			this->num1s[i][num] = num1;
+			this->part1s[i][num] = p1;
+			this->part2s[i][num] = p2;
+			
+			num = 1;
+		}
+
 		// set the total
 		this->sums[i] = sum1;
 		this->sqSums[i] = sqSum1;
@@ -243,9 +257,9 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 		srand( (int)time(0) );
 		if ( ass_sp_num != 0 ) {
 			int ass_idx = rand() % ass_sp_num;
-			assert( this->sums1[i][ass_idx] < this->sums[i] );
-			assert( this->sqSums1[i][ass_idx] < this->sqSums[i] );
-			assert( this->num1s[i][ass_idx] < this->nums[i] );
+			assert( this->sums1[i][ass_idx] <= this->sums[i] );
+			assert( this->sqSums1[i][ass_idx] <= this->sqSums[i] );
+			assert( this->num1s[i][ass_idx] <= this->nums[i] );
 			assert( this->num1s[i][ass_idx] <= this->idxs[i][ass_idx] );
 			assert( countTag(this->part1s[i][ass_idx])+countTag(this->part2s[i][ass_idx])==this->nums[i] );	
 		}
@@ -327,7 +341,7 @@ void test1()
 {
 
 #define _TEST_1_1_
-//#define _TEST_1_2_
+#define _TEST_1_2_
 //#define _TEST_1_3_
 
 	TR_Data D;	
@@ -352,14 +366,13 @@ void test1()
 	idxs.resize( D.getN() );
 	int c11v0[] = { 2, 3, 4 };
 	int c11v1[] = { 3 };
-	//int c11v2[] = { 0 };
+	int c11v2[] = { 5 };
 	int c11v3[] = { 1, 2, 3, 4 };
 	idxs[0] = vv1( c11v0, sizeof(c11v0)/sizeof(int) );
 	idxs[1] = vv1( c11v1, sizeof(c11v1)/sizeof(int) );
-	idxs[2].resize(0);
-	//idxs[2] = vv1( c11v2, sizeof(c11v2)/sizeof(int) );
+	idxs[2] = vv1( c11v2, sizeof(c11v2)/sizeof(int) );
 	idxs[3] = vv1( c11v3, sizeof(c11v3)/sizeof(int) );
-	disp( ms.getIdxs() );
+	//disp( ms.getIdxs() );
 	assert( isSame(ms.getIdxs(),idxs) );
 #endif
 
@@ -370,10 +383,10 @@ void test1()
  * Goal: 1. test the sp
  */	 
 	sp.resize( D.getN() );
-	double c12sp0[] = { 0, 0.5, 0.7 };
-	double c12sp1[] = { 0 };
+	double c12sp0[] = { 0.25, 0.6, 0.8 };
+	double c12sp1[] = { 0.25 };
 	double c12sp2[] = { 0.5 };
-	double c12sp3[] = { 0, 0.4, 0.5, 0.8 };
+	double c12sp3[] = { 0.2, 0.45, 0.65, 0.85 };
 	sp[0] = vv1( c12sp0, sizeof(c12sp0)/sizeof(double) ); 
 	sp[1] = vv1( c12sp1, sizeof(c12sp1)/sizeof(double) ); 
 	sp[2] = vv1( c12sp2, sizeof(c12sp2)/sizeof(double) ); 
@@ -407,8 +420,8 @@ void test1()
 
 void test2()
 {
-//#define _TEST_2_1_
-//#define _TEST_2_2_
+#define _TEST_2_1_
+#define _TEST_2_2_
 //#define _TEST_2_3_
 
 	TR_Data D;	
@@ -450,10 +463,10 @@ void test2()
  * Goal: 1. test the sp
  */	 
 	sp.resize( D.getN() );
-	double c12sp0[] = { 0, 1 };
-	double c12sp1[] = { 0 };
-	double c12sp2[] = { 0 };
-	double c12sp3[] = { 0, 1 };
+	double c12sp0[] = { 0.5, 1.5 };
+	double c12sp1[] = { 0.5 };
+	double c12sp2[] = { 0.5 };
+	double c12sp3[] = { 0.5, 1.5 };
 	sp[0] = vv1( c12sp0, sizeof(c12sp0)/sizeof(double) ); 
 	sp[1] = vv1( c12sp1, sizeof(c12sp1)/sizeof(double) ); 
 	sp[2] = vv1( c12sp2, sizeof(c12sp2)/sizeof(double) ); 
@@ -509,7 +522,7 @@ void pro1Test()
 int main()
 {
 	test1();	//done
-//	test2();	//done
+	test2();	//done
 	
 //	pro1Test();	//done
 
