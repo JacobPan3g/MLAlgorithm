@@ -333,9 +333,9 @@ void test1()
 
 #define _TEST_1_1_
 #define _TEST_1_2_
-//#define _TEST_1_3_
-//#define _TEST_1_4_
-//#define _TEST_1_5_
+#define _TEST_1_3_
+#define _TEST_1_4_
+#define _TEST_1_5_
 	
 	TR_Data D;
 	D.fmtread( "test/case1.fmt" );
@@ -446,9 +446,9 @@ void test2()
 
 #define _TEST_2_1_
 #define _TEST_2_2_
-//#define _TEST_2_3_
-//#define _TEST_2_4_
-//#define _TEST_2_5_
+#define _TEST_2_3_
+#define _TEST_2_4_
+#define _TEST_2_5_
 
 	TR_Data D;
 	//D.csvread( "test/case2.csv" );
@@ -516,7 +516,7 @@ void test2()
 	int m13f[] = { 2, 1, -1, -1, -1 };
 	int m13l[] = { 1, 3, -1, -1, -1 };
 	int m13r[] = { 2, 4, -1, -1, -1 };
-	double m13o[] = { 0, 0, 1, 0, 1 };
+	double m13o[] = { 0.5, 0.5, 1, 0, 1 };
 	
 	assert( isSame(m13.getFIdxV(),m13f,sizeof(m13f)/sizeof(int)) );
 	assert( isSame(m13.getLeftV(),m13l,sizeof(m13l)/sizeof(int)) );
@@ -565,16 +565,15 @@ void pro1Test( int maxH )
 	CART_Predictor tree( maxH );
 	tree.train( D );
 
-	//tree.dispModel();
+	tree.dispModel();
 	//tree.dispLeaves();
 	
 	//cout << tree.predict( D.A[18] ) << endl;
 	
-	tree.saveModel( "model/pro1_all" );
+	tree.saveModel( "model/pro1_all_sr" );
 	//cout << tree.inNode[17]->obValue << endl;
-	
-	// all use
-	//assert( isAll(tree.features,0) );
+
+	assert( tree.getRoot()->fIdx==38 );
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
@@ -585,7 +584,7 @@ int main()
 	test1();	// done
 	test2();	// done
 	
-//	pro1Test( 10 );
+	pro1Test( 10 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
