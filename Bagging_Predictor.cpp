@@ -99,8 +99,8 @@ void test1()
 	BG_Data D;
 	D.fmtread( "test/case1.fmt" );
 
-	cout << D.getCs().size() << endl;
-	disp(D.getCs() );
+	//cout << D.getCs().size() << endl;
+	//disp(D.getCs() );
 
 	Data T;
 	T.csvread( "test/case1.csv" );

@@ -11,7 +11,7 @@
 #include "VAR_Measurer.h"
 #include "TR_Data.cpp"
 
-#define LEAF_MAX_NUM 5
+#define LEAF_MAX_NUM 1
 
 
 /* Function: measure()
@@ -122,7 +122,7 @@ double VAR_Measurer::estimateLabel( const vector<double> &L, const vector<int> &
 
 bool VAR_Measurer::endCondition( const vector<double> &L, vector<int> cs, int num )
 {
-	return num < LEAF_MAX_NUM;
+	return num <= LEAF_MAX_NUM;
 }
 
 // own methods
