@@ -139,6 +139,7 @@ void BG_Data_case1_check( BG_Data& D )	// shuffling() need non-const
  */
 	vector<int> old_cs = D.getCs();
 	vector<int> old_fs = D.getFs();
+	//disp( old_cs );
 	D.reshuffling();
 	assert( !isSame(old_cs,D.getCs()) );
 	assert( !isSame(old_fs,D.getFs()) );
@@ -165,6 +166,8 @@ void BG_Data_case2_check( BG_Data &D )
 	vector<int> old_cs = D.getCs();
 	vector<int> old_fs = D.getFs();
 	D.reshuffling();
+	assert( old_cs.size()==5&&D.getFs().size()==5 );
+	assert( old_fs.size()==4&&D.getFs().size()==4 );
 	assert( !isSame(old_cs,D.getCs()) );
 	assert( !isSame(old_fs,D.getFs()) );
 #endif
@@ -195,6 +198,8 @@ void BG_Data_pro1_check( BG_Data &D )
 	vector<int> old_cs = D.getCs();
 	vector<int> old_fs = D.getFs();
 	D.reshuffling();
+	assert( old_cs.size()==15&&D.getFs().size()==15 );
+	assert( old_fs.size()==4&&D.getFs().size()==4 );
 	assert( !isSame(old_cs,D.getCs()) );
 	assert( !isSame(old_fs,D.getFs()) );
 #endif
@@ -219,6 +224,8 @@ void test1()
 	BG_Data D;
 	D.fmtread( "test/case1.fmt" );
 	BG_Data_case1_check( D );	
+
+	//disp( D.getCs() );
 }
 
 void test2()
@@ -246,9 +253,9 @@ void pro1Test()
 int main()
 {
 	test1();	// done
-	test2();	// done
+	//test2();	// done
 
-	pro1Test();
+	//pro1Test();
 	
 	cout << "All Test Cases Passed." << endl;
 	return 0;

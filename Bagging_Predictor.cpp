@@ -9,6 +9,8 @@
 
 
 #include "Bagging_Predictor.h"
+
+#include "CART_Predictor.cpp"
 #include "BG_Data.cpp"
 
 
@@ -18,8 +20,13 @@ Bagging_Predictor::Bagging_Predictor( int bagNum, int maxH )
 	this->maxH = maxH;
 	this->baserPtrV.clear();
 }
+
 Bagging_Predictor::~Bagging_Predictor()
-{}
+{
+	for ( int i = 0; i < this->baserPtrV.size(); i++ ) {
+		delete this->baserPtrV[i];
+	}
+}
 
 void Bagging_Predictor::saveModel( const string& fNM ) const
 {
@@ -35,12 +42,19 @@ void Bagging_Predictor::dispModel() const
 void Bagging_Predictor::train( BG_Data& D )
 {
 	assert( this->baserPtrV.size()==0 );
+	assert( countTag(D.getCs())==D.getM() );
+	assert( countTag(D.getFs())==D.getN() );
+
+	//cout << D.getCs().size() << endl;
+	//disp( D.getCs() );
 
 	this->baserPtrV.resize( this->bagNum );
 	for ( int i = 0; i < this->bagNum; i++ ) {
 		D.reshuffling();
 		this->baserPtrV[i] = new CART_Predictor( this->maxH );
 		this->baserPtrV[i]->train( D, D.getCs(), D.getFs() );
+		
+		//this->baserPtrV[i]->dispModel();
 	}
 }
 
@@ -84,6 +98,10 @@ void test1()
 	
 	BG_Data D;
 	D.fmtread( "test/case1.fmt" );
+
+	cout << D.getCs().size() << endl;
+	disp(D.getCs() );
+
 	Data T;
 	T.csvread( "test/case1.csv" );
 
@@ -101,6 +119,8 @@ void test1()
 
 int main()
 {
+	test1();
+
 	return 0;
 }
 

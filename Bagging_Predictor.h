@@ -8,10 +8,8 @@
 #pragma once
 
 
-//#include "BG_Data.h"
+#include "BG_Data.h"
 #include "CART_Predictor.h"
-
-class BG_Data;
 
 class Bagging_Predictor
 {

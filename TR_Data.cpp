@@ -8,6 +8,10 @@
 //#define _TR_DATA_UTEST_
 #define _TR_DATA_IN_CHECK_
 
+#ifndef _TR_DATA_UTEST_
+#pragma once
+#endif
+
 
 #include "TR_Data.h"
 #include "Data.cpp"

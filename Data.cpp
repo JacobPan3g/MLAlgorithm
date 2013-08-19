@@ -8,6 +8,10 @@
 //#define _DATA_UTEST_
 #define _DATA_IN_CHECK_
 
+#ifndef _DATA_UTEST_
+#pragma once
+#endif
+
 
 #include "Data.h"
 
