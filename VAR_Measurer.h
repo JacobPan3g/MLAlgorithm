@@ -25,10 +25,12 @@ public:
 	// getter
 	vector< vector<double> > getSp() const;
 	vector< vector<int> > getIdxs() const;
-//	const vector<int>& getPart1() const;
-//	const vector<int>& getPart2() const;
-//	int getNum1() const;
-//	int getNum2() const;
+	vector< vector<double> > getVars() const;
+	// single getter
+	const vector<int>& getPart1( int i=-1, int k=-1 ) const;
+	const vector<int>& getPart2( int i=-1, int k=-1 ) const;
+	int getNum1( int i=-1, int k=-1 ) const;
+	int getNum2( int i=-1, int k=-1 ) const;
 
 private:
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, const vector<double>& L, int m, int n, vector<int> cs );
@@ -48,4 +50,8 @@ private:
 	vector< vector<double> > sqSums1;
 	vector<double> sums;
 	vector<double> sqSums;
+
+	// res idx
+	int fIdx;
+	int spIdx;
 };

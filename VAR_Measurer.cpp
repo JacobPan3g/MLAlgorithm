@@ -31,7 +31,7 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	assert( fs.size()==n );
 
 	this->getSplitPoints( fmtV, L, m, n, cs );
-/*
+
 	this->vars.resize( n );
 	int minFIdx = -1;
 	int minSpIdx = -1;
@@ -44,12 +44,12 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	
 		int sz = this->sp[i].size();
 		this->vars[i] = vector<double>( sz );
-		double sum = this->sums[i];
-		double aver = this->avers[i];
+		//double sum = this->sums[i];
+		//double aver = this->avers[i];
 		for ( int k = 0; k < sz; k++ ) {
 			// for calculation
-			int N1 = this->num1s[i][k];
-			int N2 = this->num2s[i][k];
+			double N1 = this->num1s[i][k] + 1e-8;
+			double N2 = this->nums[i] - this->num1s[i][k] + 1e-8;
 			double sqSum1 = this->sqSums1[i][k];
 			double sqSum2 = this->sqSums[i] - this->sqSums1[i][k];
 			double sum1 = this->sums1[i][k];
@@ -59,12 +59,13 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 			double sqAver1 = pow( aver1, 2 );
 			double sqAver2 = pow( aver2, 2 );
 
-			double var1 = sqSum1/N1 + 2*aver1*sum1/N1 + sqAver1;
-			double var2 = sqSum2/N2 + 2*aver2*sum1/N1 + sqAver2;
+			double var1 = sqSum1/N1 - 2*aver1*sum1/N1 + sqAver1;
+			double var2 = sqSum2/N2 - 2*aver2*sum2/N2 + sqAver2;
 			
-			int N = N1 + N2;
+			double N = N1 + N2;
+			assert( N != 0 );
 			double var = N1/N*var1 + N2/N*var2;
-			var[i][k] = var;
+			this->vars[i][k] = var;
 
 			if ( var < minVar ) {
 				minFIdx = i;
@@ -75,15 +76,17 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	}
 
 	//cout << countTag(cs) << " " << this->num1 << " " << this->num2 << endl; 
-	assert( countTag(cs)==this->num1+this->num2 );
-	assert( countTag(this->part1)==this->num1 );
-	assert( countTag(this->part2)==this->num2 );
+	//assert( countTag(cs)==this->num1+this->num2 );
+	//assert( countTag(this->part1)==this->num1 );
+	//assert( countTag(this->part2)==this->num2 );
 	assert( minFIdx < n );
-	assert( minSpIdx < this->sp[minFidx].size() );
+	assert( minSpIdx < this->sp[minFIdx].size() );
 
-	return MS(minFIdx,this->sp[minSpIdx],minVar);
-*/
-	return MS( 0, 0, 0 );
+	this->fIdx = minFIdx;
+	this->spIdx = minSpIdx;
+	return MS(minFIdx,this->sp[minFIdx][minSpIdx],minVar);
+
+//	return MS( 0, 0, 0 );
 }
 
 double VAR_Measurer::estimateLabel( const vector<double> &L, const vector<int> &cs )
@@ -111,27 +114,53 @@ vector< vector<double> > VAR_Measurer::getSp() const
 {
 	return this->sp;
 }
-/*
-const vector<int>& VAR_Measurer::getPart1() const
+
+vector< vector<double> > VAR_Measurer::getVars() const
 {
-	return this->part1;
+	return this->vars;
 }
 
-const vector<int>& VAR_Measurer::getPart2() const
+
+const vector<int>& VAR_Measurer::getPart1( int i, int k ) const
 {
-	return this->part2;
+	if ( i==-1&&k==-1 ) {
+		i = this->fIdx;
+		k = this->spIdx;
+	}
+
+	return this->part1s[i][k];
 }
 
-int VAR_Measurer::getNum1() const
+const vector<int>& VAR_Measurer::getPart2( int i, int k ) const
 {
-	return this->num1;
+	if ( i==-1&&k==-1 ) {
+		i = this->fIdx;
+		k = this->spIdx;
+	}
+
+	return this->part2s[i][k];
 }
 
-int VAR_Measurer::getNum2() const
+int VAR_Measurer::getNum1( int i, int k ) const
 {
-	return this->num2;
+	if ( i==-1&&k==-1 ) {
+		i = this->fIdx;
+		k = this->spIdx;
+	}
+
+	return this->num1s[i][k];
 }
-*/
+
+int VAR_Measurer::getNum2( int i, int k ) const
+{
+	if ( i==-1&&k==-1 ) {
+		i = this->fIdx;
+		k = this->spIdx;
+	}
+
+	return this->nums[i] - this->num1s[i][k];
+}
+
 
 // Private Method
 
@@ -207,8 +236,8 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 					}
 				}
 				// set the part
-				p1[num1] = 1;
-				p2[num1] = 0;
+				p1[it->first] = 1;
+				p2[it->first] = 0;
 				// calculate the sum
 				sum1 += L[it->first];
 				sqSum1 += pow( L[it->first], 2 );
@@ -342,13 +371,15 @@ void test1()
 
 #define _TEST_1_1_
 #define _TEST_1_2_
-//#define _TEST_1_3_
+#define _TEST_1_3_
+#define _TEST_1_4_
 
 	TR_Data D;	
 	VAR_Measurer ms;
 	MS res;
 	vector< vector<int> > idxs;
 	vector< vector<double> > sp;
+	vector< vector<double> > vars;
 	vector<int> r, c;	
 	
 	D.fmtread( "test/case1.fmt" );
@@ -399,36 +430,61 @@ void test1()
 /* Test 1.3
  * Type: accurater
  * Data: all in case1
- * Goal: 1. test the calculation
+ * Goal: 1. test the calculation of var
+ */
+	vars.resize( D.getN() );
+	double c13vars0[] = { 0.13333, 0, 0.15 };
+	double c13vars1[] = { 0 };
+	double c13vars2[] = { 0.24 };
+	double c13vars3[] = { 0.2, 0.13333, 0, 0.15 };
+	vars[0] = vv1( c13vars0, sizeof(c13vars0)/sizeof(double) ); 
+	vars[1] = vv1( c13vars1, sizeof(c13vars1)/sizeof(double) ); 
+	vars[2] = vv1( c13vars2, sizeof(c13vars2)/sizeof(double) ); 
+	vars[3] = vv1( c13vars3, sizeof(c13vars3)/sizeof(double) );
+	//disp( ms.getVars() );
+	assert( isSame(ms.getVars(),vars) );
+#endif
+
+#ifdef _TEST_1_4_
+/* Test 1.4
+ * Type: accurater
+ * Data: all in case1
+ * Goal: 1. test the res, num, and part
  */
 	// res
-	cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
- 	assert( res.fIdx==0&&res.obVal==0.5&&res.msVal==0 );
+	//cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
+ 	assert( res.fIdx==0&&res.obVal==0.6&&isEqual(res.msVal,0) );
+	
 	// part & num
 	int num1 = ms.getNum1();
 	int num2 = ms.getNum2();
 	vector<int> part1 = ms.getPart1();
 	vector<int> part2 = ms.getPart2();
+	//cout << num1 << " " << num2 << endl;
+	//disp( part1 );
+	//disp( part2 );
 	assert( num1==3&num2==2 );
 	int p1[] = {1,1,1,0,0};
 	int p2[] = {0,0,0,1,1};
 	assert( isSame(part1,p1,sizeof(p1)/sizeof(int)) );
 	assert( isSame(part2,p2,sizeof(p2)/sizeof(int)) );
-
 #endif
+
 }
 
 void test2()
 {
 #define _TEST_2_1_
 #define _TEST_2_2_
-//#define _TEST_2_3_
+#define _TEST_2_3_
+#define _TEST_2_4_
 
 	TR_Data D;	
 	VAR_Measurer ms;
 	MS res;
 	vector< vector<int> > idxs;
 	vector< vector<double> > sp;
+	vector< vector<double> > vars;
 	vector<int> r, c;	
 	
 	D.fmtread( "test/case2.fmt" );
@@ -438,7 +494,7 @@ void test2()
 	res = ms.measure( D, r, c );
 
 #ifdef _TEST_2_1_
-/* Test 1.1
+/* Test 2.1
  * Type: accurater
  * Data: all in case2
  * Goal: 1. test the idxs
@@ -457,7 +513,7 @@ void test2()
 #endif
 
 #ifdef _TEST_2_2_
-/* Test 1.2
+/* Test 2.2
  * Type: accurater
  * Data: all in case2
  * Goal: 1. test the sp
@@ -479,25 +535,47 @@ void test2()
 /* Test 2.3
  * Type: accurater
  * Data: all in case2
- * Goal: 1. test the calculation
+ * Goal: 1. test the calculation of var
+ */
+	vars.resize( D.getN() );
+	double c23vars0[] = { 0.22, 0.22 };
+	double c23vars1[] = { 0.16 };
+	double c23vars2[] = { 0.13333 };
+	double c23vars3[] = { 0.16, 0.18182 };
+	vars[0] = vv1( c23vars0, sizeof(c23vars0)/sizeof(double) ); 
+	vars[1] = vv1( c23vars1, sizeof(c23vars1)/sizeof(double) ); 
+	vars[2] = vv1( c23vars2, sizeof(c23vars2)/sizeof(double) ); 
+	vars[3] = vv1( c23vars3, sizeof(c23vars3)/sizeof(double) );
+	//disp( ms.getVars() );
+	assert( isSame(ms.getVars(),vars) );
+#endif
+
+#ifdef _TEST_2_4_
+/* Test 2.4
+ * Type: accurater
+ * Data: all in case2
+ * Goal: 1. test the res, num and part
  */
 	// res
-	cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
- 	assert( res.fIdx==2&&res.obVal==0&&isEqual(res.msVal,0.13333) );
+	//cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
+ 	assert( res.fIdx==2&&res.obVal==0.5&&isEqual(res.msVal,0.13333) );
  	// num & part
 	int num1 = ms.getNum1();
 	int num2 = ms.getNum2();
 	vector<int> part1 = ms.getPart1();
 	vector<int> part2 = ms.getPart2();
+	//cout << num1 << " " << num2 << endl;
+	//disp( part1 );
+	//disp( part2 );
 	assert( num1==9&num2==6 );
 	int p1[] = {1,1,1,0,1,1,1,0,0,0,0,0,1,1,1};
 	int p2[] = {0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,};
 	assert( isSame(part1,p1,sizeof(p1)/sizeof(int)) );
 	assert( isSame(part2,p2,sizeof(p2)/sizeof(int)) );
-
 #endif
+
 }
-/*
+
 void pro1Test()
 {
 	time_t tic = clock();
@@ -512,19 +590,19 @@ void pro1Test()
 	c =vector<int>( D.getN(), 1 );
 	ms = VAR_Measurer();
 	res = ms.measure( D, r, c );
-	//cout << res.obVal << endl;
+	cout << res.obVal << endl;
 	assert( res.fIdx==38&&isEqual(res.obVal,0.604861)&&isEqual(res.msVal,0.280569) );
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
-}*/
+}
 
 int main()
 {
 	test1();	//done
 	test2();	//done
 	
-//	pro1Test();	//done
+	pro1Test();	//done
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
