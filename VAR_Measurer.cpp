@@ -44,8 +44,6 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	
 		int sz = this->sp[i].size();
 		this->vars[i] = vector<double>( sz );
-		//double sum = this->sums[i];
-		//double aver = this->avers[i];
 		for ( int k = 0; k < sz; k++ ) {
 			// for calculation
 			double N1 = this->num1s[i][k] + 1e-8;
@@ -120,7 +118,7 @@ vector< vector<double> > VAR_Measurer::getVars() const
 	return this->vars;
 }
 
-
+/*
 const vector<int>& VAR_Measurer::getPart1( int i, int k ) const
 {
 	if ( i==-1&&k==-1 ) {
@@ -140,7 +138,7 @@ const vector<int>& VAR_Measurer::getPart2( int i, int k ) const
 
 	return this->part2s[i][k];
 }
-
+*/
 int VAR_Measurer::getNum1( int i, int k ) const
 {
 	if ( i==-1&&k==-1 ) {
@@ -184,8 +182,8 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 	this->sqSums = vector<double>( n, 0 );
 
 	this->num1s.resize( n );
-	this->part1s.resize( n );
-	this->part2s.resize( n );
+	//this->part1s.resize( n );
+	//this->part2s.resize( n );
 	this->nums.resize( n );
 	
 	for ( int i = 0; i < n; i++ ) {
@@ -195,8 +193,8 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 		this->sqSums1[i] = vector<double>( m, 0 );
 
 		this->num1s[i] = vector<int>( m, 0 );
-		this->part1s[i].resize( m );
-		this->part2s[i].resize( m );
+		//this->part1s[i].resize( m );
+		//this->part2s[i].resize( m );
 
 		bool isFirst = true;
 		double beforeItem;		// the front diff Item
@@ -204,15 +202,13 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 		double sum1 = 0;
 		double sqSum1 = 0;
 		int num1 = 0;	// num of 1st part
-		vector<int> p1( m, 0 );
-		vector<int> p2( cs );
+		//vector<int> p1( m, 0 );
+		//vector<int> p2( cs );
 
 		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
 		int num = 0;	// num of sp
 		int idx = 0;	// idx at all cases
 		for ( ; it != fmtV[i].end(); it++, idx++ ) {
-			//this->part1s[i][idx] = vector<int>( m, 0 );
-			//this->part2s[i][idx] = cs;
 			if ( cs[it->first] ) {
 				//num1++;
 				if ( isFirst ) {
@@ -228,16 +224,16 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 						this->sqSums1[i][num] = sqSum1;
 						
 						this->num1s[i][num] = num1;
-						this->part1s[i][num] = p1;
-						this->part2s[i][num] = p2;
+						//this->part1s[i][num] = p1;
+						//this->part2s[i][num] = p2;
 
 						beforeItem = it->second;
 						num++;
 					}
 				}
 				// set the part
-				p1[it->first] = 1;
-				p2[it->first] = 0;
+				//p1[it->first] = 1;
+				//p2[it->first] = 0;
 				// calculate the sum
 				sum1 += L[it->first];
 				sqSum1 += pow( L[it->first], 2 );
@@ -252,8 +248,8 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 			this->sqSums1[i][num] = sqSum1;
 			
 			this->num1s[i][num] = num1;
-			this->part1s[i][num] = p1;
-			this->part2s[i][num] = p2;
+			//this->part1s[i][num] = p1;
+			//this->part2s[i][num] = p2;
 			
 			num = 1;
 		}
@@ -270,8 +266,8 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 		this->sums1[i].resize( sz );
 		this->sqSums1[i].resize( sz );
 		this->num1s[i].resize( sz );
-		this->part1s[i].resize( sz );
-		this->part2s[i].resize( sz );
+		//this->part1s[i].resize( sz );
+		//this->part2s[i].resize( sz );
 	
 		// Assert
 		int ass_sp_num = this->sp[i].size();
@@ -279,18 +275,18 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 		assert( ass_sp_num==this->idxs[i].size() );
 		assert( ass_sp_num==this->sums1[i].size() );
 		assert( ass_sp_num==this->sqSums1[i].size() );
-		assert( ass_sp_num==this->num1s[i].size() );
-		assert( ass_sp_num==this->part1s[i].size() );
-		assert( ass_sp_num==this->part2s[i].size() );
+		//assert( ass_sp_num==this->num1s[i].size() );
+		//assert( ass_sp_num==this->part1s[i].size() );
+		//assert( ass_sp_num==this->part2s[i].size() );
 		
 		srand( (int)time(0) );
 		if ( ass_sp_num != 0 ) {
 			int ass_idx = rand() % ass_sp_num;
 			assert( this->sums1[i][ass_idx] <= this->sums[i] );
 			assert( this->sqSums1[i][ass_idx] <= this->sqSums[i] );
-			assert( this->num1s[i][ass_idx] <= this->nums[i] );
-			assert( this->num1s[i][ass_idx] <= this->idxs[i][ass_idx] );
-			assert( countTag(this->part1s[i][ass_idx])+countTag(this->part2s[i][ass_idx])==this->nums[i] );	
+			//assert( this->num1s[i][ass_idx] <= this->nums[i] );
+			//assert( this->num1s[i][ass_idx] <= this->idxs[i][ass_idx] );
+			//assert( countTag(this->part1s[i][ass_idx])+countTag(this->part2s[i][ass_idx])==this->nums[i] );	
 		}
 	}
 }
@@ -372,7 +368,7 @@ void test1()
 #define _TEST_1_1_
 #define _TEST_1_2_
 #define _TEST_1_3_
-#define _TEST_1_4_
+//#define _TEST_1_4_
 
 	TR_Data D;	
 	VAR_Measurer ms;
@@ -477,7 +473,7 @@ void test2()
 #define _TEST_2_1_
 #define _TEST_2_2_
 #define _TEST_2_3_
-#define _TEST_2_4_
+//#define _TEST_2_4_
 
 	TR_Data D;	
 	VAR_Measurer ms;
@@ -590,8 +586,8 @@ void pro1Test()
 	c =vector<int>( D.getN(), 1 );
 	ms = VAR_Measurer();
 	res = ms.measure( D, r, c );
-	cout << res.obVal << endl;
-	assert( res.fIdx==38&&isEqual(res.obVal,0.604861)&&isEqual(res.msVal,0.280569) );
+	//cout << res.fIdx << " " << res.obVal << " " << res.msVal << endl;
+	assert( res.fIdx==38&&isEqual(res.obVal,0.748239)&&isEqual(res.msVal,0.279294) );
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
@@ -599,8 +595,8 @@ void pro1Test()
 
 int main()
 {
-	test1();	//done
-	test2();	//done
+//	test1();	//done
+//	test2();	//done
 	
 	pro1Test();	//done
 

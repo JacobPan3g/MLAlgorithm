@@ -27,8 +27,8 @@ public:
 	vector< vector<int> > getIdxs() const;
 	vector< vector<double> > getVars() const;
 	// single getter
-	const vector<int>& getPart1( int i=-1, int k=-1 ) const;
-	const vector<int>& getPart2( int i=-1, int k=-1 ) const;
+	//const vector<int>& getPart1( int i=-1, int k=-1 ) const;
+	//const vector<int>& getPart2( int i=-1, int k=-1 ) const;
 	int getNum1( int i=-1, int k=-1 ) const;
 	int getNum2( int i=-1, int k=-1 ) const;
 
@@ -41,8 +41,8 @@ private:
 	vector< vector<int> > idxs;		// record num for each sp
 	vector< vector<double> > vars;	// for variance calculate
 	
-	vector< vector< vector<int> > > part1s;
-	vector< vector< vector<int> > > part2s;
+	//vector< vector< vector<int> > > part1s;
+	//vector< vector< vector<int> > > part2s;
 	vector< vector<int> > num1s;
 	vector<int> nums;
 
