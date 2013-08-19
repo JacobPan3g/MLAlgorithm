@@ -64,12 +64,12 @@ ST_Model::ST_Model()
 {
 }
 
-ST_Model::ST_Model( const CART_Predictor *pdPtr )
+ST_Model::ST_Model( const Node *root, const vector<double> labels )
 {
 	queue<const Node*> q;
 
-	const Node* root = pdPtr->getRoot();
-	vector<double> labels = pdPtr->getLabels();
+	//const Node* root = pdPtr->getRoot();
+	//vector<double> labels = pdPtr->getLabels();
 
 	this->fIdxV.push_back( root->fIdx );
 	q.push( root );

@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include "Model.h"
-using namespace std;
 
-class CART_Predictor;
+#include "Model.h"
+#include "Node.h"
 
 class ST_Model: public Model
 {
@@ -21,7 +20,8 @@ public:
 	
 	// Own Method
 	ST_Model();
-	ST_Model( const CART_Predictor* pdPtr );
+	//ST_Model( const CART_Predictor* pdPtr );
+	ST_Model( const Node *root, const vector<double> labels );
 	ST_Model( const string& fNM );
 
 	// getter
