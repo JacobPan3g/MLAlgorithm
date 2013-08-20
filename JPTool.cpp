@@ -237,6 +237,9 @@ double mean( const vector<T> &v, vector<int> tag=vector<int>() )
 	return res/nonzero(num);
 }
 
+/* meanR()
+ *	mean for row. return a row 
+ */
 template <class T>
 vector<double> meanR( const vector< vector<T> > &v2 )
 {

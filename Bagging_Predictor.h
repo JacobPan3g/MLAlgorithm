@@ -8,8 +8,9 @@
 #pragma once
 
 
-#include "BG_Data.h"
-#include "CART_Predictor.h"
+//#include "BG_Data.h"
+//#include "CART_Predictor.h"
+//#include "MT_Model.h"
 
 class Bagging_Predictor
 {
@@ -34,10 +35,13 @@ public:
 	int getBagNum() const;
 	int getMaxH() const;
 	const vector<CART_Predictor*> getBaserPtrV() const;
+	const MT_Model& getModel() const;
 
 private:
 	int bagNum;
 	int maxH;
 	vector<CART_Predictor*> baserPtrV;
+
+	MT_Model model;
 };
 

@@ -5,8 +5,9 @@
 	> Created Time: Thu 01 Aug 2013 04:15:49 PM CST
  *********************************************************************/
 
-#include "ST_Model.h"
+#pragma once
 
+#include "ST_Model.h"
 
 // Virtual Method
 void ST_Model::load( const string& fNM )
