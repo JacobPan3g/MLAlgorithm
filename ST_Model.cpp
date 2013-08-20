@@ -13,50 +13,14 @@
 void ST_Model::load( const string& fNM )
 {
 	ifstream fin( fNM.c_str() );
-	string tmpS;
-	int size;
-
-	fin >> tmpS >> size;
-	this->fIdxV = vector<int>( size );
-	this->leftV = vector<int>( size );
-	this->rightV = vector<int>( size );
-	this->obValV = vector<double>( size );
-
-	fin >> tmpS;
-	for ( int i = 0; i < size; i++ ) {
-		fin >> this->fIdxV[i];
-	}	
-	fin >> tmpS;
-	for ( int i = 0; i < size; i++ ) {
-		fin >> this->leftV[i];
-	}
-	fin >> tmpS;
-	for ( int i = 0; i < size; i++ ) {
-		fin >> this->rightV[i];
-	}
-	fin >> tmpS;
-	for ( int i = 0; i < size; i++ ) {
-		fin >> this->obValV[i];
-	}
+	this->load( fin );
 	fin.close();
 }
 
 void ST_Model::save( const string& fNM ) const
 {
-	assert( this->fIdxV.size()==this->leftV.size() );
-	assert( this->rightV.size()==this->obValV.size() );
-	assert( this->leftV.size()==this->rightV.size() );
-
 	ofstream fout( fNM.c_str() );
-	fout << "Size: " <<  this->fIdxV.size() << endl;
-	fout << "fIdxV" << endl;
-	txtwrite( fout, this->fIdxV );
-	fout << "leftV" << endl;
-	txtwrite( fout, this->leftV );
-	fout << "rightV" << endl;
-	txtwrite( fout, this->rightV );
-	fout << "obValV" << endl;
-	txtwrite( fout, this->obValV );
+	this->save( fout );
 	fout.close();
 }
 
@@ -118,6 +82,73 @@ ST_Model::ST_Model( const Node *root, const vector<double> labels )
 ST_Model::ST_Model( const string& fNM )
 {
 	this->load( fNM );
+}
+
+ST_Model::ST_Model( ifstream &fin )
+{
+	this->load( fin );
+}
+
+ST_Model::ST_Model( const ST_Model &mdl )
+{
+	this->fIdxV = mdl.fIdxV;
+	this->leftV = mdl.leftV;
+	this->rightV = mdl.rightV;
+	this->obValV = mdl.obValV;
+}
+
+void ST_Model::load( ifstream &fin )
+{
+	string tmpS;
+	int size;
+
+	fin >> tmpS >> size;
+	this->fIdxV = vector<int>( size );
+	this->leftV = vector<int>( size );
+	this->rightV = vector<int>( size );
+	this->obValV = vector<double>( size );
+
+	fin >> tmpS;
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->fIdxV[i];
+	}	
+	fin >> tmpS;
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->leftV[i];
+	}
+	fin >> tmpS;
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->rightV[i];
+	}
+	fin >> tmpS;
+	for ( int i = 0; i < size; i++ ) {
+		fin >> this->obValV[i];
+	}
+}
+
+void ST_Model::save( ofstream &fout ) const
+{
+	assert( this->fIdxV.size()==this->leftV.size() );
+	assert( this->rightV.size()==this->obValV.size() );
+	assert( this->leftV.size()==this->rightV.size() );
+
+	fout << "Size: " <<  this->fIdxV.size() << endl;
+	fout << "fIdxV" << endl;
+	txtwrite( fout, this->fIdxV );
+	fout << "leftV" << endl;
+	txtwrite( fout, this->leftV );
+	fout << "rightV" << endl;
+	txtwrite( fout, this->rightV );
+	fout << "obValV" << endl;
+	txtwrite( fout, this->obValV );	
+}
+
+void ST_Model::show() const
+{
+	disp( this->fIdxV );
+	disp( this->leftV );
+	disp( this->rightV );
+	disp( this->obValV );
 }
 
 // getter

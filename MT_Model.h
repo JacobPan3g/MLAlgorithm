@@ -8,10 +8,6 @@
 #pragma once
 
 
-//#include "ST_Model.h"
-
-//#include "CART_Predictor.h"
-
 class MT_Model
 {
 public:
@@ -25,11 +21,13 @@ public:
 	//MT_Model( const vector<CART_Predictor*> &pdPtrV );
 	MT_Model( const string& fNM );
 	void addModel( const ST_Model &mdl );
+	void show() const;
 
 	// getter
 	const vector<const ST_Model*> getMdlPtrV() const;
 
 private:
 	vector<const ST_Model*> mdlPtrV;
+	bool selfNew;
 };
 

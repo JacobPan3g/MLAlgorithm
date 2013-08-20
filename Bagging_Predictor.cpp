@@ -30,6 +30,7 @@ Bagging_Predictor::~Bagging_Predictor()
 
 void Bagging_Predictor::saveModel( const string& fNM ) const
 {
+	this->model.save( fNM );	
 }
 
 void Bagging_Predictor::dispModel() const
@@ -130,29 +131,35 @@ void test1()
 /* Test 1.1
  * Goal: 1. train
  */
-	bg.dispModel();
+	//bg.dispModel();
 #endif
 
 #ifdef _TEST_1_2_
 /* Test 1.2
  * Goal: 1. test model
  */
-	MT_Model mdl = bg.getModel();
-	vector<const ST_Model*> mdlPtrV = mdl.getMdlPtrV();
-	for ( int i = 0; i < mdlPtrV.size(); i++ ) {
-		ST_Model model = *(mdlPtrV[i]);
-		//disp( model.getFIdxV() );
-		//disp( model.getLeftV() );
-		//disp( model.getRightV() );
-		//disp( model.getObValV() );
-		
-		// just two high
-		int m12l[] = { 1, -1, -1 };
-		int m12r[] = { 2, -1, -1 };
-		
-		assert( isSame(model.getLeftV(),m12l,sizeof(m12l)/sizeof(int)) );
-		assert( isSame(model.getRightV(),m12r,sizeof(m12r)/sizeof(int)) );
-	}
+	MT_Model m12 = bg.getModel();
+	m12.show();
+#endif
+
+#ifdef _TEST_1_3_
+/* Test 1.3
+ * Goal: 1. test saveModel()
+ */
+	bg.saveModel( "model/case1.mmdl" );
+	MT_Model m13( "model/case1.mmdl" );
+	m13.show();
+/*
+	int m13f[] = { 0, -1, -1 };
+	int m13l[] = { 1, -1, -1 };
+	int m13r[] = { 2, -1, -1 };
+	double m13o[] = { 0.6, 1, 2 };
+	
+	assert( isSame(m13.getFIdxV(),m13f,sizeof(m13f)/sizeof(int)) );
+	assert( isSame(m13.getLeftV(),m13l,sizeof(m13l)/sizeof(int)) );
+	assert( isSame(m13.getRightV(),m13r,sizeof(m13r)/sizeof(int)) );
+	assert( isSame(m13.getObValV(),m13o,sizeof(m13o)/sizeof(double)) );
+*/
 #endif
 
 #ifdef _TEST_1_4_
@@ -189,7 +196,7 @@ void test2()
 /* Test 2.1
  * Goal: 1. train
  */
-	bg.dispModel();
+	//bg.dispModel();
 #endif
 
 	//p = bg.predict( T );

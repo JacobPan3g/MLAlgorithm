@@ -14,27 +14,43 @@
 // Virtual Method
 void MT_Model::load( const string& fNM )
 {
+	assert( this->mdlPtrV.size()==0 );
+	ifstream fin( fNM.c_str() );
+	string tmpS;
+	int sz;
+	fin >> tmpS >> sz;
+	this->mdlPtrV.resize( sz );
+	for ( int i = 0; i < sz; i++ ) {
+		this->mdlPtrV[i] = new ST_Model( fin );
+		//this->mdlPtrV[i]->load( fin );
+	}
+	fin.close();
 }
 
 void MT_Model::save( const string& fNM ) const
 {
+	ofstream fout( fNM.c_str() );
+	fout << "num: " << this->mdlPtrV.size() << endl;
 	for ( int i = 0; i < this->mdlPtrV.size(); i++ ) {
-		
+		fout << endl;
+		mdlPtrV[i]->save( fout );
 	}
+	fout.close();
 }
 
 // Own Method
 MT_Model::MT_Model()
 {
 	this->mdlPtrV.clear();
+	this->selfNew = false;
 }
 
 MT_Model::~MT_Model()
 {
 	// cause double free
-	//for ( int i = 0; i < this->mdlPtrV.size(); i++ ) {
-	//	delete this->mdlPtrV[i];
-	//}
+	if ( selfNew )
+		for ( int i = 0; i < this->mdlPtrV.size(); i++ )
+			delete this->mdlPtrV[i];
 }
 
 /*
@@ -48,11 +64,21 @@ MT_Model::MT_Model( const vector<CART_Predictor*> &pdPtrV )
 }*/
 
 MT_Model::MT_Model( const string& fNM )
-{}
+{
+	this->selfNew = true;
+	this->load( fNM );
+}
 
 void MT_Model::addModel( const ST_Model &mdl )
 {
 	this->mdlPtrV.push_back( &mdl );
+}
+
+void MT_Model::show() const
+{
+	for ( int i = 0; i < this->mdlPtrV.size(); i++ ) {
+		this->mdlPtrV[i]->show();
+	}
 }
 
 // getter

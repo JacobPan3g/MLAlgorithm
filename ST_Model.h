@@ -23,6 +23,11 @@ public:
 	//ST_Model( const CART_Predictor* pdPtr );
 	ST_Model( const Node *root, const vector<double> labels );
 	ST_Model( const string& fNM );
+	ST_Model( ifstream &fin );
+	ST_Model( const ST_Model &mdl );
+	void load( ifstream &fin );
+	void save( ofstream &fout ) const;
+	void show() const;
 
 	// getter
 	const vector<int>& getFIdxV() const;
@@ -30,6 +35,7 @@ public:
 	const vector<int>& getRightV() const;
 	const vector<double>& getObValV() const;
 
+	bool operator==( const ST_Model& mdl );
 private:
 	vector<int> fIdxV;
 	vector<int> leftV;
