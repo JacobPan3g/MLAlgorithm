@@ -41,6 +41,7 @@ public:
 
 	// big data getter
 	const vector< list< pair<int,double> > > getFmtV() const;
+	void setL( const vector<double> &L ) { this->L = L; }
 
 protected:
 	void init();
