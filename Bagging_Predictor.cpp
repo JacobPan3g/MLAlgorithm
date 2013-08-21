@@ -21,6 +21,17 @@ Bagging_Predictor::Bagging_Predictor( int bagNum, int maxH )
 	this->baserPtrV.clear();
 }
 
+Bagging_Predictor::Bagging_Predictor( const MT_Model &mdl )
+{
+	this->model = mdl;
+	const vector<const ST_Model*>& mdlPtrV = mdl.getMdlPtrV();
+	int sz = mdlPtrV.size();
+	this->baserPtrV.resize( sz );
+	for ( int i = 0; i < mdlPtrV.size(); i++ ) {
+		this->baserPtrV[i] = new CART_Predictor( *mdlPtrV[i] );
+	}
+}
+
 Bagging_Predictor::~Bagging_Predictor()
 {
 	for ( int i = 0; i < this->baserPtrV.size(); i++ ) {
@@ -77,7 +88,17 @@ vector<double> Bagging_Predictor::predict( const Data& T ) const
 //double Bagging_Predictor::predict( const vector<double>& a ) const;
 
 // use in predict part
-//vector<double> Bagging_Predictor::predict( const ST_Model& mdl, const Data& T ) const;
+vector<double> Bagging_Predictor::predict( const MT_Model& mdl, const Data& T ) const
+{
+	assert( this->bagNum!=0 );
+	vector< vector<double> > res( this->bagNum );
+	const vector<const ST_Model*>& mdlPtrV = mdl.getMdlPtrV();
+	for ( int i = 0; i < this->bagNum; i++ ) {
+		res[i] = this->baserPtrV[i]->predict( *(mdlPtrV[i]), T );
+	}
+	return meanR( res );
+}
+
 //double Bagging_Predictor::predict( const ST_Model& mdl, const vector<double>& a ) const;
 
 // getter
@@ -139,27 +160,18 @@ void test1()
  * Goal: 1. test model
  */
 	MT_Model m12 = bg.getModel();
-	m12.show();
+	//m12.show();
 #endif
 
 #ifdef _TEST_1_3_
 /* Test 1.3
- * Goal: 1. test saveModel()
+ * Goal: 1. test saveModel(): with( save() and load at MT_Model )
  */
 	bg.saveModel( "model/case1.mmdl" );
 	MT_Model m13( "model/case1.mmdl" );
-	m13.show();
-/*
-	int m13f[] = { 0, -1, -1 };
-	int m13l[] = { 1, -1, -1 };
-	int m13r[] = { 2, -1, -1 };
-	double m13o[] = { 0.6, 1, 2 };
-	
-	assert( isSame(m13.getFIdxV(),m13f,sizeof(m13f)/sizeof(int)) );
-	assert( isSame(m13.getLeftV(),m13l,sizeof(m13l)/sizeof(int)) );
-	assert( isSame(m13.getRightV(),m13r,sizeof(m13r)/sizeof(int)) );
-	assert( isSame(m13.getObValV(),m13o,sizeof(m13o)/sizeof(double)) );
-*/
+	//m13.show();
+
+	assert( bg.getModel()==m13 );
 #endif
 
 #ifdef _TEST_1_4_
@@ -170,6 +182,20 @@ void test1()
 	//disp( p );
 	//cout << rmse(p,T.getL()) << endl;
 	assert( rmse(p,T.getL())<0.3 );
+#endif
+
+#ifdef _TEST_1_5_
+/* Test 1.5
+ * Goal: 1. predict away train
+ */
+	MT_Model m15( "model/case1.mmdl" );
+	Bagging_Predictor c5T( m15 );
+
+	p = c5T.predict( T );
+	//disp( p );
+	//cout << rmse( p, T.getL() ) << endl;
+
+	//assert( rmse(p,T.getL())<0.3 );
 #endif
 }
 

@@ -82,7 +82,18 @@ void MT_Model::show() const
 }
 
 // getter
-const vector<const ST_Model*> MT_Model::getMdlPtrV() const
+const vector<const ST_Model*> &MT_Model::getMdlPtrV() const
 {
 	return this->mdlPtrV;
+}
+
+bool MT_Model::operator==( const MT_Model& mdl ) const 
+{
+	bool res = true;
+	for ( int i = 0; i < this->mdlPtrV.size(); i++ ) {
+		if ( !( *(this->mdlPtrV[i]) == *(mdl.mdlPtrV[i]) ) ) {
+			res = false;
+		}
+	}
+	return res;
 }

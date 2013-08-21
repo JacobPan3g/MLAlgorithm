@@ -8,12 +8,11 @@
 //#define _CART_PREDICTOR_UTEST_
 
 
-#include <queue>
-
-#include "CART_Predictor.h"
 #include "VAR_Measurer.cpp"
 #include "ST_Model.cpp"
 
+#include "CART_Predictor.h"
+#include <queue>
 
 /* Function: train()
  *		-- train for a model from data
@@ -166,6 +165,11 @@ CART_Predictor::CART_Predictor( int maxH )
 	this->c_msr = VAR_Measurer();
 	this->MAX_HIGH = maxH;
 	this->high = 0;
+}
+
+CART_Predictor::CART_Predictor( const ST_Model &mdl )
+{
+	this->model = mdl;
 }
 
 CART_Predictor::~CART_Predictor()
@@ -407,6 +411,7 @@ void test1()
 	assert( isSame(m13.getLeftV(),m13l,sizeof(m13l)/sizeof(int)) );
 	assert( isSame(m13.getRightV(),m13r,sizeof(m13r)/sizeof(int)) );
 	assert( isSame(m13.getObValV(),m13o,sizeof(m13o)/sizeof(double)) );
+	assert( c1T.getModel()==m13 );
 #endif
 
 #ifdef _TEST_1_4_

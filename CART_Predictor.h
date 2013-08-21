@@ -8,8 +8,8 @@
 #pragma once
 
 //#include "Predictor.h"
-#include "VAR_Measurer.h"
-#include "ST_Model.h"
+//#include "VAR_Measurer.h"
+//#include "ST_Model.h"
 
 
 class CART_Predictor//: public Predictor
@@ -20,6 +20,7 @@ public:
 
 	// own method
 	CART_Predictor( int maxH=10 );
+	CART_Predictor( const ST_Model &mdl );
 	~CART_Predictor();
 	void saveModel( const string& fNM ) const;
 	void saveTrees( ofstream &fobj ) const;

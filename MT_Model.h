@@ -24,7 +24,9 @@ public:
 	void show() const;
 
 	// getter
-	const vector<const ST_Model*> getMdlPtrV() const;
+	const vector<const ST_Model*> &getMdlPtrV() const;
+
+	bool operator==( const MT_Model& mdl ) const;
 
 private:
 	vector<const ST_Model*> mdlPtrV;

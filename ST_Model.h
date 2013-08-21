@@ -35,7 +35,7 @@ public:
 	const vector<int>& getRightV() const;
 	const vector<double>& getObValV() const;
 
-	bool operator==( const ST_Model& mdl );
+	bool operator==( const ST_Model& mdl ) const;
 private:
 	vector<int> fIdxV;
 	vector<int> leftV;

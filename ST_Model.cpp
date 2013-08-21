@@ -8,6 +8,7 @@
 #pragma once
 
 #include "ST_Model.h"
+#include <queue>
 
 // Virtual Method
 void ST_Model::load( const string& fNM )
@@ -170,4 +171,15 @@ const vector<int>& ST_Model::getRightV() const
 const vector<double>& ST_Model::getObValV() const
 {
 	return this->obValV;
+}
+
+bool ST_Model::operator==( const ST_Model& mdl ) const
+{
+	if ( isSame(this->fIdxV, mdl.fIdxV) 
+			&& isSame(this->leftV, mdl.leftV) 
+			&& isSame(this->rightV, mdl.rightV) 
+			&& isSame(this->obValV, mdl.obValV) ) {
+		return true;
+	}
+	return false;
 }
