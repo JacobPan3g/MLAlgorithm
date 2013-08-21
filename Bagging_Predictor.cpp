@@ -258,10 +258,45 @@ void test2()
 #endif
 }
 
+void pro1Test( int bagNum )
+{
+#define _PRO_1_DATAREAD_
+#define _PRO_1_TRAIN_
+#define _PRO_1_PREDICT_
+
+	time_t tic = clock();
+
+#ifdef _PRO_1_DATAREAD_
+	BG_Data D;
+	D.fmtread( "dataset/pro1.fmt" );
+#endif
+
+#ifdef _PRO_1_TRAIN_
+	Bagging_Predictor bg( bagNum );
+	bg.train( D );
+	bg.saveModel( "model/pro1.mmdl" );
+#endif
+
+#ifdef _PRO_1_PREDICT_
+	vector<double> p;
+	MT_Model mdl( "model/pro1.mmdl" );
+	p = Bagging_Predictor::predict( mdl, D );
+	double RMSE = rmse( p, D.getL() );
+	//disp( p );
+	cout << RMSE << endl;
+	assert( RMSE < 0.5 );
+#endif
+
+	time_t toc = clock();
+	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
+}
+
 int main()
 {
-	test1();
-	test2();
+	test1();	//done
+	test2();	//done
+
+	pro1Test( 16 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;

@@ -557,7 +557,7 @@ void test2()
 	assert( rmse(p,T.getL())==0 );
 #endif
 }
-
+/*
 void pro1Test( int maxH )
 {
 	time_t tic = clock();
@@ -579,8 +579,41 @@ void pro1Test( int maxH )
 
 	time_t toc = clock();
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
-}
+}*/
 
+void pro1Test( int maxH )
+{
+#define _PRO_1_DATAREAD_
+#define _PRO_1_TRAIN_
+#define _PRO_1_PREDICT_
+
+	time_t tic = clock();
+
+#ifdef _PRO_1_DATAREAD_
+	TR_Data D;
+	D.fmtread( "dataset/pro1.fmt" );
+#endif
+
+#ifdef _PRO_1_TRAIN_
+	CART_Predictor cart( maxH );
+	cart.train( D );
+	//cart.dispModel();
+	cart.saveModel( "model/pro1.smdl" );
+#endif
+
+#ifdef _PRO_1_PREDICT_
+	vector<double> p;
+	ST_Model mdl( "model/pro1.smdl" );
+	p = CART_Predictor::predict( mdl, D );
+	double RMSE = rmse( p, D.getL() );
+	//disp( p );
+	cout << RMSE << endl;
+	assert( RMSE < 0.5 );
+#endif
+
+	time_t toc = clock();
+	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
+}
 int main()
 {
 	test1();	// done
