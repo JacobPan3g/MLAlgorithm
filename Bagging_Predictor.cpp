@@ -14,22 +14,25 @@
 
 #include "Bagging_Predictor.h"
 
+// Static Method
+vector<double> Bagging_Predictor::predict( const MT_Model& mdl, const Data& T )
+{
+	const vector<const ST_Model*>& mdlPtrV = mdl.getMdlPtrV();
+	int bagNum = mdlPtrV.size();
+	vector< vector<double> > res( bagNum );
+	for ( int i = 0; i < bagNum; i++ ) {
+		res[i] = CART_Predictor::predict( *(mdlPtrV[i]), T );
+	}
+	return meanR( res );
+}
+
+//double Bagging_Predictor::predict( const MT_Model& mdl, const vector<double>& a );
+
 Bagging_Predictor::Bagging_Predictor( int bagNum, int maxH )
 {
 	this->bagNum = bagNum;
 	this->maxH = maxH;
 	this->baserPtrV.clear();
-}
-
-Bagging_Predictor::Bagging_Predictor( const MT_Model &mdl )
-{
-	this->model = mdl;
-	const vector<const ST_Model*>& mdlPtrV = mdl.getMdlPtrV();
-	int sz = mdlPtrV.size();
-	this->baserPtrV.resize( sz );
-	for ( int i = 0; i < mdlPtrV.size(); i++ ) {
-		this->baserPtrV[i] = new CART_Predictor( *mdlPtrV[i] );
-	}
 }
 
 Bagging_Predictor::~Bagging_Predictor()
@@ -86,20 +89,6 @@ vector<double> Bagging_Predictor::predict( const Data& T ) const
 }
 
 //double Bagging_Predictor::predict( const vector<double>& a ) const;
-
-// use in predict part
-vector<double> Bagging_Predictor::predict( const MT_Model& mdl, const Data& T ) const
-{
-	assert( this->bagNum!=0 );
-	vector< vector<double> > res( this->bagNum );
-	const vector<const ST_Model*>& mdlPtrV = mdl.getMdlPtrV();
-	for ( int i = 0; i < this->bagNum; i++ ) {
-		res[i] = this->baserPtrV[i]->predict( *(mdlPtrV[i]), T );
-	}
-	return meanR( res );
-}
-
-//double Bagging_Predictor::predict( const ST_Model& mdl, const vector<double>& a ) const;
 
 // getter
 int Bagging_Predictor::getBagNum() const
@@ -189,13 +178,12 @@ void test1()
  * Goal: 1. predict away train
  */
 	MT_Model m15( "model/case1.mmdl" );
-	Bagging_Predictor c5T( m15 );
 
-	p = c5T.predict( T );
+	p = Bagging_Predictor::predict( m15, T );
 	//disp( p );
 	//cout << rmse( p, T.getL() ) << endl;
 
-	//assert( rmse(p,T.getL())<0.3 );
+	assert( rmse(p,T.getL())<0.3 );
 #endif
 }
 
@@ -227,6 +215,47 @@ void test2()
 
 	//p = bg.predict( T );
 	//disp( p );
+#ifdef _TEST_2_2_
+/* Test 2.2
+ * Goal: 1. test model
+ */
+	MT_Model m12 = bg.getModel();
+	//m12.show();
+#endif
+
+#ifdef _TEST_2_3_
+/* Test 2.3
+ * Goal: 1. test saveModel(): with( save() and load at MT_Model )
+ */
+	bg.saveModel( "model/case2.mmdl" );
+	MT_Model m13( "model/case2.mmdl" );
+	//m13.show();
+
+	assert( bg.getModel()==m13 );
+#endif
+
+#ifdef _TEST_2_4_
+/* Test 2.4
+ * Goal: 1. predict after train
+ */
+	p = bg.predict( T );
+	//disp( p );
+	//cout << rmse(p,T.getL()) << endl;
+	assert( rmse(p,T.getL())<0.3 );
+#endif
+
+#ifdef _TEST_2_5_
+/* Test 2.5
+ * Goal: 1. predict away train
+ */
+	MT_Model m15( "model/case2.mmdl" );
+
+	p = Bagging_Predictor::predict( m15, T );
+	//disp( p );
+	//cout << rmse( p, T.getL() ) << endl;
+
+	assert( rmse(p,T.getL())<0.3 );
+#endif
 }
 
 int main()

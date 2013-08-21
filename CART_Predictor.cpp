@@ -1,9 +1,9 @@
-/*************************************************************************
-	> File Name: tree.cpp
-	> Author: ma6174
-	> Mail: ma6174@163.com 
+/**********************************************************************
+	> File Name: CART_Predictor.cpp
+	> Author: Jacob Pan
+	> Mail: zhenjian3g@gmail.com 
 	> Created Time: Sun 07 Jul 2013 10:57:34 AM CST
- ************************************************************************/
+ *********************************************************************/
 
 //#define _CART_PREDICTOR_UTEST_
 
@@ -13,6 +13,37 @@
 
 #include "CART_Predictor.h"
 #include <queue>
+
+// Static Methods
+vector<double> CART_Predictor::predict( const ST_Model& mdl, const Data& T )
+{
+	int m = T.getM();
+	vector<double> res( m );
+	for ( int i = 0; i < m; i++ ) {
+		res[i] = predict( mdl, T.getA()[i] );
+	}
+	return res;
+}
+
+double CART_Predictor::predict( const ST_Model& mdl, const vector<double> &a )
+{
+	vector<int> fIdxV = mdl.getFIdxV();
+	vector<int> leftV = mdl.getLeftV();
+	vector<int> rightV = mdl.getRightV();
+	vector<double> obValV = mdl.getObValV();
+	
+	int i = 0;
+	while ( fIdxV[i] != -1 ) {
+		if ( a[fIdxV[i]] <= obValV[i] ) {
+			i = leftV[i];
+		}
+		else {
+			i = rightV[i];
+		}
+	}
+	return obValV[i];	
+}
+
 
 /* Function: train()
  *		-- train for a model from data
@@ -136,15 +167,6 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
 
-vector<double> CART_Predictor::predict( const ST_Model& mdl, const Data& T ) const
-{
-	int m = T.getM();
-	vector<double> res( m );
-	for ( int i = 0; i < m; i++ ) {
-		res[i] = this->predict( mdl, T.getA()[i] );
-	}
-	return res;
-}
 
 
 /* Function: saveModel()
@@ -165,11 +187,6 @@ CART_Predictor::CART_Predictor( int maxH )
 	this->c_msr = VAR_Measurer();
 	this->MAX_HIGH = maxH;
 	this->high = 0;
-}
-
-CART_Predictor::CART_Predictor( const ST_Model &mdl )
-{
-	this->model = mdl;
 }
 
 CART_Predictor::~CART_Predictor()
@@ -209,24 +226,6 @@ double CART_Predictor::predict( const vector<double> &a ) const
 	return this->predict( this->model, a );
 }
 
-double CART_Predictor::predict( const ST_Model& mdl, const vector<double> &a ) const
-{
-	vector<int> fIdxV = mdl.getFIdxV();
-	vector<int> leftV = mdl.getLeftV();
-	vector<int> rightV = mdl.getRightV();
-	vector<double> obValV = mdl.getObValV();
-	
-	int i = 0;
-	while ( fIdxV[i] != -1 ) {
-		if ( a[fIdxV[i]] <= obValV[i] ) {
-			i = leftV[i];
-		}
-		else {
-			i = rightV[i];
-		}
-	}
-	return obValV[i];	
-}
 
 void CART_Predictor::saveTrees( ofstream &fobj ) const
 {
@@ -433,10 +432,9 @@ void test1()
  * Type: accurater
  * Goal: 1. predict away train
  */
-	CART_Predictor c5T;
 	ST_Model m15( "model/case1.mdl" );
 
-	p = c5T.predict( m15, T );
+	p = CART_Predictor::predict( m15, T );
 	//disp( p );
 	//cout << rmse( p, T.getL() ) << endl;
 
@@ -548,10 +546,9 @@ void test2()
  * Type: accurater
  * Goal: 1. predict away train
  */
-	CART_Predictor c5T;
 	ST_Model m15( "model/case2.mdl" );
 
-	p = c5T.predict( m15, T );
+	p = CART_Predictor::predict( m15, T );
 	//disp( p );
 	//cout << rmse( p, T.getL() ) << endl;
 

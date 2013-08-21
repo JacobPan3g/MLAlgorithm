@@ -15,8 +15,12 @@
 class Bagging_Predictor
 {
 public:
+	// Static Method
+	static vector<double> predict( const MT_Model& mdl, const Data& T );
+	//static double predict( const MT_Model& mdl, const vector<double>& a );
+	
 	Bagging_Predictor( int bagNum, int maxH=10 );
-	Bagging_Predictor( const MT_Model& mdl );	
+//	Bagging_Predictor( const MT_Model& mdl );	
 	~Bagging_Predictor();
 
 	void saveModel( const string& fNM ) const;
@@ -26,11 +30,8 @@ public:
 	void train( BG_Data& D, const vector<int>& cs, const vector<int>& fs );
 
 	vector<double> predict( const Data& T ) const;
-	double predict( const vector<double>& a ) const;
+	//double predict( const vector<double>& a ) const;
 	
-	// use in predict part
-	vector<double> predict( const MT_Model& mdl, const Data& T ) const;
-	double predict( const MT_Model& mdl, const vector<double>& a ) const;
 
 	// getter
 	int getBagNum() const;

@@ -16,11 +16,14 @@ class CART_Predictor//: public Predictor
 {
 
 public:
+	// Static Method
+	static vector<double> predict( const ST_Model& mdl, const Data& T );
+	static double predict( const ST_Model& mdl, const vector<double>& a );
+
 	// virtual method	
 
 	// own method
 	CART_Predictor( int maxH=10 );
-	CART_Predictor( const ST_Model &mdl );
 	~CART_Predictor();
 	void saveModel( const string& fNM ) const;
 	void saveTrees( ofstream &fobj ) const;
@@ -30,10 +33,6 @@ public:
 
 	vector<double> predict( const Data& T ) const;
 	double predict( const vector<double>& a ) const;
-	
-	// use in predict part
-	vector<double> predict( const ST_Model& mdl, const Data& T ) const;
-	double predict( const ST_Model& mdl, const vector<double>& a ) const;
 	
 	// disp
 	void dispModel() const;
