@@ -163,7 +163,11 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	assert( leaf.size()!=0 );
 	assert( leaf.size()==labels.size() );
 	assert( countTag(myFs)+inNode.size()==countTag(fs) );
-	assert( high <= (int)log2(n)+1 );
+	//if (!( high <= (int)log2(n)+1 )) {
+	//	cout << high << " " << (int)log2(n)+1 << endl;
+	//	this->dispModel();
+	//}
+	//assert( high <= (int)log2(n)+1 );	// not a complete binary tree
 	assert( inNode.size()-sinNodeNum+1==leaf.size() );	//(m-1)i+1=t
 }
 

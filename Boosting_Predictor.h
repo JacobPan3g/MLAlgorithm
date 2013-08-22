@@ -5,8 +5,8 @@
 	> Created Time: Wed 21 Aug 2013 07:31:40 PM CST
  *********************************************************************/
 
-#include <iostream>
-using namespace std;
+#pragma once
+
 
 class Boosting_Predictor
 {

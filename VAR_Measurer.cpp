@@ -293,8 +293,8 @@ void VAR_Measurer::getSplitPoints( const vector< list< pair<int,double> > >& fmt
 		srand( (int)time(0) );
 		if ( ass_sp_num != 0 ) {
 			int ass_idx = rand() % ass_sp_num;
-			assert( this->sums1[i][ass_idx] <= this->sums );
-			assert( this->sqSums1[i][ass_idx] <= this->sqSums );
+			//assert( this->sums1[i][ass_idx] <= this->sums );
+			assert( this->sqSums1[i][ass_idx] <= this->sqSums+1e-5 );
 			assert( this->num1s[i][ass_idx] <= this->nums );
 			assert( this->num1s[i][ass_idx] <= this->idxs[i][ass_idx] );
 			//assert( countTag(this->part1s[i][ass_idx])+countTag(this->part2s[i][ass_idx])==this->nums[i] );	
