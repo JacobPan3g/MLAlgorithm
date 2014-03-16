@@ -601,7 +601,7 @@ void pro1Test( int maxH )
 #ifdef _PRO_1_TRAIN_
 	CART_Predictor cart( maxH );
 	cart.train( D );
-	//cart.dispModel();
+	cart.dispModel();
 	cart.saveModel( "model/pro1.smdl" );
 #endif
 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-class RGF_Predictor: public Boost_Predictor
+class RGF_Predictor
 {
 public:
 	// Static Method
@@ -16,5 +16,11 @@ public:
 	RFG_Predictor( int maxH=10 );
 	
 	void train( TR_Data& D );
+
+private:
+	int maxH;
+
+	TR_Data D;
+	CARTx_Predictor* pdPtr;
 };
 

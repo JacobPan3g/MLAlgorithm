@@ -7,10 +7,6 @@
 
 #pragma once
 
-//#include "Predictor.h"
-//#include "VAR_Measurer.h"
-//#include "ST_Model.h"
-
 
 class CART_Predictor//: public Predictor
 {
