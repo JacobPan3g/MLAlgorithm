@@ -182,6 +182,7 @@ int VAR_Measurer::getNum2( int i, int k ) const
 
 /* Function: getSplitPoints()
  *		-- use fmtV to find all sp for all F
+ *						and sum，sqSum of part 1
  *	Update:	sp, idxs
  *	Return: void 
  */

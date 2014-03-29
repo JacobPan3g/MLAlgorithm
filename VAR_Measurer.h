@@ -34,7 +34,7 @@ public:
 
 private:
 	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, const vector<double>& L, int m, int n, vector<int> cs );
-	double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
+	//double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
 
 	// will update every loop
 	vector< vector<double> > sp;	// just use to test

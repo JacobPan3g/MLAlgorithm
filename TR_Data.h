@@ -11,7 +11,7 @@
 #include "Data.h"
 
 /*	Class Data
- *		-- focus on Data read/write( or format)
+ *		-- extern Data class for tree model
  *	
  *	Type:	Tool Class
  *	Inside:	sort L, A, fmtV
