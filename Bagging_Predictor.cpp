@@ -5,7 +5,7 @@
 	> Created Time: Thu 08 Aug 2013 08:01:34 PM CST
  *********************************************************************/
 
-//#define _BAGGING_PREDICTOR_UTEST_
+#define _BAGGING_PREDICTOR_UTEST_
 
 
 #include "CART_Predictor.cpp"
@@ -123,10 +123,10 @@ void test1()
 {
 
 #define _TEST_1_1_
-#define _TEST_1_2_
-#define _TEST_1_3_
-#define _TEST_1_4_
-#define _TEST_1_5_
+//#define _TEST_1_2_
+//#define _TEST_1_3_
+//#define _TEST_1_4_
+//#define _TEST_1_5_
 	
 	BG_Data D;
 	Data T;
@@ -293,10 +293,10 @@ void pro1Test( int bagNum )
 
 int main()
 {
-	test1();	//done
-	test2();	//done
+	//test1();	//done
+	//test2();	//done
 
-	pro1Test( 16 );
+	//pro1Test( 16 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
