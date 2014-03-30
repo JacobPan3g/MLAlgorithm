@@ -1,0 +1,31 @@
+num: 3
+
+Size: 3
+fIdxV
+2 -1 -1 
+leftV
+1 -1 -1 
+rightV
+2 -1 -1 
+obValV
+0.5 0.333333 1 
+
+Size: 3
+fIdxV
+1 -1 -1 
+leftV
+1 -1 -1 
+rightV
+2 -1 -1 
+obValV
+0.5 -0.2 0.4 
+
+Size: 3
+fIdxV
+3 -1 -1 
+leftV
+1 -1 -1 
+rightV
+2 -1 -1 
+obValV
+0.5 -0.186667 0.0933333 
