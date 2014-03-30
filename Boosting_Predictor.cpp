@@ -266,9 +266,9 @@ void pro1Test( int bagNum, int maxH=10 )
 int main()
 {
 	test1();	//done
-	test2();	//done
+	//test2();	//done
 
-	pro1Test( 32 );
+	//pro1Test( 32 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
