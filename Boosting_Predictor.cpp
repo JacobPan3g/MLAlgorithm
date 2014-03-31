@@ -268,7 +268,7 @@ int main()
 	test1();	//done
 	test2();	//done
 
-	//pro1Test( 32 );
+	pro1Test( 4 );
 
 	cout << "All Unit Cases Passed." << endl;
 	return 0;
