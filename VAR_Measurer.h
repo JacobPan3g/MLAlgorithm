@@ -37,10 +37,10 @@ private:
 	//double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
 
 	// will update every loop
-	vector< vector<double> > sp;	// just use to test
+	// just use to test
+	vector< vector<double> > sp;	// record sp value for each sp
 	vector< vector<int> > idxs;		// record num for each sp
-	vector< vector<double> > vars;	// for variance calculate
-	
+	vector< vector<double> > vars;	// record var for each sp	
 	vector<int> part1;
 	vector<int> part2;
 
@@ -50,7 +50,7 @@ private:
 	int nums;
 
 	vector< vector<double> > sums1;
-	vector< vector<double> > sqSums1;
+	///vector< vector<double> > sqSums1;
 	vector< vector<int> > num1s;
 
 	// res idx
