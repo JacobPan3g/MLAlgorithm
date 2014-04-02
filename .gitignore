@@ -4,6 +4,7 @@
 /p
 /trees
 /tmp
+unitTest/bin
 /bin
 *.swp
 *.bmmdl

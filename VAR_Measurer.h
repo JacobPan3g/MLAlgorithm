@@ -21,40 +21,19 @@ public:
 
 	// own methods
 	VAR_Measurer();					// constructor for accurater
-
-	// getter
-	vector< vector<double> > getSp() const;
-	vector< vector<int> > getIdxs() const;
-	vector< vector<double> > getVars() const;
-	// single getter
-	const vector<int>& getPart1() const;
-	const vector<int>& getPart2() const;
-	int getNum1( int i=-1, int k=-1 ) const;
-	int getNum2( int i=-1, int k=-1 ) const;
+	const vector<int>& getPart1() const { return this->part1; }
+	const vector<int>& getPart2() const { return this->part2; }
 
 private:
-	void getSplitPoints( const vector< list< pair<int,double> > >& fmtV, const vector<double>& L, int m, int n, vector<int> cs );
-	//double computeVAR( int i, int k, const list< pair<int,double> >& fmt, const vector<double>& L, int m, int n, vector<int> cs );
+	MS minVarAndSp( const vector<double> L, const list< pair<int,double> > F, double sqSums, double sums, int nums, const vector<int> cs );
+	double computeVAR( double sqSums, double sums, int nums, double sum1, int num1);
 
-	// will update every loop
-	// just use to test
-	vector< vector<double> > sp;	// record sp value for each sp
-	vector< vector<int> > idxs;		// record num for each sp
-	vector< vector<double> > vars;	// record var for each sp	
+	// res 
+	int minFIdx;
+	double minSpVal;
+	double minVAR;
+	int m1;
+	int m2;
 	vector<int> part1;
 	vector<int> part2;
-
-	// the total value
-	double sums;
-	double sqSums;
-	int nums;
-
-	vector< vector<double> > sums1;
-	///vector< vector<double> > sqSums1;
-	vector< vector<int> > num1s;
-
-	// res idx
-	int fIdx;
-	int spIdx;
-	double obVal;
 };

@@ -8,6 +8,7 @@
 //#define _JPTOOL_UTEST_
 #define _INNER_TEST_
 
+//#define NDEBUG
 
 #include <iostream>
 #include <vector>
