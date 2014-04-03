@@ -1,5 +1,5 @@
 #include "../VAR_Measurer.cpp"
-
+#include <mpi.h>
 void test1()
 {
 	TR_Data D;	

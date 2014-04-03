@@ -1,2 +1,2 @@
 VARwithMPI: VARwithMPI.cpp
-	mpicxx VARwithMPI.cpp -o bin/VAR
+	mpicxx VAR2.0.cpp -o bin/VAR
