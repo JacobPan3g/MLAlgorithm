@@ -43,21 +43,62 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	this->minFIdx = -1;
 	this->minVAR = 1e8;
 
+	//MPI msg data
+	int mn[2];
+	mn[0]=nums; mn[1]=n;
+	double *mL = new double[nums];
+	for ( int i=0,j=0; i < m; i++ ) {
+		if ( !cs[i] ) continue;
+		mL[j++] = L[i];
+	}
+	double mSums[2];
+	mSums[0] = sqSums; mSums[1] = sums;
+
+	//MPI Bcast the m, n, L, sqSums, sums
+	MPI_Bcast( mn, 2, MPI_INT, 0, MPI_COMM_WORLD );
+	MPI_Bcast( mL, nums, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+	MPI_Bcast( mSums, 2, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+	delete[] mL;
+
 	// each feature
 	for ( int i = 0; i < n; i++ )	
 	{
 		if ( !fs[i] )
 			continue;
-	
-		MS ms = this->minVarAndSp( L, fmtV[i], sqSums, sums, nums, cs );
-		assert(ms.fIdx==-1);
+		
+		//MPI Send the cow of A
+		int *mI = new int[nums];
+		double *mF = new double[nums];
+		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
+		for ( int j=0; it != fmtV[i].end(); it++ ) {
+			if ( !cs[it->first] ) continue;
+			mI[j] = it->first;
+			mF[j] = it->second;
+			j++;
+		}
+		MPI_Send( mI, nums, MPI_INT, i+1, 0, MPI_COMM_WORLD );
+		MPI_Send( mF, nums, MPI_DOUBLE, i+1, 1, MPI_COMM_WORLD );
+		delete[] mI;
+		delete[] mF;
 
-		if ( ms.VAR < minVAR ) { 
+		//MS ms = this->minVarAndSp( L, fmtV[i], sqSums, sums, nums, cs );
+		//assert(ms.fIdx==-1);
+
+		//MPI Receive the res
+			// 0 for spVal
+			// 1 for VAR
+			// 2 for 1
+		double res[3];
+		MPI_Status sta;
+		MPI_Recv( &res, 3, MPI_DOUBLE, MPI_ANY_SOURCE, 99, MPI_COMM_WORLD, &sta );
+		double VAR = res[1];
+
+		if ( VAR < minVAR ) { 
 			this->minFIdx = i;
-			this->minSpVal = ms.spVal;
-			this->minVAR = ms.VAR;
-			this->m1 = ms.m1;
-			this->m2 = ms.m2;
+			this->minSpVal = res[0];
+			this->minVAR = VAR;
+			this->m1 = (int)res[2];
+			this->m2 = nums - m1;
 		}
 	}
 
@@ -173,4 +214,52 @@ double VAR_Measurer::computeVAR( double sqSums, double sums, int nums, double su
 	double M = m1 + m2;
 	assert( M != 0 );
 	return (sqSums - pow(sum1,2)/m1 - pow(sum2,2)/m2) / M;
+}
+
+
+MS VAR_Measurer::minVar( double L[], int I[], double F[], double sqSums, double sums, int m )
+{
+	bool isFirst = true;
+	double beforeItem;		// the front diff Item
+
+	double sum1 = 0;
+	int num1 = 0;		// num of 1st part
+
+	double minVAR = 1e8;
+	double minSp = 1e8;
+	int m1;
+
+	int numSp = 0;	// num of sp
+	for ( int i = 0; i < m; i++ ) {
+		if ( isFirst ) {
+			isFirst = false;
+			beforeItem = F[i];
+		}
+		else {
+			if ( beforeItem != F[i] ) {
+				double sp = (F[i]+beforeItem)/2;
+				double var = computeVAR( sqSums, sums, m, sum1, num1 );
+				
+				if ( var < minVAR ) {
+					minSp = sp;
+					minVAR = var;
+					m1 = num1;
+				}
+				beforeItem = F[i];
+				numSp++;
+			}
+		}
+		// calculate the sum
+		sum1 += L[I[i]];
+		num1++;
+	}
+
+	if ( numSp == 0 ) {
+		minSp = F[0];
+		minVAR = computeVAR( sqSums, sums, m, sum1, num1 );
+		m1 = num1;
+		assert( m1==m );
+	}
+	
+	return MS( -1, minSp, minVAR, m1, m-m1 );
 }

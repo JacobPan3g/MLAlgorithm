@@ -24,9 +24,11 @@ public:
 	const vector<int>& getPart1() const { return this->part1; }
 	const vector<int>& getPart2() const { return this->part2; }
 
+	static MS minVar( double L[], int I[], double F[], double sqSumes, double sums, int m );
+
 private:
 	MS minVarAndSp( const vector<double> L, const list< pair<int,double> > F, double sqSums, double sums, int nums, const vector<int> cs );
-	double computeVAR( double sqSums, double sums, int nums, double sum1, int num1);
+	static double computeVAR( double sqSums, double sums, int nums, double sum1, int num1);
 
 	// res 
 	int minFIdx;
