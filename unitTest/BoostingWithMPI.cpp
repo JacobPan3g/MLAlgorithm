@@ -143,6 +143,40 @@ void test2()
 #endif
 }
 
+void pro1Test( int bagNum, int maxH=10 )
+{
+#define _PRO_1_DATAREAD_
+#define _PRO_1_TRAIN_
+#define _PRO_1_PREDICT_
+
+	time_t tic = clock();
+
+#ifdef _PRO_1_DATAREAD_
+	TR_Data D;
+	D.fmtread( "../dataset/pro1.fmt" );
+#endif
+
+#ifdef _PRO_1_TRAIN_
+	Boosting_Predictor bt( bagNum, maxH );
+	bt.train( D );
+	bt.dispModel();
+	bt.saveModel( "../model/pro1.bmmdl" );
+#endif
+
+#ifdef _PRO_1_PREDICT_
+	vector<double> p;
+	MT_Model mdl( "../model/pro1.bmmdl" );
+	p = Boosting_Predictor::predict( mdl, D );
+	double RMSE = rmse( p, D.getL() );
+	//disp( p );
+	cout << RMSE << endl;
+	//assert( RMSE < 0.5 );
+#endif
+
+	time_t toc = clock();
+	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
+}
+
 int main( int argc, char* argv[] )
 {
 	const int master = 0;
@@ -155,7 +189,8 @@ int main( int argc, char* argv[] )
 
 	if ( master == rank ) {		
 		test1();
-		//test2();	
+		//test2();
+		//pro1Test( 4 );
 		cout << "All Unit Cases Passed." << endl;
 	}
 	else {

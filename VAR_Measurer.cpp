@@ -43,6 +43,73 @@ MS VAR_Measurer::measure( const TR_Data &D, const vector<int> &cs, const vector<
 	this->minFIdx = -1;
 	this->minVAR = 1e8;
 
+	// each feature
+	for ( int i = 0; i < n; i++ )	
+	{
+		if ( !fs[i] )
+			continue;
+	
+		MS ms = this->minVarAndSp( L, fmtV[i], sqSums, sums, nums, cs );
+		assert(ms.fIdx==-1);
+
+		if ( ms.VAR < minVAR ) { 
+			this->minFIdx = i;
+			this->minSpVal = ms.spVal;
+			this->minVAR = ms.VAR;
+			this->m1 = ms.m1;
+			this->m2 = ms.m2;
+		}
+	}
+
+	// set the parts
+	this->part1 = vector<int>( m, 0 );
+	this->part2 = cs;
+
+	list< pair<int,double> >::const_iterator it = fmtV[this->minFIdx].begin();
+	for ( ; it != fmtV[this->minFIdx].end(); it++ ) {
+		if ( !cs[it->first] ) continue;
+		if ( it->second > this->minSpVal ) break;
+		this->part1[it->first] = 1;
+		this->part2[it->first] = 0;
+	}
+
+	// Assert
+	assert( countTag(cs)==nums );
+	assert( this->minFIdx < n );
+	assert( this->minFIdx > -1 );
+	assert( this->minVAR < 1e8 );
+	assert( this->m1 + this->m2 == nums );
+	assert( countTag(part1)+countTag(part2)==nums );
+
+	return MS(this->minFIdx,this->minSpVal,this->minVAR,this->m1,this->m2);
+}
+
+MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs )
+{
+	int m = D.getM();
+	int n = D.getN();
+	vector<double> L = D.getL();
+	vector< list< pair<int,double> > > fmtV = D.getFmtV();
+	
+	assert( cs.size()==m );
+	assert( fs.size()==n );
+
+	// get the total value
+	double sqSums = 0;
+	double sums = 0;
+	int nums = 0;
+	for ( int i = 0; i < L.size(); i++ ) {
+		if ( cs[i] ) {
+			sums += L[i];
+			sqSums += pow( L[i], 2 );
+			nums++;
+		}
+	}
+
+	// calculate the variance
+	this->minFIdx = -1;
+	this->minVAR = 1e8;
+
 	//MPI msg data
 	int mn[2];
 	mn[0]=nums; mn[1]=n;
@@ -217,8 +284,14 @@ double VAR_Measurer::computeVAR( double sqSums, double sums, int nums, double su
 }
 
 
-MS VAR_Measurer::minVar( double L[], int I[], double F[], double sqSums, double sums, int m )
+MS VAR_Measurer::MPI_minVar( double L[], int I[], double F[], double sqSums, double sums, int m )
 {
+/*
+	cout << " "; for( int i=0; i < m; i++ ) cout << L[i] << " ";
+	cout << " "; for( int i=0; i < m; i++ ) cout << I[i] << " ";
+	cout << " "; for( int i=0; i < m; i++ ) cout << F[i] << " ";
+	cout << endl;
+*/
 	bool isFirst = true;
 	double beforeItem;		// the front diff Item
 
@@ -262,4 +335,44 @@ MS VAR_Measurer::minVar( double L[], int I[], double F[], double sqSums, double 
 	}
 	
 	return MS( -1, minSp, minVAR, m1, m-m1 );
+}
+
+void VAR_Measurer::MPI_slaveThread()
+{
+	int mn[2];
+	MPI_Bcast( mn, 2, MPI_INT, MPI_master, MPI_COMM_WORLD );
+	int m = mn[0], n = mn[1];
+	//cout << m << " " << n << " ";
+
+	double *L = new double[m];
+	MPI_Bcast( L, m, MPI_DOUBLE, MPI_master, MPI_COMM_WORLD );
+	//for ( int i = 0; i < m; i++ ) cout << L[i] << " ";
+	//cout << endl;
+
+	double sums[2];
+	MPI_Bcast( sums, 2, MPI_DOUBLE, MPI_master, MPI_COMM_WORLD );
+	double sqSum = sums[0], sum = sums[1];
+	//cout << sqSum << " " << sum << endl;
+
+
+	int *I = new int[m];
+	double *F = new double[m];
+	MPI_Status sta;
+	MPI_Recv( I, m, MPI_INT, MPI_master, 0, MPI_COMM_WORLD, &sta );
+	MPI_Recv( F, m, MPI_DOUBLE, MPI_master, 1, MPI_COMM_WORLD, &sta );
+	//for ( int i = 0; i < m; i++ ) cout << I[i] << " ";
+	//cout << " ";
+	//for ( int i = 0; i < m; i++ ) cout << F[i] << " ";
+	//cout << endl;
+
+	MS ms = VAR_Measurer::MPI_minVar( L, I, F, sqSum, sum, m );
+	assert( ms.fIdx == -1 );
+
+	//Send the res to master
+		// 0 for spVal
+		// 1 for VAR
+		// 2 for 1
+	double res[3];
+	res[0] = ms.spVal; res[1] = ms.VAR; res[2] = ms.m1;
+	MPI_Send( res, 3, MPI_DOUBLE, MPI_master, 99, MPI_COMM_WORLD );
 }

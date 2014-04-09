@@ -24,11 +24,17 @@ public:
 	const vector<int>& getPart1() const { return this->part1; }
 	const vector<int>& getPart2() const { return this->part2; }
 
-	static MS minVar( double L[], int I[], double F[], double sqSumes, double sums, int m );
+	// MPI Mehtod
+	MS MPI_measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs );
+	static void MPI_slaveThread();
+	//static void MPI_stopSlaveThread();
 
 private:
 	MS minVarAndSp( const vector<double> L, const list< pair<int,double> > F, double sqSums, double sums, int nums, const vector<int> cs );
 	static double computeVAR( double sqSums, double sums, int nums, double sum1, int num1);
+	static MS MPI_minVar( double L[], int I[], double F[], double sqSumes, double sums, int m );
+
+	static const int MPI_master = 0;
 
 	// res 
 	int minFIdx;

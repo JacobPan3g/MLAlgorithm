@@ -102,7 +102,7 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		inNode.push_back( node );
 
 		// get the optimal feature
-		MS ms = c_msr.measure( D, node->cs, myFs );
+		MS ms = c_msr.MPI_measure( D, node->cs, myFs );
 		/// tag and asign
 		myFs[ms.fIdx] = 0;
 		node->fIdx = ms.fIdx;
