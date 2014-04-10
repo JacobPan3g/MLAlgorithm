@@ -27,7 +27,7 @@ public:
 	// MPI Mehtod
 	MS MPI_measure( const TR_Data &D, const vector<int> &cs, const vector<int> &fs );
 	static void MPI_slaveThread();
-	//static void MPI_stopSlaveThread();
+	static void MPI_stopSlaveThread();
 
 private:
 	MS minVarAndSp( const vector<double> L, const list< pair<int,double> > F, double sqSums, double sums, int nums, const vector<int> cs );

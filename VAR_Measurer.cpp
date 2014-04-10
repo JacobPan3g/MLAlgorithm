@@ -127,38 +127,51 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	MPI_Bcast( mSums, 2, MPI_DOUBLE, 0, MPI_COMM_WORLD );
 	delete[] mL;
 
-	// each feature
-	for ( int i = 0; i < n; i++ )	
+	// each thread
+	int numprocs;
+	MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
+	int fIdx = 0;
+	int *mI = new int[nums];
+	double *mF = new double[nums];
+	//cout << "numprocs: " << numprocs << endl;
+	for ( int i = 1; i < numprocs; i++ )	
 	{
-		if ( !fs[i] )
-			continue;
+		// to correct the fIdx
+		if ( fIdx >= n ) break;
+		while ( !fs[fIdx] ) {
+			fIdx++;
+			if ( fIdx >= n ) break;
+		}
+		if ( fIdx >= n ) break;
 		
 		//MPI Send the cow of A
-		int *mI = new int[nums];
-		double *mF = new double[nums];
-		list< pair<int,double> >::const_iterator it = fmtV[i].begin();
-		for ( int j=0; it != fmtV[i].end(); it++ ) {
+		list< pair<int,double> >::const_iterator it = fmtV[fIdx].begin();
+		for ( int j=0; it != fmtV[fIdx].end(); it++ ) {
 			if ( !cs[it->first] ) continue;
 			mI[j] = it->first;
 			mF[j] = it->second;
 			j++;
 		}
-		MPI_Send( mI, nums, MPI_INT, i+1, 0, MPI_COMM_WORLD );
-		MPI_Send( mF, nums, MPI_DOUBLE, i+1, 1, MPI_COMM_WORLD );
-		delete[] mI;
-		delete[] mF;
-
-		//MS ms = this->minVarAndSp( L, fmtV[i], sqSums, sums, nums, cs );
-		//assert(ms.fIdx==-1);
-
-		//MPI Receive the res
-			// 0 for spVal
-			// 1 for VAR
-			// 2 for 1
-		double res[3];
-		MPI_Status sta;
+		MPI_Send( mI, nums, MPI_INT, i, 1, MPI_COMM_WORLD );
+		MPI_Send( mF, nums, MPI_DOUBLE, i, 2, MPI_COMM_WORLD );
+		fIdx++;
+	}
+		
+	//MPI Receive the res
+		// 0 for spVal
+		// 1 for VAR
+		// 2 for 1
+	double res[3];
+	MPI_Status sta;
+	int sender;
+	for ( int i = 0; i < n; i++ ) {
+		if ( !fs[i] ) continue;
+		
+		//cout << "waiting recv" << endl;
 		MPI_Recv( &res, 3, MPI_DOUBLE, MPI_ANY_SOURCE, 99, MPI_COMM_WORLD, &sta );
 		double VAR = res[1];
+		sender = sta.MPI_SOURCE;
+		//cout << "VAR: " << VAR << endl;
 
 		if ( VAR < minVAR ) { 
 			this->minFIdx = i;
@@ -167,7 +180,36 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 			this->m1 = (int)res[2];
 			this->m2 = nums - m1;
 		}
+
+		// if not finish send
+		if ( fIdx < n ) {
+			// to correct the fIdx
+			//cout << "not finish" << endl;
+			while ( !fs[fIdx] ) {
+				fIdx++;
+				if ( fIdx >= n ) break;
+			}
+			if ( fIdx >= n ) break;
+			
+			//MPI Send the cow of A
+			list< pair<int,double> >::const_iterator it = fmtV[fIdx].begin();
+			for ( int j=0; it != fmtV[fIdx].end(); it++ ) {
+				if ( !cs[it->first] ) continue;
+				mI[j] = it->first;
+				mF[j] = it->second;
+				j++;
+			}
+			MPI_Send( mI, nums, MPI_INT, sender, 1, MPI_COMM_WORLD );
+			MPI_Send( mF, nums, MPI_DOUBLE, sender, 2, MPI_COMM_WORLD );
+			fIdx++;
+		}
+		else {	// stop the thread
+			//cout << "fIdx: " << fIdx << endl;
+			MPI_Send( 0, 0, MPI_INT, sender, 0, MPI_COMM_WORLD );
+		}
 	}
+	delete[] mI;
+	delete[] mF;
 
 	// set the parts
 	this->part1 = vector<int>( m, 0 );
@@ -188,6 +230,8 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	assert( this->minVAR < 1e8 );
 	assert( this->m1 + this->m2 == nums );
 	assert( countTag(part1)+countTag(part2)==nums );
+
+	cout << "minVAR: " << this->minVAR << endl;
 
 	return MS(this->minFIdx,this->minSpVal,this->minVAR,this->m1,this->m2);
 }
@@ -339,40 +383,71 @@ MS VAR_Measurer::MPI_minVar( double L[], int I[], double F[], double sqSums, dou
 
 void VAR_Measurer::MPI_slaveThread()
 {
-	int mn[2];
-	MPI_Bcast( mn, 2, MPI_INT, MPI_master, MPI_COMM_WORLD );
-	int m = mn[0], n = mn[1];
-	//cout << m << " " << n << " ";
+	int rank;
+	MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+	
+	while( 1 ) {
+		int mn[2];
+		MPI_Bcast( mn, 2, MPI_INT, MPI_master, MPI_COMM_WORLD );
+		int m = mn[0], n = mn[1];
+		//cout << m << " " << n << " ";
+		if ( m==-1&&n==-1 ) break;
 
-	double *L = new double[m];
-	MPI_Bcast( L, m, MPI_DOUBLE, MPI_master, MPI_COMM_WORLD );
-	//for ( int i = 0; i < m; i++ ) cout << L[i] << " ";
-	//cout << endl;
+		double *L = new double[m];
+		MPI_Bcast( L, m, MPI_DOUBLE, MPI_master, MPI_COMM_WORLD );
+		//for ( int i = 0; i < m; i++ ) cout << L[i] << " ";
+		//cout << endl;
 
-	double sums[2];
-	MPI_Bcast( sums, 2, MPI_DOUBLE, MPI_master, MPI_COMM_WORLD );
-	double sqSum = sums[0], sum = sums[1];
-	//cout << sqSum << " " << sum << endl;
+		double sums[2];
+		MPI_Bcast( sums, 2, MPI_DOUBLE, MPI_master, MPI_COMM_WORLD );
+		double sqSum = sums[0], sum = sums[1];
+		//cout << sqSum << " " << sum << endl;
 
 
-	int *I = new int[m];
-	double *F = new double[m];
-	MPI_Status sta;
-	MPI_Recv( I, m, MPI_INT, MPI_master, 0, MPI_COMM_WORLD, &sta );
-	MPI_Recv( F, m, MPI_DOUBLE, MPI_master, 1, MPI_COMM_WORLD, &sta );
-	//for ( int i = 0; i < m; i++ ) cout << I[i] << " ";
-	//cout << " ";
-	//for ( int i = 0; i < m; i++ ) cout << F[i] << " ";
-	//cout << endl;
+		int *I = new int[m];
+		double *F = new double[m];
+		MPI_Status sta;
+		while (1) {
+			MPI_Recv( I, m, MPI_INT, MPI_master, MPI_ANY_TAG, MPI_COMM_WORLD, &sta );
+			//cout << "tag: " << sta.MPI_TAG << endl;
+			if ( sta.MPI_TAG == 0 ) break;
+			
+			MPI_Recv( F, m, MPI_DOUBLE, MPI_master, 2, MPI_COMM_WORLD, &sta );
+			//for ( int i = 0; i < m; i++ ) cout << I[i] << " ";
+			//cout << " ";
+			//for ( int i = 0; i < m; i++ ) cout << F[i] << " ";
+			//cout << endl;
 
-	MS ms = VAR_Measurer::MPI_minVar( L, I, F, sqSum, sum, m );
-	assert( ms.fIdx == -1 );
+			MS ms = VAR_Measurer::MPI_minVar( L, I, F, sqSum, sum, m );
+			assert( ms.fIdx == -1 );
 
-	//Send the res to master
-		// 0 for spVal
-		// 1 for VAR
-		// 2 for 1
-	double res[3];
-	res[0] = ms.spVal; res[1] = ms.VAR; res[2] = ms.m1;
-	MPI_Send( res, 3, MPI_DOUBLE, MPI_master, 99, MPI_COMM_WORLD );
+			//cout << "res: " << ms.VAR << endl;
+
+			//Send the res to master
+				// 0 for spVal
+				// 1 for VAR
+				// 2 for 1
+			double res[3];
+			res[0] = ms.spVal; res[1] = ms.VAR; res[2] = ms.m1;
+			MPI_Send( res, 3, MPI_DOUBLE, MPI_master, 99, MPI_COMM_WORLD );
+			//cout << "send slave: " << MPI_master  << endl;
+		}
+		delete[] L;
+		delete[] I;
+		delete[] F;
+	}
+	cout << "finish slave:" << rank  << endl;
+}
+
+void VAR_Measurer::MPI_stopSlaveThread()
+{
+/*	int numprocs;
+	MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
+
+	for ( int i=1; i < numprocs; i++ ) {
+		MPI_Send( 0, 0, MPI_INT, i, 0, MPI_COMM_WORLD );	
+	}
+*/
+	int mn[2] = {-1, -1};
+	MPI_Bcast( mn, 2, MPI_INT, 0, MPI_COMM_WORLD );
 }

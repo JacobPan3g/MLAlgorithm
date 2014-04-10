@@ -159,7 +159,7 @@ void pro1Test( int bagNum, int maxH=10 )
 #ifdef _PRO_1_TRAIN_
 	Boosting_Predictor bt( bagNum, maxH );
 	bt.train( D );
-	bt.dispModel();
+	//bt.dispModel();
 	bt.saveModel( "../model/pro1.bmmdl" );
 #endif
 
@@ -188,10 +188,12 @@ int main( int argc, char* argv[] )
 	MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
 
 	if ( master == rank ) {		
-		test1();
-		//test2();
-		//pro1Test( 4 );
+		//test1();
+		test2();
+		//pro1Test( 1 );
 		cout << "All Unit Cases Passed." << endl;
+
+		VAR_Measurer::MPI_stopSlaveThread();
 	}
 	else {
 		VAR_Measurer::MPI_slaveThread();
