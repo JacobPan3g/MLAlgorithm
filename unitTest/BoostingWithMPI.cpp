@@ -85,7 +85,7 @@ void test2()
 #ifdef _TEST_2_0_
 	TR_Data D;
 	Data T;
-	Boosting_Predictor bt( 1 );
+	Boosting_Predictor bt( 3 );
 	vector<double> p;
 	
 	D.fmtread( "../test/case2.fmt" );
@@ -148,7 +148,7 @@ void pro1Test( int bagNum, int maxH=10 )
 {
 #define _PRO_1_DATAREAD_
 #define _PRO_1_TRAIN_
-#define _PRO_1_PREDICT_
+//#define _PRO_1_PREDICT_
 
 	time_t tic = clock();
 
@@ -190,8 +190,8 @@ int main( int argc, char* argv[] )
 
 	if ( master == rank ) {		
 		//test1();
-		test2();
-		//pro1Test( 1 );
+		//test2();
+		pro1Test( 1 );
 		cout << "All Unit Cases Passed." << endl;
 
 		VAR_Measurer::MPI_stopSlaveThread();

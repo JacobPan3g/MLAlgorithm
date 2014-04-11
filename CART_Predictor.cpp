@@ -56,6 +56,7 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	vector<double> L = D.getL();
 	int m = D.getM();
 	int n = D.getN();
+	cout << "m,n: " << m << " " << n << endl;
 
 	assert( cs.size()==m );
 	assert( fs.size()==n );
@@ -63,11 +64,13 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	vector<int> myFs = fs;
 	queue<Node*> q;
 	this->sinNodeNum = 0;
-	
+
+	int tagCout = 0;
 	this->root = new Node( cs, countTag(cs), 0 );
 	q.push( this->root );
 	while ( !q.empty() )
 	{
+		cout << tagCout++;
 		Node *node = q.front();
 		q.pop();
 		// end 1

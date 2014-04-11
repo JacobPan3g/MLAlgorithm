@@ -1,4 +1,4 @@
-num: 1
+num: 3
 
 Size: 5
 fIdxV
@@ -9,3 +9,23 @@ rightV
 2 4 -1 -1 -1 
 obValV
 0.5 0.5 1 0 1 
+
+Size: 1
+fIdxV
+-1 
+leftV
+-1 
+rightV
+-1 
+obValV
+0 
+
+Size: 1
+fIdxV
+-1 
+leftV
+-1 
+rightV
+-1 
+obValV
+0 
