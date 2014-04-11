@@ -26,6 +26,7 @@ vector<double> Boosting_Predictor::predict( const MT_Model& mdl, const Data& T )
 
 Boosting_Predictor::Boosting_Predictor( int bagNum, int maxH )
 {
+	//cout << "BagNum: " << bagNum << endl;
 	this->bagNum = bagNum;
 	this->maxH = maxH;
 	this->baserPtrV.clear();
@@ -55,6 +56,7 @@ void Boosting_Predictor::dispModel() const
 void Boosting_Predictor::train( TR_Data& D )
 {
 	assert( this->baserPtrV.size()==0 );
+	//cout << "BagNum: " << this->bagNum << endl;
 
 	this->baserPtrV.resize( this->bagNum );
 

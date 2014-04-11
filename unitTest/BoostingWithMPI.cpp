@@ -76,16 +76,16 @@ void test2()
 {
 
 #define _TEST_2_0_
-//#define _TEST_2_1_
-//#define _TEST_2_2_
-//#define _TEST_2_3_
+#define _TEST_2_1_
+#define _TEST_2_2_
+#define _TEST_2_3_
 //#define _TEST_2_4_	// not
-//#define _TEST_2_5_
+#define _TEST_2_5_
 	
 #ifdef _TEST_2_0_
 	TR_Data D;
 	Data T;
-	Boosting_Predictor bt( 3, 1 );
+	Boosting_Predictor bt( 1 );
 	vector<double> p;
 	
 	D.fmtread( "../test/case2.fmt" );
@@ -105,6 +105,7 @@ void test2()
  * Goal: 1. test model
  */
 	MT_Model m12 = bt.getModel();
+	bt.dispModel();
 	//m12.show();
 #endif
 
