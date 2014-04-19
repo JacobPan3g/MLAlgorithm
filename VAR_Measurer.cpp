@@ -124,32 +124,11 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	double mSums[2];
 	mSums[0] = sqSums; mSums[1] = sums;
 
-	//MPI Bcast the m, n, L, sqSums, sums
-	MPI_Bcast( mn, 2, MPI_INT, 0, MPI_COMM_WORLD );
-	MPI_Bcast( mL, nums, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-	MPI_Bcast( mSums, 2, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-
-	// each thread
-	int numprocs;
-	MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
-	// stop the more thread
-	if ( numprocs > nums+1 )
-		for ( int i=nums+1; i < numprocs; i++ )
-			MPI_Send( 0, 0, MPI_INT, i, 0, MPI_COMM_WORLD );
-	
-	int fIdx = 0;
 	int *mI = new int[nums];
 	double *mF = new double[nums];
-	//cout << "numprocs: " << numprocs << endl;
-	for ( int i = 0; i < (numprocs-1<nums?numprocs-1:nums); i++ )	
+	for ( int fIdx = 0; fIdx < n; fIdx++ )	
 	{
-		// to correct the fIdx
-		if ( fIdx >= n ) break;
-		while ( !fs[fIdx] ) {
-			fIdx++;
-			if ( fIdx >= n ) break;
-		}
-		if ( fIdx >= n ) break;
+		if ( !fs[fIdx] ) continue;
 		
 		//MPI Send the cow of A
 		list< pair<int,double> >::const_iterator it = fmtV[fIdx].begin();
@@ -159,65 +138,23 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 			mF[j] = it->second;
 			j++;
 		}
-		//MPI_TAG == 0 for stop signal
-		//MPI_TAG = fIdx + 1
-		MPI_Send( mI, nums, MPI_INT, i+1, fIdx+1, MPI_COMM_WORLD );
-		MPI_Send( mF, nums, MPI_DOUBLE, i+1, fIdx+1, MPI_COMM_WORLD );
-		fIdx++;
-	}
-		
-	//MPI Receive the res
-		// 0 for spVal
-		// 1 for VAR
-		// 2 for 1
-	double res[3];
-	MPI_Status sta;
-	int sender;
-	int recvIdx;
-	for ( int i = 0; i < n; i++ ) {
-		if ( !fs[i] ) continue;
-		
-		//cout << "waiting recv" << endl;
-		MPI_Recv( &res, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &sta );
-		double VAR = res[1];
-		sender = sta.MPI_SOURCE;
-		recvIdx = sta.MPI_TAG;
-		//cout << "FIdx,spVal,VAR: " << recvIdx<<","<<res[0]<<"," << VAR << endl;
-
+		double sqSum=mSums[0], sum=mSums[1];
+		int m = mn[0];
+		MS ms = VAR_Measurer::MPI_minVar( mL, mI, mF, sqSum, sum, m );
+			
+		//MPI Receive the res
+		double VAR = ms.VAR;
+		int recvIdx = fIdx;
 		if ( VAR < this->minVAR || (VAR == this->minVAR && recvIdx < this->minFIdx) ) { 
 			this->minFIdx = recvIdx;
-			this->minSpVal = res[0];
+			this->minSpVal = ms.spVal;
 			this->minVAR = VAR;
-			this->m1 = (int)res[2];
+			this->m1 = ms.m1;
 			this->m2 = nums - m1;
 		}
 
-		// if not finish send
-		if ( fIdx < n ) {
-			// to correct the fIdx
-			//cout << "not finish" << endl;
-			while ( !fs[fIdx] ) {
-				fIdx++;
-				if ( fIdx >= n ) break;
-			}
-			if ( fIdx >= n ) break;
-			
-			//MPI Send the cow of A
-			list< pair<int,double> >::const_iterator it = fmtV[fIdx].begin();
-			for ( int j=0; it != fmtV[fIdx].end(); it++ ) {
-				if ( !cs[it->first] ) continue;
-				mI[j] = mapIdxs[it->first];
-				mF[j] = it->second;
-				j++;
-			}
-			MPI_Send( mI, nums, MPI_INT, sender, fIdx+1, MPI_COMM_WORLD );
-			MPI_Send( mF, nums, MPI_DOUBLE, sender, fIdx+1, MPI_COMM_WORLD );
-			fIdx++;
-		}
-		else {	// stop the thread
-			//cout << "fIdx: " << fIdx << endl;
-			MPI_Send( 0, 0, MPI_INT, sender, 0, MPI_COMM_WORLD );
-		}
+		
+		fIdx++;
 	}
 	delete[] mL;
 	delete[] mapIdxs;

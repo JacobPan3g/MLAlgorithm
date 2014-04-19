@@ -99,8 +99,8 @@ int main( int argc, char* argv[] )
 
 	if ( master == rank ) {	
 		//cout << "numprocs: " << numprocs << endl;
-		//test1();
-		//test2();
+		test1();
+		test2();
 		pro1Test();
 		cout << "All Unit Cases Passed." << endl;
 		VAR_Measurer::MPI_stopSlaveThread();
