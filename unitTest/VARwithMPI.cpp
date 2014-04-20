@@ -72,7 +72,7 @@ void pro1Test()
 	D.fmtread( "../dataset/pro1.fmt" );
 	r = vector<int>( D.getM(), 1 );
 	c = vector<int>( D.getN(), 1 );
-	res = ms.measure( D, r, c );
+	res = ms.MPI_measure( D, r, c );
 
 	//cout << res.fIdx << " " << res.spVal << " " << res.VAR << endl;
 	//cout << res.m1 << " " << res.m2 << endl;

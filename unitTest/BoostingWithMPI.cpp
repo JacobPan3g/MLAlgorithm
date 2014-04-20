@@ -160,7 +160,7 @@ void pro1Test( int bagNum, int maxH=10 )
 #ifdef _PRO_1_TRAIN_
 	Boosting_Predictor bt( bagNum, maxH );
 	bt.train( D );
-	//bt.dispModel();
+	bt.dispModel();
 	bt.saveModel( "../model/pro1.bmmdl" );
 #endif
 
