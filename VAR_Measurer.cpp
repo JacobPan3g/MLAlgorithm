@@ -177,9 +177,9 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 		double VAR = res[1];
 		sender = sta.MPI_SOURCE;
 		recvIdx = sta.MPI_TAG;
-		cout << "FIdx,spVal,VAR: " << recvIdx<<","<<res[0]<<"," << VAR << endl;
+		//cout << "FIdx,spVal,VAR: " << recvIdx<<","<<res[0]<<"," << VAR << endl;
 
-		if ( VAR < this->minVAR || (VAR == this->minVAR && recvIdx < this->minFIdx) ) { 
+		if ( VAR < this->minVAR || (isEqual(VAR,this->minVAR) && recvIdx < this->minFIdx) ) { 
 			this->minFIdx = recvIdx;
 			this->minSpVal = res[0];
 			this->minVAR = VAR;
@@ -210,7 +210,7 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 			fIdx++;
 		}
 		else {	// stop the thread
-			//cout << "fIdx: " << fIdx << endl;
+			cout << "fIdx: " << fIdx << endl;
 			MPI_Send( 0, 0, MPI_INT, sender, 0, MPI_COMM_WORLD );
 		}
 	}
@@ -240,12 +240,13 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	assert( countTag(part1)+countTag(part2)==nums );
 
 	
-	cout << "minFIdx: " << this->minFIdx << endl;
+	cout << "minFIdx: " << this->minFIdx << "\t";
 	cout << "minVAR: " << this->minVAR << endl;
-	cout << "minSpVal: " << this->minSpVal << endl;
-	cout << "m1, m2: " << this->m1 << ", " << this->m2 << endl;
+	//cout << "minSpVal: " << this->minSpVal << endl;
+	//cout << "m1, m2: " << this->m1 << ", " << this->m2 << endl;
 	
 
+	//cout << "Lalala" << endl;
 	return MS(this->minFIdx,this->minSpVal,this->minVAR,this->m1,this->m2);
 }
 
@@ -359,7 +360,7 @@ MS VAR_Measurer::MPI_minVar( double L[], int I[], double F[], double sqSums, dou
 	double minSp = 1e8;
 	int m1;
 
-	cout << "sp,var: ";
+	//cout << "sp,var: ";
 
 	int numSp = 0;	// num of sp
 	for ( int i = 0; i < m; i++ ) {
@@ -373,7 +374,7 @@ MS VAR_Measurer::MPI_minVar( double L[], int I[], double F[], double sqSums, dou
 				//cout << "sum1,num1: " << sum1 << "," << num1 << " ";
 				double var = computeVAR( sqSums, sums, m, sum1, num1 );
 				
-				cout << sp << "," << var << "; ";
+				//cout << sp << "," << var << "; ";
 
 				if ( var < minVAR ) {
 					minSp = sp;
@@ -396,7 +397,7 @@ MS VAR_Measurer::MPI_minVar( double L[], int I[], double F[], double sqSums, dou
 		assert( m1==m );
 	}
 
-	cout << endl;
+	//cout << endl;
 	return MS( -1, minSp, minVAR, m1, m-m1 );
 }
 
@@ -428,19 +429,19 @@ void VAR_Measurer::MPI_slaveThread()
 		MPI_Status sta;
 		while (1) {
 			MPI_Recv( I, m, MPI_INT, MPI_master, MPI_ANY_TAG, MPI_COMM_WORLD, &sta );
-			cout << "tag: " << sta.MPI_TAG << " ";
+			//cout << "tag: " << sta.MPI_TAG << " ";
 			if ( sta.MPI_TAG == 0 ) break;
 			
 			int fIdx = sta.MPI_TAG-1;
 			MPI_Recv( F, m, MPI_DOUBLE, MPI_master, MPI_ANY_TAG, MPI_COMM_WORLD, &sta );
 			assert( fIdx==sta.MPI_TAG-1 );
-			cout << " |";
-			for ( int i = 0; i < m; i++ ) cout << L[i] << " ";
-			cout << "| ";
+			//cout << " |";
+			//for ( int i = 0; i < m; i++ ) cout << L[i] << " ";
+			//cout << "| ";
 			//cout << fIdx << " ";
-			for ( int i = 0; i < m; i++ ) cout << I[i] << " ";
-			cout << " I ";
-			for ( int i = 0; i < m; i++ ) cout << F[i] << " ";
+			//for ( int i = 0; i < m; i++ ) cout << I[i] << " ";
+			//cout << " I ";
+			//for ( int i = 0; i < m; i++ ) cout << F[i] << " ";
 			//cout << endl;
 
 			MS ms = VAR_Measurer::MPI_minVar( L, I, F, sqSum, sum, m );

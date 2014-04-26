@@ -190,8 +190,8 @@ int main( int argc, char* argv[] )
 
 	if ( master == rank ) {		
 		//test1();
-		test2();
-		//pro1Test( 1 );
+		//test2();
+		pro1Test( 1 );
 		cout << "All Unit Cases Passed." << endl;
 
 		VAR_Measurer::MPI_stopSlaveThread();
