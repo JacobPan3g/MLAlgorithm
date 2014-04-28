@@ -98,8 +98,8 @@ int main( int argc, char* argv[] )
 	MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
 
 	if ( master == rank ) {		
-		//test1();
-		//test2();
+		test1();
+		test2();
 		pro1Test();
 		cout << "All Unit Cases Passed." << endl;
 		VAR_Measurer::MPI_stopSlaveThread();

@@ -133,6 +133,8 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	int numprocs;
 	MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
 	int fIdx = 0;
+	int numsend = 0;
+	int ttlsend = countTag(fs);
 	int *mI = new int[nums];
 	double *mF = new double[nums];
 	//cout << "numprocs: " << numprocs << endl;
@@ -159,6 +161,7 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 		MPI_Send( mI, nums, MPI_INT, i, fIdx+1, MPI_COMM_WORLD );
 		MPI_Send( mF, nums, MPI_DOUBLE, i, fIdx+1, MPI_COMM_WORLD );
 		fIdx++;
+		numsend++;
 	}
 		
 	//MPI Receive the res
@@ -173,14 +176,14 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 		if ( !fs[i] ) continue;
 		
 		//cout << "waiting recv" << endl;
-		MPI_Recv( &res, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &sta );
+		MPI_Recv( &res, 3, MPI_DOUBLE, MPI_ANY_SOURCE, i, MPI_COMM_WORLD, &sta );
 		double VAR = res[1];
 		sender = sta.MPI_SOURCE;
-		recvIdx = sta.MPI_TAG;
+		//recvIdx = sta.MPI_TAG;
 		//cout << "FIdx,spVal,VAR: " << recvIdx<<","<<res[0]<<"," << VAR << endl;
 
-		if ( VAR < this->minVAR || (isEqual(VAR,this->minVAR) && recvIdx < this->minFIdx) ) { 
-			this->minFIdx = recvIdx;
+		if ( VAR < this->minVAR ) { 
+			this->minFIdx = i;
 			this->minSpVal = res[0];
 			this->minVAR = VAR;
 			this->m1 = (int)res[2];
@@ -188,7 +191,7 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 		}
 
 		// if not finish send
-		if ( fIdx < n ) {
+		if ( numsend < ttlsend ) {
 			// to correct the fIdx
 			//cout << "not finish" << endl;
 			while ( !fs[fIdx] ) {
@@ -208,16 +211,19 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 			MPI_Send( mI, nums, MPI_INT, sender, fIdx+1, MPI_COMM_WORLD );
 			MPI_Send( mF, nums, MPI_DOUBLE, sender, fIdx+1, MPI_COMM_WORLD );
 			fIdx++;
-		}
-		else {	// stop the thread
-			cout << "fIdx: " << fIdx << endl;
-			MPI_Send( 0, 0, MPI_INT, sender, 0, MPI_COMM_WORLD );
+			numsend++;
 		}
 	}
 	delete[] mL;
 	delete[] mapIdxs;
 	delete[] mI;
 	delete[] mF;
+
+	// stop the thread
+	for ( int i=1; i < numprocs; i++ ) {
+		MPI_Send( 0, 0, MPI_INT, i, 0, MPI_COMM_WORLD );	
+	}
+	
 
 	// set the parts
 	this->part1 = vector<int>( m, 0 );
@@ -240,8 +246,8 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	assert( countTag(part1)+countTag(part2)==nums );
 
 	
-	cout << "minFIdx: " << this->minFIdx << "\t";
-	cout << "minVAR: " << this->minVAR << endl;
+	//cout << "minFIdx: " << this->minFIdx << "\t";
+	//cout << "minVAR: " << this->minVAR << endl;
 	//cout << "minSpVal: " << this->minSpVal << endl;
 	//cout << "m1, m2: " << this->m1 << ", " << this->m2 << endl;
 	

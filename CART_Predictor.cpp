@@ -65,17 +65,17 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 	queue<Node*> q;
 	this->sinNodeNum = 0;
 
-	int tagCout = 0;
+	//int tagCout = 0;
 	this->root = new Node( cs, countTag(cs), 0 );
 	q.push( this->root );
 	while ( !q.empty() )
 	{
-		cout << tagCout++ << "\t";
+		//cout << tagCout++ << "\t";
 		Node *node = q.front();
 		q.pop();
 
-		int testTag = 31;
-		if ( tagCout==testTag ) cout << "1" << ends;
+		//int testTag = 31;
+		//if ( tagCout==testTag ) cout << "1" << ends;
 		// end 1
 		if ( node->high >= this->MAX_HIGH )
 		{
@@ -104,19 +104,19 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 			continue;
 		}
 		
-		if ( tagCout==testTag ) cout << "2" << ends;
+		//if ( tagCout==testTag ) cout << "2" << ends;
 		// handle the inner node
 		inNode.push_back( node );
 
-		if ( tagCout==testTag ) cout << "3" << ends;
+		//if ( tagCout==testTag ) cout << "3" << ends;
 		// get the optimal feature
 		MS ms = c_msr.MPI_measure( D, node->cs, myFs );
-		if ( tagCout==testTag ) cout << "finishMS" << ends;
+		//if ( tagCout==testTag ) cout << "finishMS" << ends;
 		/// tag and asign
 		myFs[ms.fIdx] = 0;
 		node->fIdx = ms.fIdx;
 		node->obValue = ms.spVal;
-		if ( tagCout==testTag ) cout << "ffIdx: " << ms.fIdx << ends;
+		//if ( tagCout==testTag ) cout << "ffIdx: " << ms.fIdx << ends;
 	/*
 		// separate the data by minF( need to know the minF )
 		vector<int> part1( m, 0 );
@@ -143,7 +143,6 @@ void CART_Predictor::train( const TR_Data &D, const vector<int>& cs, const vecto
 		assert( countTag(part2)==num2 );
 		assert( num1+num2==countTag(node->cs) );
 	*/
-		if ( tagCout==testTag ) cout << "4";
 		int num1 = ms.m1;
 		int num2 = ms.m2;
 
