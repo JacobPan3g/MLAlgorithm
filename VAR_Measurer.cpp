@@ -145,7 +145,7 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 		//MPI Receive the res
 		double VAR = ms.VAR;
 		int recvIdx = fIdx;
-		if ( VAR < this->minVAR || (VAR == this->minVAR && recvIdx < this->minFIdx) ) { 
+		if ( VAR < this->minVAR || (isEqual(VAR,this->minVAR) && recvIdx < this->minFIdx) ) { 
 			this->minFIdx = recvIdx;
 			this->minSpVal = ms.spVal;
 			this->minVAR = VAR;
@@ -182,8 +182,8 @@ MS VAR_Measurer::MPI_measure( const TR_Data &D, const vector<int> &cs, const vec
 	assert( countTag(part1)+countTag(part2)==nums );
 
 	
-	cout << "minFIdx: " << this->minFIdx << endl;
-	//cout << "minVAR: " << this->minVAR << endl;
+	cout << "minFIdx: " << this->minFIdx << "\t";
+	cout << "minVAR: " << this->minVAR << endl;
 	//cout << "minSpVal: " << this->minSpVal << endl;
 	//cout << "m1, m2: " << this->m1 << ", " << this->m2 << endl;
 	

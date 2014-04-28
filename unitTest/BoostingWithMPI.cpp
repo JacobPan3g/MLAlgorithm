@@ -178,6 +178,56 @@ void pro1Test( int bagNum, int maxH=10 )
 	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
 }
 
+void abaloneTest( int bagNum, int maxH=10 )
+{
+	time_t tic = clock();
+
+	TR_Data D;
+	D.csvread( "../dataset/abalone.csv" );
+
+	Boosting_Predictor bt( bagNum, maxH );
+	bt.train( D );
+	//bt.dispModel();
+	bt.saveModel( "../model/abalone.bmmdl" );
+
+	vector<double> p;
+	MT_Model mdl( "../model/abalone.bmmdl" );
+	p = Boosting_Predictor::predict( mdl, D );
+	double RMSE = rmse( p, D.getL() );
+	//disp( p );
+	cout << RMSE << endl;
+	//assert( RMSE < 0.5 );
+
+	time_t toc = clock();
+	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
+
+}
+
+void cadataTest( int bagNum, int maxH=10 )
+{
+	time_t tic = clock();
+
+	TR_Data D;
+	D.csvread( "../dataset/cadata.csv" );
+
+	Boosting_Predictor bt( bagNum, maxH );
+	bt.train( D );
+	//bt.dispModel();
+	bt.saveModel( "../model/cadata.bmmdl" );
+
+	vector<double> p;
+	MT_Model mdl( "../model/cadata.bmmdl" );
+	p = Boosting_Predictor::predict( mdl, D );
+	double RMSE = rmse( p, D.getL() );
+	//disp( p );
+	cout << RMSE << endl;
+	//assert( RMSE < 0.5 );
+
+	time_t toc = clock();
+	cout << "Time: " << (double)(toc-tic)/CLOCKS_PER_SEC << "s"<< endl;
+
+}
+
 int main( int argc, char* argv[] )
 {
 	const int master = 0;
@@ -191,7 +241,9 @@ int main( int argc, char* argv[] )
 	if ( master == rank ) {		
 		//test1();
 		//test2();
-		pro1Test( 1 );
+		//pro1Test( 3 );
+		//abaloneTest( 5 );
+		cadataTest( 1 );
 		cout << "All Unit Cases Passed." << endl;
 
 		VAR_Measurer::MPI_stopSlaveThread();
